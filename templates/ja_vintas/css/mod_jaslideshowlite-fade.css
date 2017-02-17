@@ -1,0 +1,16 @@
+/* Fading */
+
+.fade .ja-ss-item.animate {
+	-webkit-transition: opacity 1s;
+	-moz-transition: opacity 1s;
+	-ms-transition: opacity 1s;
+	-o-transition: opacity 1s;
+	transition: opacity 1s;
+}
+
+.fade .ja-ss-item {
+	opacity: 0;
+}
+.fade .ja-ss-item.curr {
+	opacity: 1;
+}

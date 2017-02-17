@@ -1,0 +1,48 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+
+#jasdl-mainnav {
+    background-image: url("../../images/bg-mainnav.png") ;
+}
+
+#jasdl-mainnav li a:hover,
+#jasdl-mainnav li a:focus,
+#jasdl-mainnav li a:active,
+#jasdl-mainnav li a.active {
+	color: #535817;
+}
+
+/* Sub Nav ---*/
+
+#ja-subnav {
+	border-color: #333;
+}
+
+#ja-subnav ul li a:hover {
+	color: #8f972c;
+}
+#ja-subnav ul li.active a.active, 
+#ja-subnav ul li.active a.active:hover, 
+#ja-subnav ul li.active a.active:active, #ja-subnav ul li.active a.active:focus {
+	color: #fff;
+}
+
+#ja-subnav ul li li a:hover { color: #8f972c; }
+
+#ja-subnav ul li li a:active { color: #8f972c; }
+
+#ja-subnav ul li.active li.active a.active, 
+#ja-subnav ul li.active li.active a.active:hover, 
+#ja-subnav ul li.active li.active a.active:active, 
+#ja-subnav ul li.active li.active a.active:focus {
+	color: #8f972c;
+}

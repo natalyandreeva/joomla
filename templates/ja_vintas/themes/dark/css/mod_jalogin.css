@@ -1,0 +1,43 @@
+/**
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+ */
+
+
+ #ja-login > ul > li > a.show {
+	background-image: url(../images/arrow_login.gif);
+}
+
+#ja-user-login, #ja-user-register {
+	border-color: #8f972c;
+}
+
+#ja-user-login .inputbox:focus, 
+#ja-user-register input[type="text"]:focus,
+#ja-user-register input[type="password"]:focus,
+#ja-user-register input[type="email"]:focus {
+	border-color: #8f972c;  
+}
+
+
+#ja-user-login input.button, #ja-user-register button {
+	background-image:	url(../images/pattern-green.gif);
+	border-color: #afb83b;
+}
+
+#ja-user-register form em {
+	color: #8f972c;
+}
+
+.logout-button input.button:hover,
+.logout-button input.button:focus,
+.logout-button input.button:active {
+	color: #8f972c;
+}

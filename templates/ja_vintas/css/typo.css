@@ -1,0 +1,651 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+
+
+/* PREFORMATTED TEXT
+-------------------------------------------------------------*/
+
+/* sub & sup tags ---*/ 
+.style-italic {
+	font-style: italic;
+	color: #222;
+	font-size: 120%;
+	font-family: "Times New Roman", serif;
+	margin: 20px 0px 20px 25px !important;
+}
+
+/* LIST STYLES
+-----------------------------------------------------------------*/
+
+/* Big Number ---*/
+.blocknumber {
+	position: relative;
+	padding: 5px 0 5px 40px !important;
+	min-height: 40px;
+	margin-top: 10px !important;
+}
+
+.blocknumber .bignumber {
+	background-image: url(../images/blocknumber-bg.png);
+	background-repeat: no-repeat;
+	color: #FFFFFF;
+	display: block;
+	width: 30px;
+	height: 30px;
+	line-height: 30px !important;
+	position: absolute;
+	top: 10px;
+	left: 0;
+	font-weight: bold;
+	font-size: 18px;
+	text-align: center;
+	font-family: "Times New Roman", serif;
+}
+
+.blocknumber-1 .bignumber { background-position: left top;}
+.blocknumber-2 .bignumber { background-position: left -30px;}
+.blocknumber-3 .bignumber { background-position: left -60px;}
+
+/* ICON STYLE
+-----------------------------------------------------------------*/
+/* Tips, Error, Message, Hightlight ---*/
+body p.ja-typo-icon {
+	padding-left: 55px;
+	position: relative;
+	display: block;
+	min-height: 60px;
+	margin-top: 10px !important;
+}
+
+body p.ja-typo-icon span.icon {
+	background-image: url(../images/icons/icons-sprites.png);
+	background-repeat: no-repeat;
+	width: 40px;
+	height: 40px;
+	display: block;
+	position: absolute;
+	top: 0px;
+	left: 0;
+	color: #666;
+}
+
+body p.ja-typo-icon span.icon               { background-position: left 0px !important; }
+body p.ja-typo-icon.icon-location span.icon { background-position: left -40px !important; }
+body p.ja-typo-icon.icon-search 	span.icon  { background-position: left -80px !important; }
+body p.ja-typo-icon.icon-blog 	span.icon  { background-position: left -120px !important; }
+body p.ja-typo-icon.icon-chat 	span.icon  { background-position: right -160px !important; }
+body p.ja-typo-icon.icon-map 		span.icon  { background-position: right -200px !important; }
+body p.ja-typo-icon.icon-home 	span.icon  { background-position: right -240px !important; }
+body p.ja-typo-icon.icon-gallery span.icon  { background-position: right -280px !important; }
+
+body p.ja-typo-icon span.text-icon {
+	color: #999;
+	font-size: 98%;
+}
+
+/* BUBBLES
+-----------------------------------------------------------------*/
+/* Common Style + Style 1 */
+.ja-typo-bubble {
+	margin: 20px 0;
+	position: relative;
+}
+
+.ja-typo-bubblect {
+	padding: 15px;
+	border: 3px solid #ddd;
+}
+
+.ja-typo-bubble p.ja-typo-bubble-meta {
+	margin: -3px 0 0;
+	height: 25px;
+	padding-left: 65px;
+}
+
+.ja-typo-bubble span.ja-typo-bubble-author {
+	font-weight: bold;
+	display: block;
+	padding-top: 5px;
+}
+
+.ja-typo-bubble span.ja-typo-bubble-arrow {
+	display: block;
+	position: absolute;
+	bottom: 0;
+	left: 28px;
+	width: 25px;
+	height: 25px;
+	background: url(../images/bubble-arrow.png) 0 0;
+}
+
+/* Style 2 --- */
+.bubble-2 .ja-typo-bubblect { border: 0; background: #ddd; }
+.bubble-2 span.ja-typo-bubble-arrow { background-position: -25px 0; }
+
+/* Style 3 --- */
+.bubble-3 .ja-typo-bubblect { border: 3px solid #08c; }
+.bubble-3 span.ja-typo-bubble-arrow { background-position: 0 -25px; }
+
+/* Style 4 --- */
+.bubble-4 .ja-typo-bubblect { border: 0; background: #08c; color: #fff; }
+.bubble-4 span.ja-typo-bubble-arrow { background-position: -25px -25px; }
+
+/* Style 5 --- */
+.bubble-5 .ja-typo-bubblect { border: 3px solid #333; }
+.bubble-5 span.ja-typo-bubble-arrow { background-position: -50px -50px; }
+
+/* Style 6 --- */
+.bubble-6 .ja-typo-bubblect { border: none; background: #333; color: #fff; }
+.bubble-6 span.ja-typo-bubble-arrow { background-position: -25px -50px; }
+
+/* MESSAGE BOXES AND LEGENDS STYLE
+-----------------------------------------------------------------*/
+/* Box style ---*/
+body p.ja-typo-box {
+	border-width: 1px;
+	border-style: solid;
+	padding: 20px 10px 20px 65px;
+	background-repeat: no-repeat;
+	background-position: 10px 10px;
+}
+
+/* Box with icons */
+p.box-warning {
+	background-image: url(../images/icons/ico-warning.png);
+	background-color: #fff5f5;
+	border-color: #d85457 !important;
+	color: #d85457;
+}
+
+p.box-edit {
+	background-image: url(../images/icons/ico-pencil.png);
+	background-color: #feffee;
+	border-color: #8f982d !important;
+	color: #8f982d;
+}
+
+p.box-funcion {
+	background-image: url(../images/icons/ico-link.png);
+	background-color: #ecfcfe;
+	border-color: #6a8b90 !important;
+	color: #6a8b90;
+}
+
+p.box-chat {
+	background-image: url(../images/icons/ico-message.png);
+	background-color: #fff3ee;
+	border-color: #e77d56 !important;
+	color: #e77d56;
+}
+
+/* Box without icons - Style 1*/
+p.box-grey-1, p.box-hilite-1 { padding: 10px 15px; }
+
+p.box-grey-1 { background: #f7f7f7; border-color: #dddddd; }
+p.box-hilite-1 { background: #ffffdd; border-color: #d2d2b6; }
+
+/* Box without icons - Style 2*/
+p.box-grey-2, p.box-hilite-2 { padding: 10px 15px; }
+
+p.box-grey-2 { background: #f7f7f7; border-color: #dddddd; border-style: dotted; }
+p.box-hilite-2 { background: #ffffdd; border-color: #d2d2b6; border-style: dotted; }
+
+/* Legend ---*/
+.ja-typo-legend {
+	border: 3px solid #ddd;
+	margin: 20px 0;
+	padding: 20px 15px 15px;
+	position: relative;
+}
+
+.ja-typo-legend .legend-title {
+	background: #fff;
+	display: block;
+	float: left;
+	font-family: Arial, sans-serif;
+	font-size: 125%;
+	font-weight: bold;
+	left: 10px;
+	line-height: normal;
+	margin: 0 !important;
+	padding: 5px !important;
+	position: absolute;
+	top: -17px;
+}
+
+/* Legend Style 2 */
+.legend-2 { border: 3px solid #08c; }
+
+.legend-2 .legend-title { color: #08c; }
+
+
+/* BUTTONS
+--------------------------------------------------*/
+/* Common Buttons Style ---*/
+a.ja-typo-btn {
+	display: block;
+	text-decoration: none;
+	white-space: nowrap;
+	border: solid 1px #7E7E7E;
+	color: #fff;
+	background: none;
+}
+
+/*Use for Demo Page Only*/
+#ja-typo a.ja-typo-btn, a.ja-typo-btn {
+	margin: 10px 15px 10px 0;
+	float: left;
+	font-family: "Times New Roman", serif;
+	text-transform: uppercase;
+	color: #fff;
+}
+
+#ja-typo a.ja-typo-btn:hover,
+#ja-typo a.ja-typo-btn:focus,
+#ja-typo a.ja-typo-btn:active,
+a.ja-typo-btn:hover, a.ja-typo-btn:focus, a.ja-typo-btn:active {
+	color: #fff;
+}
+
+.dark #ja-typo a.ja-typo-btn:hover,
+.dark #ja-typo a.ja-typo-btn:focus,
+.dark #ja-typo a.ja-typo-btn:active,
+.dark a.ja-typo-btn:hover, .dark a.ja-typo-btn:focus, .dark a.ja-typo-btn:active {
+	background-color: #74AF57;
+}
+
+/* Icon Buttons ---*/
+a.ja-typo-btn-icn {
+	height: 30px;
+	color: #222;
+	background: #fff;
+	border: solid 1px #ddd;
+	padding-top: 6px;
+	padding-bottom: 6px;
+}
+
+a.ja-typo-btn-icn:hover,
+a.ja-typo-btn-icn:focus,
+a.ja-typo-btn-icn:active {
+	border: solid 1px #ddd; 
+	color: #ef2a33;
+}
+
+a.ja-typo-btn-icn span {
+	padding: 0 0px 0 29px;
+	display: block;
+	background-repeat: no-repeat;
+	background-position: 7px 7px;
+	border: none;
+}
+
+a.btn-icn-chat span 	{ background-image: url(../images/icons/ico-chat.png); }
+a.btn-icn-info span 		{ background-image: url(../images/icons/ico-info.png); }
+a.btn-icn-cart span 	{ background-image: url(../images/icons/ico-cart.png); }
+a.btn-icn-light span 	{ background-image: url(../images/icons/ico-light.png); }
+
+a.ja-typo-btn-icn span span {
+	height: auto;
+	line-height: 32px;
+	padding: 0;
+	display: inline;
+	background: none;
+	border: none;
+	padding-left: 10px;
+	padding-right: 14px;
+}
+
+/* Big Buttons ----*/
+a.ja-typo-btn-big {
+	text-align: center;
+	border: none;
+	font-size: 110%;
+	line-height: normal;
+	font-weight: normal;
+}
+
+a.ja-typo-btn-big span {
+	padding: 15px 23px;
+	border: none;
+	display: block;
+}
+
+/* Small Buttons --- */
+a.ja-typo-btn-sm {
+	text-align: center;
+	border: 1px solid #ccc;
+	font-size: 100%;
+	line-height: normal;
+}
+
+a.ja-typo-btn-sm span {
+	padding: 5px 10px;
+	border: 1px solid #fff;
+	display: block;
+}
+
+/* Button Blue*/
+a.btn-blue {
+	background: url(../images/pattern-blue.gif) repeat left top;
+	border: solid 1px #6c8e90;
+}
+
+a.btn-blue:hover,
+a.btn-blue:active,
+a.btn-blue:focus {
+	background-image: url(../images/pattern-red.gif);
+	border: solid 1px #e3575a;
+}
+
+a.btn-blue span { border: none; }
+
+/* Button green*/
+a.btn-green {
+	background: url(../images/pattern-green.gif) repeat left top;
+	border: solid 1px #8e962b;
+}
+
+a.btn-green:hover,
+a.btn-green:active,
+a.btn-green:focus {
+	background-image: url(../images/pattern-red.gif);
+	border: solid 1px #e3575a;
+}
+
+a.btn-green span { border: none; }
+
+/* Button red*/
+a.btn-red {
+	background: url(../images/pattern-red.gif) repeat left top;
+	border: solid 1px #e3575a;
+}
+
+a.btn-red:hover,
+a.btn-red:active,
+a.btn-red:focus { background: url(../images/pattern-gray.gif); border-color: #7E7E7E; }
+
+a.btn-red span { border: none; }
+
+/* Button gray*/
+a.btn-gray {
+	background: url(../images/pattern-gray.gif) repeat left top;
+	border: solid 1px #7E7E7E;
+}
+
+a.btn-gray:hover,
+a.btn-gray:active,
+a.btn-gray:focus {
+	background-image: url(../images/pattern-red.gif);
+	border: solid 1px #e3575a;
+}
+
+a.btn-pink span { border: none; }
+
+/* Button orange */
+a.btn-orange {
+	background: url(../images/pattern-orange.gif) repeat left top;
+	border: solid 1px #e77d56;
+}
+
+a.btn-orange:hover,
+a.btn-orange:active,
+a.btn-orange:focus {
+	background-image: url(../images/pattern-red.gif);
+	border-color: #e3575a ;
+}
+
+a.btn-orange span { border: none; }
+
+/* Button brown */
+a.btn-brown {
+	background: url(../images/pattern-brown.gif) repeat left top;
+	border: solid 1px #a8783e;
+}
+
+a.btn-brown:hover,
+a.btn-brown:active,
+a.btn-brown:focus {
+background-image: url(../images/pattern-red.gif);
+	border-color: #e3575a ;
+}
+
+a.btn-brown span { border: none; }
+
+/* Button viollet */
+a.btn-purple {
+	background: url(../images/pattern-purple.gif) repeat left top;
+	border: solid 1px #851cd6;
+}
+
+a.btn-purple:hover,
+a.btn-purple:active,
+a.btn-purple:focus {
+background-image: url(../images/pattern-red.gif);
+	border-color: #e3575a ;
+}
+
+a.btn-purple span { border: none; }
+
+/* Button pink */
+a.btn-pink {
+	background: url(../images/pattern-pink.gif) repeat left top;
+	border: solid 1px #d755bd;
+}
+
+a.btn-pink:hover,
+a.btn-pink:active,
+a.btn-pink:focus {
+background-image: url(../images/pattern-red.gif);
+	border-color: #e3575a ;
+}
+
+a.btn-pink span { border: none; }
+
+/* TAGS
+--------------------------------------------------*/
+span.ja-typo-tag {
+	padding: 3px 12px;
+	margin: 0 2px;
+	display: inline-block;
+	line-height: normal;
+	white-space: nowrap;
+	background: #666;
+	color: #fff;
+}
+
+span.tag-blue 	{ background: #08c; }
+span.tag-green 	{ background: #669900; }
+span.tag-orange { background: #e58c00; }
+span.tag-red 	{ background: #cc0000; }
+
+span.tag-grey { background: #ccc; color: #333; }
+
+/* SPECIAL MODULE STYLE
+--------------------------------------------------*/
+/* Badge ---*/
+.badge {
+	background-image: url(../images/badge.png);
+	background-repeat: no-repeat;
+	height: 46px;
+	position: absolute;
+	right: 0;
+	width: 45px;
+}
+
+.badge-hot 	.badge { background-position: 0 0; }
+.badge-new 	.badge { background-position: 0 -46px; }
+.badge-pick .badge { background-position: 0 -92px; }
+.badge-top 	.badge { background-position: 0 -138px; }
+
+/*Use for Demo Page Only*/
+#ja-typo .moduletable_badge {
+	margin: 0;
+	padding: 0;
+	min-height: 40px;
+}
+
+#ja-typo .moduletable_badge .ja-box-ct {
+	border: 3px solid #ddd;
+	padding: 20px;
+	background: #f7f7f7;
+}
+
+/* FORM
+--------------------------------------------------*/
+/* Fieldset ----*/
+/* Common Style + Style 1 */
+fieldset.ja-typo-fieldset {
+	border: 3px solid #ddd;
+	padding: 10px 12px;
+}
+
+fieldset.ja-typo-fieldset legend {
+	padding: 0 10px;
+}
+
+/* Style 2 */
+fieldset.fieldset-2 {
+	border: 3px solid #08c;
+}
+
+fieldset.fieldset-2 legend {
+	color: #08c;
+}
+
+/*Use for Demo Page Only*/
+#ja-typo fieldset {
+	margin-top: 20px;
+}
+
+/* TYPO PAGE LAYOUT
+-------------------------------------------------------------*/
+.ja-typo-blockswrap {
+	margin: 15px 0;
+}
+
+.ja-typo-blockrow {
+	border-bottom: none;
+	padding: 0 0 20px;
+}
+
+.ja-typo-block { float: left; padding-top: 0px; }
+.ja-typo-blockct { padding: 0px; }
+
+.ja-typo-blockswrap .cols-1 .ja-typo-block { width: 100%; float: none; }
+.ja-typo-blockswrap .cols-2 .ja-typo-block { width: 50%; float: left; }
+.ja-typo-blockswrap .cols-3 .ja-typo-block { width: 33%; float: left; }
+.ja-typo-blockswrap .cols-4 .ja-typo-block { width: 24.9%; float: left; }
+
+.ja-typo-blockswrap .cols-2 .ja-typo-block.first {
+	margin-right: 1.9%;
+	width: 48%
+}
+
+.ja-typo-blockswrap .cols-2 .ja-typo-block.last {
+	margin-left: 1.9%;
+	width: 48%
+}
+.ja-typo-blockswrap .ja-typo-block.last { float: right; }
+
+.ja-typo-blockswrap h1.ja-typo-title {
+	font-size: 325%;
+	padding: 5px;
+	margin: 0;
+	font-family: "Times New Roman", serif;
+	text-transform: uppercase;
+	font-weight: normal;
+	position: relative;
+	color: #222;
+	border-bottom: none;
+}
+
+.ja-typo-blockswrap:hover h1.ja-typo-title  {
+	border: none;
+	color: #222;
+}
+
+.ja-typo-blockswrap h2.ja-typo-title {
+	font-size: 215%;
+	margin: 0;
+	padding: 0 10px;
+	font-family: "Times New Roman", serif;
+	text-transform: none;
+	font-weight: normal;
+	padding: 3px 0px;
+}
+
+.ja-typo-blockswrap h2.ja-typo-title span {
+	background: none;
+	color: #222;
+	padding: 3px 0px;
+	display: inline-block;
+	word-spacing: -0.2em;
+}
+
+.ja-typo-blockswrap:hover h2.ja-typo-title span  {
+	background: none;
+	color: #222;
+}
+
+.ja-typo-blockrow > h2.ja-typo-title {
+	margin-bottom: -20px;
+	margin-top: 20px;
+}
+
+.ja-typo-blockswrap h3.ja-typo-title {
+	font-size: 120%;
+	margin: 0;
+	padding: 0 10px;
+	font-family: "Times New Roman", serif;
+	text-transform: uppercase;
+	padding: 3px 0px;
+}
+
+.ja-typo-blockswrap h3.ja-typo-title span {
+	background: none;
+	color: #222;
+	padding: 3px 0px;
+	display: inline-block;
+	word-spacing: -0.2em;
+}
+
+.ja-typo-blockswrap:hover h3.ja-typo-title span  {
+	background: none;
+	color: #222;
+}
+
+/* Blockswrap Actions ---*/
+.ja-typo-blocks-actions {
+	font-size: 85%;
+	position: absolute;
+	right: 5px;
+	top: 5px;
+	color: #999;
+}
+
+.ja-typo-blocks-actions a {
+	font-size: 85%;
+	text-transform: none;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	color: #c00;
+	text-decoration: none;
+}
+
+
+
+
+
+
+
+
+

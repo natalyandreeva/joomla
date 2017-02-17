@@ -1,0 +1,89 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+#ja-splitmenu {
+	font-family: 'Bernard MT Condensed';
+	background: url(../../images/bg-mainnav.png) repeat-x left top;
+	height: 54px;
+}
+
+#ja-splitmenu li a {
+	color: #f0e6db;
+	text-shadow: 0px 1px 1px rgba(0,0,0,0.5);
+	font-size: 115%;
+	padding: 14px 25px 13px 25px;
+	font-weight: normal;
+}
+
+#ja-splitmenu li a:hover,
+#ja-splitmenu li a:focus,
+#ja-splitmenu li a:active,
+#ja-splitmenu li a.active {
+	color: #622829;
+	text-shadow: 0px 1px 1px rgba(255,255,255,0.5);
+}
+
+/* Sub Nav ---*/
+#ja-subnav { background: none; border-bottom: solid 1px #decfbe;}
+
+#ja-subnav li { padding: 10px 0px; margin: 0px;}
+
+#ja-subnav ul li a { color: #666; padding: 0px 15px; }
+
+#ja-subnav ul li a:hover { color: #e3575a; }
+
+#ja-subnav ul li a:active { color: #333; }
+
+#ja-subnav ul li li a { color: #666; }
+
+#ja-subnav ul li li a:hover { color: #e3575a; }
+
+#ja-subnav ul li li a:active { color: #e3575a; }
+
+
+#ja-subnav ul li.active a.active, 
+#ja-subnav ul li.active a.active:hover, 
+#ja-subnav ul li.active a.active:active, 
+#ja-subnav ul li.active a.active:focus {
+	color: #333;
+}
+
+#ja-subnav ul li.active li.active a.active, 
+#ja-subnav ul li.active li.active a.active:hover, 
+#ja-subnav ul li.active li.active a.active:active, 
+#ja-subnav ul li.active li.active a.active:focus {
+	color: #e3575a;
+}
+/* Sub Nav (lv2) ---*/
+#ja-subnav ul li ul {
+	background: url(../../images/bg-submenu.png) repeat left top;
+	top: 2.3em;
+}
+
+#ja-subnav ul li ul li {
+	background: url(../../images/line-submenu.png) repeat-x left top;
+	padding: 5px 15px;
+}
+
+#ja-subnav ul li ul li.first-item {
+	background: none;
+}
+
+#ja-subnav li ul li.haschild a.haschild span.menu-title,
+#ja-subnav li ul li.haschild:hover a.haschild span.menu-title,
+#ja-subnav li ul li.haschild:hover a.haschild:hover span.menu-title {
+	background: url(../../images/arrow1.png) no-repeat 92% center;
+	padding-right: 0px;
+}
+
+#ja-subnav ul li ul li a{
+	padding: 0px ;
+}

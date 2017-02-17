@@ -1,0 +1,97 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+/* Son of Suckerfish Dropdowns
+---------------------------------------------------------
+Originally developed by Patrick Griffiths and Dan Webb
+http://www.htmldog.com/articles/suckerfish/dropdowns/
+---------------------------------------------------------
+NOTE: After a deep research, we decide to divide this
+CSS into 2 parts. The first part will define the layout.
+The second part will define the visual look for this menu.
+---------------------------------------------------------*/
+
+/* STYLING THE MENU
+-----------------------------------*/
+#ja-cssmenu {
+	background: url(../../images/bg-mainnav.png) repeat-x left top;
+	height: 54px;
+}
+
+#ja-cssmenu li {
+	font-family: 'Bernard MT Condensed';
+}
+
+/* 1st level */
+
+#ja-cssmenu li a {
+	color: #f0e6db;
+	font-size: 115%;
+	padding: 14px 25px 13px 25px;
+	font-weight: normal;
+}
+
+#ja-cssmenu li a:hover,
+#ja-cssmenu li a:focus,
+#ja-cssmenu li a:active,
+#ja-cssmenu li a.active {
+	color: #622829;
+}
+
+/* 2nd level and above */
+#ja-cssmenu li ul {
+	background: url(../../images/bg-submenu.png) repeat left top;
+	background-color: transparent;
+	border-top: 4px solid #000;
+	color: #333;
+	width: 14.3em !important;
+}
+
+#ja-cssmenu li li {
+ 	font-family: "Times New Roman", serif;
+ 	font-size: 95%;
+ 	padding: 0px;
+}
+
+#ja-cssmenu li ul li,
+#ja-cssmenu li.havesubchild, #ja-cssmenu li.havesubchild-active {
+	background: url(../../images/line-submenu.png) repeat-x left top;
+}
+
+#ja-cssmenu li ul li.first-item { background: none; }
+
+#ja-cssmenu li ul a {
+	color: #b4aca3;
+	padding: 8px 0px 8px 20px;
+}
+
+#ja-cssmenu li ul a:hover,
+#ja-cssmenu li ul a:focus,
+#ja-cssmenu li ul a:active {
+	color: #e3575a;
+}
+
+#ja-cssmenu li ul a.active,
+#ja-cssmenu li ul a.active:hover,
+#ja-cssmenu li ul a.active:focus,
+#ja-cssmenu li ul a.active:active {
+	color: #e3575a;
+	font-weight: normal;
+}
+
+#ja-cssmenu li.havesubchild a.haschild span.menu-title,
+#ja-cssmenu li.havesubchild.sfhover a.haschild.sfhover span.menu-title,
+#ja-cssmenu li.havesubchildsfhover a.haschild span.menu-title,
+#ja-cssmenu li.havesubchildsfhover.sfhover a.haschild.sfhover span.menu-title,
+#ja-cssmenu li.havesubchild-active a.haschild.active span.menu-title,
+#ja-cssmenu li.havesubchild-active.sfhover a.haschild.active.sfhover span.menu-title  {
+	background: url(../../images/arrow1.png) no-repeat 95% center;
+}

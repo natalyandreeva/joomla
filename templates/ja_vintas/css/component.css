@@ -1,0 +1,150 @@
+/**
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+ */
+
+/* COMMON STYLE
+--------------------------------------------------------- */
+@import url(../fonts/bernard_mt/stylesheet.css);
+body {
+	color: #666;
+	font-family: Georgia, "Times New Roman", serif;
+}
+
+body#bd {
+  background: url(../images/page-bg.gif) repeat left top;
+  color: #666;
+  font-size: 14px;
+}
+
+/* Normal links ---*/
+body.contentpane a { color: #333; text-decoration: none; }
+
+body.contentpane a:hover, body.contentpane a:active, body.contentpane a:focus {
+	text-decoration: none;
+	color: #e3575a;
+}
+
+
+body.contentpane .button,
+body.contentpane #ja-typo button,
+#login-form input.button {
+	background:	url(../images/pattern-red.gif) repeat left top;
+	border: solid 1px #e3575a;
+	color: #fff;
+	display: inline-block;
+	margin: 0px 4px 3px 0px;
+	padding: 6px 12px;
+	cursor: pointer;
+	overflow: visible;
+	text-transform: uppercase;
+	font-size: 85%;
+}
+
+body.contentpane .button:hover,
+body.contentpane #ja-typo button:hover,
+#login-form input.button:hover {
+	background:	url(../images/pattern-gray.gif);
+	border-color: #7E7E7E;
+	color: #fff;
+}
+
+body.contentpane .inputbox,
+body.contentpane input[type=text],
+body.contentpane input[type=password],
+body.contentpane input[type=email] {
+	background: #ede1d2;
+	border: 1px solid #D4C9BD;
+	color: #666666;
+	margin: 0;
+	padding: 6px;
+	font-size: 90%;
+}
+
+body.contentpane .inputbox:hover, 
+body.contentpane input[type=text]:hover,
+body.contentpane input[type=password]:hover,
+body.contentpane input[type=email]:hover {
+	background: #ede1d2; border-color: #D4C9BD;
+}
+
+body.contentpane .inputbox:focus,
+body.contentpane input[type=text]:focus,
+body.contentpane input[type=password]:focus,
+body.contentpane input[type=email]:focus {
+	background: #ede1d2;
+	border-color: #ef2a33;
+}
+
+body.contentpane input[type="checkbox"],
+body.contentpane input[type="checkbox"]:hover,
+body.contentpane input[type="checkbox"]:focus {
+	border: none;
+	background: none;
+	padding: 0px;
+	margin: 4px 0px 0px 0px;
+}
+
+body.contentpane h1.componentheading,
+body.contentpane h2.componentheading,
+body.contentpane .componentheading,
+body.contentpane h2.contentheading,
+body.contentpane h2 {
+	color: #333333;
+	text-transform: uppercase;
+	font-family: 'Bernard MT Condensed';
+	font-size: 150%;
+	line-height: 1.1;
+}
+
+/* Acymailling Module */ 
+
+table.acymailing_form {
+	margin: 10px 0px 0px 0px;
+	width: 95%;
+}
+
+.acysubbuttons {
+	text-align: left;
+}
+
+.acymailing_module_form table.acymailing_form input.inputbox {
+    background: none repeat scroll 0 0 #222222;
+    border: 1px solid #333333;
+    color: #666666;
+    padding: 6px 5px;
+    width: 95%;
+    margin-bottom: 5px;
+}
+
+.acymailing_module_form table.acymailing_form input.inputbox:hover {
+	border-color: #2f2f2f;
+}
+
+.acymailing_module_form table.acymailing_form input.inputbox:focus {
+	border-color: #ef2a33;
+}
+
+table.acymailing_form .acysubbuttons input.button {
+	text-transform: uppercase;
+	text-align: right;
+}
+
+a.acymailing_togglemodule {
+	background:	url(../images/pattern-red.gif) repeat left top;
+	border: solid 1px #e3575a;
+	color: #FFFFFF !important;
+	font-size: 92%;
+	font-weight: bold;
+	letter-spacing: 0.5px;
+	padding: 6px 13px;
+	text-transform: uppercase;
+	display: inline-block;
+}

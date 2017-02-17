@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="file" version="2.5" method="upgrade">
+
+    <name>com_virtuemart_ru-RU</name>
+    <author>The VirtueMart Development and Translation Team</author>
+    <creationDate>October 22 2012</creationDate>
+    <copyright>Copyright (C) 2004-2012 Virtuemart Team. All rights reserved.</copyright>
+    <license>http://www.gnu.org/licenses/gpl-2.0.html GNU/GPL</license>
+    <authorEmail>max|at|virtuemart.net</authorEmail>
+    <authorUrl>http://www.virtuemart.net</authorUrl>
+    <version>2.0.12f</version>
+    <description>This ru-RU language pack for VirtueMart has been installed successfully. It includes files for the component, modules,
+        and plugins. Some languages may not have all the files.</description>
+
+    <!-- Fileset definition -->
+    <fileset>
+        <files>
+            <file type="language" client="site" id="ru-RU">site_ru-RU.zip</file>
+            <file type="language" client="administrator" id="ru-RU">admin_ru-RU.zip</file>
+        </files>
+    </fileset>
+</extension>

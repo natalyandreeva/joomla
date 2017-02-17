@@ -1,0 +1,144 @@
+/* Copyright (C) YOOtheme GmbH, http://www.gnu.org/licenses/gpl.html GNU/GPL */
+
+@import url(../warp/css/menus.css);
+
+
+#menubar { background: url(../images/b-menu.png) repeat-x; }
+.VMmenu { margin: 15px -13px !important; padding: 0px !important; }
+.VMmenu li { padding: 0px !important; }
+.VmClose { margin: 5px !important; padding: 0px !important; background-color: #5c5b3c; border-radius: 5px; }
+.VmClose .zg { padding: 0px 5px !important; }
+.VmClose .zg a { color: #fff !important; font-weight:bold; text-decoration: none !important; }
+.VmOpen .zg { background-color: #f7941d; color: #fff !important; font-weight:bold; margin: 0px 5px; padding: 0px 5px !important; border-radius: 5px 5px 0px 0px; }
+.VmOpen .zg a, .VmOpen .zg a:hover { color: #fff; text-decoration: none !important; }
+.VmOpen .menu { background-color: #ddd; margin: 0px 5px; padding: 0px !important; font: 12px/16px Arial,Helvetica,sans-serif; border-radius: 0px 0px 5px 5px; } 
+.VmArrowdown { padding: 0px !important; }
+.VMmenu ul.menu li { padding: 2px 15px !important; }
+
+/* Mega Drop-Down Menu
+----------------------------------------------------------------------------------------------------*/
+
+#menubar ul.menu li.level1 {
+    background: url("../images/separator.png") no-repeat;
+    padding-left: 1px;
+}
+
+.menu-dropdown a.level1,
+.menu-dropdown span.level1 {
+	color: #fff;
+	font-weight:bold;
+}
+
+/* Set Active */
+.menu-dropdown li.active .level1 { color: #fff; background: url(../images/a-menu.png) repeat-x; }
+
+/* Set Hover */
+.menu-dropdown li.level1:hover .level1,
+.menu-dropdown li.remain .level1 { color: #d50; background: url(../images/a-menu.png) repeat-x; }
+
+/* Drop-Down */
+.menu-dropdown .dropdown {
+	top: 30px;
+	border-top: 1px solid #000000;
+}
+
+.menu-dropdown .dropdown-bg > div {
+	padding: 0 5px;
+	border: 1px solid #000000;
+	border-top: none;
+	background: #fff;
+}
+
+/* Level 2 */
+.menu-dropdown li.level2 { 
+	margin: 0 5px;
+	border-top: 1px solid #ddd;
+}
+.menu-dropdown li.level2:first-child { border: none; }
+
+.menu-dropdown a.level2,
+.menu-dropdown span.level2 { color: #444; }
+
+/* Set Hover */
+.menu-dropdown a.level2:hover { color: #d50; }
+
+/* Set Current */
+.menu-dropdown a.current.level2 { font-weight: bold; } 
+
+/* Set Hover */
+.menu-dropdown a.level3:hover { color: #d50; }
+
+/* Set Current */
+.menu-dropdown a.current.level3 { font-weight: bold; } 
+
+
+/* Sidebar/Accordion Menu
+----------------------------------------------------------------------------------------------------*/
+
+/* Link */
+.menu-sidebar a,.ext-menu-sidebar a,
+.menu-sidebar li > span, .ext-menu-sidebar li > span { color: #444; }
+
+/* Hover */
+.menu-sidebar a:hover, .ext-menu-sidebar a:hover
+.menu-sidebar li > span:hover { color: #d33; }
+
+/* Current */
+.menu-sidebar a.current { font-weight: bold; }
+
+/* Level 1 */
+.menu-sidebar li.level1 { border-top: 1px solid #ddd; }
+.menu-sidebar li.level1:first-child { border-top: none; }
+
+.menu-sidebar li.parent .level1 > span { background: url(../images/menu_sidebar_parent.png) 100% 0 no-repeat; }
+.menu-sidebar li.parent.active .level1 > span { background-position: 100% -30px; }
+
+/* Level 2-4 */
+.menu-sidebar ul.level2 ul { padding-left: 10px; }
+
+
+/* Line Menu
+----------------------------------------------------------------------------------------------------*/
+
+.menu-line li {
+	margin-left: 7px;
+	padding-left: 8px;
+	background: url(../images/menu_line_item.png) 0 50% no-repeat;
+}
+
+.menu-line li:first-child {
+	margin-left: 0;
+	padding-left: 0;
+	background: none;
+}
+
+
+/* Footer Menu
+----------------------------------------------------------------------------------------------------*/
+.ext-footermenu { margin: 10px; }
+
+.ext-footermenu, .ext-footermenu li, .ext-footermenu li a {
+    display: block;
+    background: none;    
+    padding: 0px !important;
+    border: none !important;
+}
+
+.ext-footermenu a.level1 > span, .ext-footermenu span.level1 > span {
+    padding: 0px;
+}
+
+/* Footer home
+----------------------------------------------------------------------------------------------------*/
+.ext-homemenu {
+	margin: 10px;
+	padding: 0px;
+   display: block;
+   background: none;    
+   padding: 0px !important;
+   border: none !important;
+}
+
+.ext-homemenu .col1,.ext-homemenu .col2,.ext-homemenu .col3 {width: 150px; float:left;}
+.ext-homemenu ul { padding: 10px; font: 12px/18px Arial,Helvetica,sans-serif; };
+

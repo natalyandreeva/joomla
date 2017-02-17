@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE install SYSTEM "http://www.joomla.org/xml/dtd/1.5/module-install.dtd">
+<install type="module" version="1.5.0">
+    <name>mod_virtuemart_randcatproduct</name>
+    <creationDate>May 2013</creationDate>
+    <author>Andrew Zahalski</author>
+    <authorUrl>http:/pusk.ws</authorUrl>
+    <copyright>Copyright (C) 2013 Andrew Zahalski. All rights reserved.</copyright>
+    <license>GNU/GPL</license>
+    <version>1.2</version>
+    <description>Вывод товаров из категории в детальный вид</description>
+    <files>
+	<filename module="mod_virtuemart_randcatproduct">mod_virtuemart_randcatproduct.php</filename>
+	<filename>index.html</filename>
+	<filename>helper.php</filename>
+	<folder>tmpl</folder>
+	<folder>fields</folder>
+	<folder>assets</folder>
+    </files>
+    <config>
+	<fields name="params">
+	    <fieldset name="basic">
+			<field name="kol" type="text" default="9"
+			label="Количество для вывода"
+			description="Введите количество товаров для вывода в модуле" />
+			<field name="kolstr" type="text" default="3"
+			label="Количество для вывода в строку"
+			description="Введите количество товаров для вывода в строку или видимая часть карусели" />
+			<field name="show_addcart" type="list"
+						default="1"
+						label="Показывать кнопку купить"
+						description="Показывать кнопку купить"
+					>
+				<option value="0">Не показывать</option>
+				<option value="1">Показывать</option>
+			</field>
+			<field name="show_price" type="list"
+						default="1"
+						label="Показывать цены"
+						description="Показывать цены"
+					>
+				<option value="0">Не показывать</option>
+				<option value="1">Показывать</option>
+			</field>
+			<field name="show_car" type="list"
+						default="0"
+						label="Использовать карусель"
+						description="Использовать карусель для вывода"
+					>
+				<option value="0">нет</option>
+				<option value="1">да</option>
+			</field>
+			<field name="shirinastr" type="text" default="654"
+			label="Ширина карусели в пикселах"
+			description="Ширина карусели в пикселах, без px" />
+			<field name="stepcarusel" type="text" default="1"
+			label="Шаг промотки"
+			description="Укажите значение на которое сдвигать карусель" />
+			<field name="show_jquery" type="list"
+						default="0"
+						label="Подключать Jquery?"
+						description="Подключать Jquery?"
+					>
+				<option value="0">нет</option>
+				<option value="1">да</option>
+			</field>
+			
+	    </fieldset>
+		<fieldset name="filter" label="Фильтры вывода" addfieldpath="/modules/mod_virtuemart_randcatproduct/fields">
+			<field name="category" type="list"
+						default="1"
+						label="Выводить товары из"
+						description="Выберите способ вывода товаров"
+					>
+				<option value="0">Все товары</option>
+				<option value="1">Из текущей категории</option>
+				<option value="2">Из выбранной категории</option>
+				<option value="3">Последние просмотренные товары</option>
+			</field>
+			
+			<field name="virtuemart_category_idn" type="vmcategories"  value_field="category_name" 
+			label="Категория" 
+			description="Выберите категорию для вывода товаров" />
+			
+			<field name="vmmanufacturer_idn" type="vmmanufacturer"  value_field="vmmanufacturer" 
+			label="Производитель"
+			default='0'
+			description="Выберите производителя для вывода товаров" />
+			
+			
+			<field name="stock" type="list"
+						default="1"
+						label="Наличие товара на складе"
+						description="Выберите способ вывода товаров"
+					>
+				<option value="0">Все товары</option>
+				<option value="1">Только товары в наличии</option>
+			</field>
+			
+			<field name="show_all" type="list"
+						default="1"
+						label="Показывать только в подробном виде товара"
+						description="Показывать только в подробном виде товара"
+					>
+				<option value="0">Отображение везде</option>
+				<option value="1">Отображение в детальном виде товара</option>
+			</field>
+			
+		</fieldset>
+		<fieldset name="filter2" label="Фильтры вывода в подробный вид">
+			<field name="cur_product" type="list"
+						default="1"
+						label="Текущий товар"
+						description="Выберите способ вывода товаров"
+					>
+				<option value="0">Не скрывать</option>
+				<option value="1">Скрывать</option>
+			</field>
+			<field name="cur_manufacturer" type="list"
+						default="0"
+						label="Только текущий производитель"
+						description="Выберите способ вывода товаров"
+					>
+				<option value="0">Все производители</option>
+				<option value="1">Только текущий</option>
+				<option value="2">Брать значения из настроек выше</option>
+			</field>
+		</fieldset>
+	    <fieldset name="advanced">
+		<field
+					name="layout"
+					type="modulelayout"
+					label="JFIELD_ALT_LAYOUT_LABEL"
+					description="JFIELD_ALT_MODULE_LAYOUT_DESC" />
+		<field name="cache" type="hidden"
+					default="0"
+					label="COM_MODULES_FIELD_CACHING_LABEL"
+					description="COM_MODULES_FIELD_CACHING_DESC"
+				>
+		<field name="cached" type="list"
+						default="1"
+						label="COM_MODULES_FIELD_CACHING_LABEL"
+						description="COM_MODULES_FIELD_CACHING_DESC"
+					>
+				<option value="0">нет</option>
+				<option value="1">да</option>
+			</field>
+		</field>
+		<field name="moduleclass_sfx" type="text" default=""
+			label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+				description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+		<field name="class_sfx" type="text" default=""
+			label="Menu Class Suffix"
+			description="A suffix to be applied to the css class of the menu items" />
+	    </fieldset>
+	</fields>
+    </config>
+</install>

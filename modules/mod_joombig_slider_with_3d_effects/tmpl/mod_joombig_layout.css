@@ -1,0 +1,41 @@
+/* General Demo Style */
+.slider_with_3d_effect_container a{
+	color: white;
+	text-decoration: none;
+}
+.slider_with_3d_effect_container{
+	/*tapnm
+	width: 100%;
+	*/
+	position: relative;
+}
+.slider_with_3d_effect_container > header{
+	margin: 10px;
+	padding: 20px 10px 10px 10px;
+	position: relative;
+	display: block;
+	text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    text-align: center;
+}
+.slider_with_3d_effect_container > header h1{
+	font-size: 40px;
+	line-height: 40px;
+	margin: 0;
+	position: relative;
+	font-weight: 300;
+	color: #777;
+	text-shadow: 1px 1px 1px rgba(255,255,255,0.7);
+}
+.slider_with_3d_effect_container > header h1 span{
+	font-weight: 700;
+}
+.slider_with_3d_effect_container > header h2{
+	font-size: 14px;
+	font-weight: 300;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	margin: 0;
+	padding: 15px 0 5px 0;
+	color: #6190ca;
+	text-shadow: 1px 1px 1px rgba(255,255,255,0.7);
+}

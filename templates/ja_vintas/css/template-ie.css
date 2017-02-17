@@ -1,0 +1,89 @@
+
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+
+/* MESSAGE BOXES AND LEGENDS STYLE
+-----------------------------------------------------------------*/
+
+div.catItemTagsBlock .catItemTags li,
+div.userItemTagsBlock .userItemTags li,
+div.tagItemTagsBlock .tagItemTags li {
+	display: inline-block;
+}
+
+div.catItemBlogView .item-media {
+	margin-top: 6px;
+}
+
+.finder #search-form button,
+#searchForm button {
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+#ja-botsl1 div.k2ItemsBlock.list_item ul li a.moduleItemImage,
+.border-image {
+	border-width: 0px;
+
+  display: inline-block;
+  margin: 0px;
+}
+
+div.k2ItemsBlock.list_item ul li a.moduleItemImage img,
+.border-image img {
+ 	outline-color: #c6b9a7;
+  outline-style: double;
+  padding: 5px !important;
+  margin: 3px;
+}
+
+
+div.subCategory {
+	 	outline-color: #c6b9a7;
+  outline-style: double;
+ 	margin-left: 3px;
+ 	margin-right: 17px;
+}
+
+/* VIRTUALMART
+-------------------------------------------------------------------*/
+/* All categories */
+.category .spacer {
+  margin-top: 3px;
+  outline-color: #c6b9a7;
+  outline-style: double;
+}
+
+/* Category list */
+.browseProductImage {
+  margin-top: 3px;
+  outline-color: #c6b9a7;
+  outline-style: double;
+}
+
+/* Product detail */
+div.main-image img {
+  background: url(../images/trans-w10.png);
+  margin-left: 3px;
+  outline-color: #c6b9a7;
+  outline-style: double;
+}
+
+/* vm product module */
+div.vmgroup ul.vmproduct li a img {
+  outline-color: #c6b9a7;
+  outline-style: double;
+}
+
+div.group-content div.vmgroup ul.vmproduct li a img {
+  outline-color: #333;
+}

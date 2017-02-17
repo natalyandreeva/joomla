@@ -1,0 +1,16 @@
+.bmHeaderContainer {
+    background: none repeat scroll 0 0 #D5E7FA;
+    border-bottom: 2px solid #96B0CB;
+    clear: both;
+    color: #336699;
+    float: left;
+    font-size: 12px;
+    font-weight: bold;
+    margin: 12px 0 4px;
+    padding: 0;
+    width: 100%;
+}
+.bmparamHeaderContent {
+    padding: 6px 8px;
+}
+

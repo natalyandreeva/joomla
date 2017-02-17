@@ -1,0 +1,60 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+/* content slider
+--------------------------------------------------------- */
+.ja-contentslider-center-wrap {
+	padding: 10px 30px;
+}
+
+.ja-contentslider-right,
+.ja-contentslide-right-img {
+	background: url(../images/btn-control.png) 100% 0 no-repeat;
+	cursor: pointer;
+	height: 40px;
+	position: absolute;
+	right: -80px;
+	bottom: 20px;
+	width: 40px;
+	z-index: 5;
+	overflow:hidden;
+}
+
+.ja-contentslide-left-img:hover { background-position: 0 -40px; }
+
+.ja-contentslide-right-img:hover  {
+	background-position: 100% -40px;
+}
+
+.ja-contentslider-left,
+.ja-contentslide-left-img {
+	background: url(../images/btn-control.png) 0 0 no-repeat;
+	cursor: pointer;
+	height: 40px;
+	left: -80px;
+	position: absolute;
+	bottom: 20px;
+	width: 40px;
+	z-index: 5;
+	overflow:hidden;
+}
+
+.ja-contentslider { position:relative; }
+
+.ja-contentslider-center .content { padding: 0 4px; }
+
+#ja-botsl2 .ja-button-control {
+	display: none;
+}
+
+#ja-botsl2:hover .ja-button-control {
+	display: block;
+}

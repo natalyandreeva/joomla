@@ -1,0 +1,33 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+
+/* BIG NUMBER
+-----------------------------------------------------------------*/
+.blocknumber .bignumber {
+	background-image: url(../images/blocknumber-bg.png);
+}
+
+body p.ja-typo-icon span.icon {
+	background-image: url("../images/icons-sprites.png");
+}
+
+.ja-typo-blockswrap h2.ja-typo-title span,
+.ja-typo-blockswrap h3.ja-typo-title span,
+.ja-typo-blockswrap:hover h2.ja-typo-title span,
+.ja-typo-blockswrap:hover h3.ja-typo-title span {
+	color: #fff;
+	text-shadow: 0 -1px 1px rgba(0, 0, 0, 0.8);
+}
+
+.style-italic {
+	color: #fff;
+}

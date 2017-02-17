@@ -1,0 +1,202 @@
+/**
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+ */
+
+#ja-login {
+	float: right;
+	margin-right: 5px;
+}
+
+#ja-login > ul {
+	position: relative;
+}
+
+#ja-login > ul > li {
+	display: inline-block;
+	float: left;
+	background: url(../images/line.gif) no-repeat right center; 
+}
+
+#ja-login > ul > li > a {
+	color: #999;
+	display: inline-block;
+	z-index: 1000;
+	padding: 0px 10px;
+	height: 40px;
+	line-height: 40px;
+	text-transform: uppercase;
+}
+
+#ja-login > ul > li > a:hover,
+#ja-login > ul > li > a:focus,
+#ja-login > ul > li > a:active {
+	color: #fff;
+	
+}
+
+#ja-login > ul > li > a.show {
+	color: #fff;
+	background: url(../images/arrow_login.gif) no-repeat center bottom;
+	z-index: 1000;
+}
+
+
+#ja-user-login ul li a:link, #ja-user-login ul li a:visited {
+	padding: 0 !important;
+}
+
+.login-greeting {
+	float: right;
+	margin-right: 10px;
+	margin-top: 11px;
+}
+ 
+.logout-button {
+	float: right;
+	margin-top: 13px;
+	margin-right: 10px;
+}
+
+.logout-button input.button {
+	background: none !important;
+	border: none !important;
+	color: #fff;
+	padding: 0px;
+}
+
+.logout-button input.button:hover,
+.logout-button input.button:focus,
+.logout-button input.button:active {
+	color: #e3575a;
+	border: none;
+}
+
+.column .login-greeting {
+	float: none;
+	margin-right: 0;
+}
+
+.column .logout-button {
+	float: none;
+	margin-top: 10px;
+}
+
+#ja-user-login, #ja-user-register {
+	position: absolute;
+	display: none;
+	padding: 20px;
+	right: 30px;
+	margin-top: -1px;
+	z-index: 1000;
+	top: 41px;
+	background: url(../images/bg-login.png) repeat left top;
+	border: solid 5px #e3575a;
+	font-size: 125%;
+}
+
+#ja-user-login input.button, #ja-user-register button {
+	text-transform: none;
+	font-size: 90%;
+	font-family: "Times New Roman",serif;
+}
+
+#ja-user-register {
+	right: 0px;
+}
+
+#ja-user-login .inputbox, 
+#ja-user-register input[type="text"],
+#ja-user-register input[type="password"],
+#ja-user-register input[type="email"] {
+	width: 230px;
+	border: 1px solid #2f2f2f;
+	color: #999;
+}
+
+#ja-user-login .inputbox:hover, 
+#ja-user-register input[type="text"]:hover,
+#ja-user-register input[type="password"]:hover,
+#ja-user-register input[type="email"]:hover {
+	border-color: #2f2f2f;
+}
+
+#ja-user-login .inputbox:focus, 
+#ja-user-register input[type="text"]:focus,
+#ja-user-register input[type="password"]:focus,
+#ja-user-register input[type="email"]:focus {
+	border-color: #ef2a33;  
+}
+
+#ja-user-login .invalid, 
+#ja-user-register input.invalid[type="text"],
+#ja-user-register input.invalid[type="password"],
+#ja-user-register input.invalid[type="email"],
+#ja-user-login .invalid,
+#ja-user-login .invalid:hover,
+#ja-user-login .invalid:focus,
+#ja-user-register .invalid, 
+#ja-user-register .invalid:hover,
+#ja-user-register .invalid:focus {
+	border-color: #ff0000;  
+}
+
+#ja-user-login input.button, #ja-user-register button {
+	background:	url(../images/pattern-red.gif) repeat left top;
+	border: solid 1px #e3575a;
+}
+
+#ja-user-login input.button:hover, #ja-user-register button:hover,
+#ja-user-login input.button:focus, #ja-user-register button:focus {
+	background:	url(../images/pattern-gray.gif);
+	border-color: #7E7E7E;
+}
+
+#ja-user-login #modlgn-remember {
+	width: auto;
+	border: 0;
+	margin-left: 15px;
+	margin-right: 3px;
+	margin-top: 4px;
+}
+
+#form-login-username,
+#form-login-password,
+#form-login-remember {
+	margin-bottom: 10px;
+	margin-top: 0;
+}
+
+#ja-user-register fieldset dt {
+	clear: none;
+	float: none;
+	padding: 0;
+}
+
+#ja-user-register fieldset dd {
+	padding: 0;	
+	margin-bottom: 10px;
+}
+
+#ja-user-register fieldset + p {
+	margin-bottom: 10px;
+	font-size: 92%;
+}
+
+#ja-user-login form label, #ja-user-register form label {
+	font-weight: bold;
+	color: #999;
+	font-size: 90%;
+	margin-bottom: 3px;
+}
+
+#ja-user-register form em {
+	color: #e3575a;
+}

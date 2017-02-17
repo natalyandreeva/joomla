@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension
+	type="module"
+	version="3.1"
+	client="site"
+	method="upgrade">
+	<name>BM Top For K2</name>
+	<author>brainymore</author>
+	<creationDate>August 2013</creationDate>
+	<copyright>Copyright (C) 2005 - 2013 Open Source Matters. All rights reserved.</copyright>
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
+	<authorEmail>brainymore@gmail.com</authorEmail>
+	<authorUrl>www.brainymore.com</authorUrl>
+	<version>1.0.0</version>
+	<description>BM_XML_DESCRIPTION</description>
+	<files>
+		<filename module="mod_bm_top_for_k2">mod_bm_top_for_k2.php</filename>
+		<folder>tmpl</folder>
+		<folder>language</folder>
+		<folder>assets</folder>
+		<folder>elements</folder>
+		<folder>libs</folder>
+		<filename>helper.php</filename>
+		<filename>defines.php</filename>
+		<filename>index.html</filename>
+		<filename>mod_bm_top_for_k2.xml</filename>
+		<filename>LICENSE.txt</filename>
+		<filename>README.txt</filename>
+	</files>
+	<languages folder="language/en-GB">
+		<language tag="en-GB">en-GB.mod_bm_top_for_k2.ini</language>
+		<language tag="en-GB">en-GB.mod_bm_top_for_k2.sys.ini</language>
+	</languages>
+	<help key="JHELP_EXTENSIONS_MODULE_MANAGER_BM_ARTICLES_SLIDER" />
+	<config>
+		<fields name="params" addfieldpath="/modules/mod_bm_top_for_k2/elements/">
+			<fieldset name="basic">
+			<field name="" type="header" default="MOD_BM_CONFIG_COMMON" module="mod_bm_top_for_k2" label="" description=""/>
+			<field name="source" type="list" default="filter" label="K2_SOURCE" description="">
+                    <option value="filter">K2_RETRIEVE_ITEMS_FROM_CATEGORIES</option>
+                    <option value="specific">K2_SELECT_SPECIFIC_ITEMS</option>
+                </field>
+                <field name="" type="header" default="K2_RETRIEVE_ITEMS_FROM_CATEGORIES" label="" description=""/>
+                <field name="catfilter" type="radio" default="0" label="K2_CATEGORY_FILTER" description="">
+                    <option value="0">K2_ALL</option>
+                    <option value="1">K2_SELECT</option>
+                </field>
+				
+                <field name="category_id" type="categoriesmultiple" default="" label="K2_SELECT_ONE_OR_MORE_CATEGORIES" description="K2_SELECT_ONE_ORE_MORE_CATEGORIES_FOR_WHICH_YOU_WANT_TO_FILTER_AN_ITEMS_LIST_SELECT_NONE_TO_FETCH_ITEMS_FROM_ALL_CATEGORIES"/>
+                <field name="getChildren" type="radio" class="btn-group" default="0" label="K2_FETCH_ITEMS_FROM_CHILDREN_CATEGORIES" description="K2_FETCH_ITEMS_FROM_CHILDREN_CATEGORIES_DESC">
+                    <option value="1">JYes</option>
+                    <option value="0">JNo</option>
+                </field>
+                <field name="itemCount" type="text" size="4" default="5" label="K2_ITEM_COUNT" description=""/>
+                <field name="itemsOrdering" type="list" default="" label="K2_ITEM_ORDERING" description="">
+                    <option value="">K2_DEFAULT</option>
+                    <option value="date">K2_OLDEST_FIRST</option>
+                    <option value="rdate">K2_MOST_RECENT_FIRST</option>
+                    <option value="publishUp">K2_RECENTLY_PUBLISHED</option>
+                    <option value="alpha">K2_TITLE_ALPHABETICAL</option>
+                    <option value="ralpha">K2_TITLE_REVERSEALPHABETICAL</option>
+                    <option value="order">K2_ORDERING</option>
+                    <option value="rorder">K2_ORDERING_REVERSE</option>
+                    <option value="hits">K2_MOST_POPULAR</option>
+                    <option value="best">K2_HIGHEST_RATED</option>
+                    <option value="comments">K2_MOST_COMMENTED</option>
+                    <option value="modified">K2_LATEST_MODIFIED</option>
+                    <option value="rand">K2_RANDOM_ORDERING</option>
+                </field>
+                <field name="FeaturedItems" type="list" default="1" label="K2_FEATURED_ITEMS" description="">
+                    <option value="0">K2_HIDE</option>
+                    <option value="1">K2_SHOW</option>
+                    <option value="2">K2_SHOW_ONLY_FEATURED_ITEMS</option>
+                </field>
+                <field name="popularityRange" type="list" default="" label="K2_TIME_RANGE" description="K2_TIME_RANGE_IF_ORDERING_IS_SET_TO_MOST_POPULAR_OR_MOST_COMMENTED">
+                    <option value="">K2_ALL_TIME</option>
+                    <option value="1">K2_1_DAY</option>
+                    <option value="3">K2_3_DAYS</option>
+                    <option value="7">K2_1_WEEK</option>
+                    <option value="15">K2_2_WEEKS</option>
+                    <option value="30">K2_1_MONTH</option>
+                    <option value="90">K2_3_MONTHS</option>
+                    <option value="180">K2_6_MONTHS</option>
+                </field>
+                <field name="" type="header" default="K2_SELECT_SPECIFIC_ITEMS" label="" description=""/>
+                <field name="item" type="item" default="" label="K2_ADD_ITEMS" description="K2_USE_THIS_TO_ADD_ITEMS_TO_THE_LIST_BELOW"/>
+                <field name="items" type="items" default="" label="K2_DRAG_AND_DROP_TO_REORDER_ITEMS" description="K2_DRAG_AND_DROP_TO_REORDER_ITEMS_CLICK_THE_REMOVE_ICON_TO_REMOVE_AN_ITEM_FROM_THE_LIST"/>
+                <field name="" type="header" default="K2_ITEM_VIEW_OPTIONS_COMMON_FOR_EITHER_SOURCE" label="" description=""/>                
+                <field name="itemImgSize" type="list" default="Large" label="K2_IMAGE_SIZE" description="">
+                    <option value="XSmall">K2_XSMALL</option>
+                    <option value="Small">K2_SMALL</option>
+                    <option value="Medium">K2_MEDIUM</option>
+                    <option value="Large">K2_LARGE</option>
+                    <option value="XLarge">K2_XLARGE</option>
+					<option value="Original">Original</option>
+                </field>	
+				<field name="" type="header" default="MOD_BM_CONFIG_DISPLAY" module="mod_bm_top_for_k2" label="" description=""/>
+                
+				<field name="addLinkToImage" type="radio" class="btn-group" default="0" label="MOD_BM_ADD_LINK_TO_IMAGE" description="">
+					<option value="1">JYes</option>
+                    <option value="0">JNo</option>                    
+                </field>
+                <field
+                    name="theme"
+                    type="list"
+                    default="default"
+                    label="MOD_BM_THEME" 
+                    description="MOD_BM_THEME_DESC"
+                    >
+                    <option value="theme1">Theme 1</option>
+                    <option value="theme2">Theme 2</option>                    
+                    <option value="theme3">Theme 3</option>                    
+                    <option value="theme4">Theme 4</option>  
+					<option value="theme5">Theme 5</option>                                       
+                </field>
+                <field
+                    name="width_image"
+                    type="text"
+                    default="400"
+                    label="MOD_BM_WIDTH_IMAGE"
+                    description="MOD_BM_WIDTH_IMAGE_DESC" />
+                <field
+                    name="height_image"
+                    type="text"
+                    default="250"
+                    label="MOD_BM_HEIGHT_IMAGE"
+                    description="MOD_BM_HEIGHT_IMAGE_DESC" />
+				<field
+                    name="width_thumb"
+                    type="text"
+                    default="100"
+                    label="MOD_BM_WIDTH_THUMB"
+                    description="MOD_BM_WIDTH_THUMB_DESC" />
+                <field
+                    name="height_thumb"
+                    type="text"
+                    default="70"
+                    label="MOD_BM_HEIGHT_THUMB"
+                    description="MOD_BM_HEIGHT_THUMB_DESC" />
+                <field
+                    name="resize_type"
+                    type="list"
+                    default="5"
+                    label="MOD_BM_RESIZE_TYPE" 
+                    description="MOD_BM_RESIZE_TYPE_DESC"
+                    >                
+                    <option value="1">SCALE FILL</option>
+                    <option value="2">SCALE INSIDE</option>
+                    <option value="3">SCALE OUTSIDE</option>
+                    <option value="4">CROP</option>
+                    <option value="5">CROP RESIZE</option> 
+                </field>    
+				<field
+                    name="title_limit"
+                    type="text"
+                    default="50"
+                    label="MOD_BM_TITLE_LIMIT"
+                    description="MOD_BM_TITLE_LIMIT_DESC" />             
+				<field
+                    name="readmore_limit"
+                    type="text"
+                    default="300"
+                    label="MOD_BM_READMORE_LIMIT"
+                    description="MOD_BM_READMORE_LIMIT_DESC" /> 
+				<field
+                    name="readmore_limit2"
+                    type="text"
+                    default="100"
+                    label="MOD_BM_READMORE_LIMIT2"
+                    description="MOD_BM_READMORE_LIMIT2_DESC" />   					
+				<field
+					name="show_desc"
+					type="radio"
+					class="btn-group"
+					default="1"
+					label="MOD_BM_SHOW_DESC"
+					description="MOD_BM_SHOW_DESC_DESC">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>
+				</field>
+					
+				<field
+					name="show_readmore"
+					type="radio"
+					class="btn-group"
+					default="1"
+					label="MOD_BM_SHOW_READMORE"
+					description="MOD_BM_SHOW_READMORE_DESC">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>					
+				</field>
+				<field
+					name="show_thumb"
+					type="radio"
+					class="btn-group"
+					default="1"
+					label="MOD_BM_SHOW_THUMB"
+					description="MOD_BM_SHOW_THUMB_DESC">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>					
+				</field>
+				<field
+					name="show_desc_small"
+					type="radio"
+					class="btn-group"
+					default="1"
+					label="MOD_BM_SHOW_DESC_SMALL"
+					description="MOD_BM_SHOW_DESC_SMALL_DESC">
+					<option value="1">JYES</option>
+					<option value="0">JNO</option>					
+				</field>
+				<field
+					name="readmore_label"
+					type="text"
+					default="More detail"
+					label="MOD_BM_READMORE_LABEL"
+					description="MOD_BM_READMORE_LABEL" />
+			
+			</fieldset>
+
+			<fieldset
+				name="advanced">
+
+				<field                                   
+					name="layout"
+					type="modulelayout"
+					label="JFIELD_ALT_LAYOUT_LABEL"
+					description="JFIELD_ALT_MODULE_LAYOUT_DESC" />
+
+				<field
+					name="moduleclass_sfx"
+					type="textarea" rows="3"
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+					description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+
+				<field
+					name="cache"
+					type="list"
+					default="1"
+					label="COM_MODULES_FIELD_CACHING_LABEL"
+					description="COM_MODULES_FIELD_CACHING_DESC">
+					<option
+						value="1">JGLOBAL_USE_GLOBAL</option>
+					<option
+						value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+				</field>
+
+				<field
+					name="cache_time"
+					type="text"
+					default="900"
+					label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+					description="COM_MODULES_FIELD_CACHE_TIME_DESC" />
+				<field
+					name="cachemode"
+					type="hidden"
+					default="static">
+					<option
+						value="static"></option>
+				</field>
+			</fieldset>
+		</fields>
+	</config>
+</extension>

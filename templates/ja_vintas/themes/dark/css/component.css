@@ -1,0 +1,84 @@
+/**
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+ */
+
+/* COMMON STYLE
+--------------------------------------------------------- */
+
+/* Normal links ---*/
+
+body#bd {
+  background-image: url(../images/page-bg.gif);
+  color: #999;
+}
+
+body.contentpane a:hover, body.contentpane a:active, body.contentpane a:focus {
+	color: #8f972c;
+}
+
+
+body.contentpane a {
+	color: #999;
+}
+
+body.contentpane .button,
+body.contentpane #ja-typo button,
+#login-form input.button {
+	background-image:	url(../images/pattern-green.gif) ;
+	border: solid 1px #2F2F2F;
+}
+
+body.contentpane .inputbox:hover, 
+body.contentpane input[type=text]:hover,
+body.contentpane input[type=password]:hover,
+body.contentpane input[type=email]:hover {
+		border-color: #2F2F2F;
+			background-color: #1F1F1F;
+}
+
+body.contentpane .inputbox:focus,
+body.contentpane input[type=text]:focus,
+body.contentpane input[type=password]:focus,
+body.contentpane input[type=email]:focus {
+		border-color: #2F2F2F;
+			background-color: #1F1F1F;
+}
+
+body.contentpane .inputbox:focus,
+body.contentpane input[type=text]:focus,
+body.contentpane input[type=password]:focus,
+body.contentpane input[type=email]:focus {
+		border-color: #2F2F2F;
+		background-color: #1F1F1F;
+}
+
+body.contentpane .inputbox, body.contentpane input[type="text"], 
+body.contentpane input[type="password"], body.contentpane input[type="email"] {
+			background-color: #1F1F1F;
+			border-color: #2F2F2F;
+}
+body.contentpane h1.componentheading, body.contentpane h2.componentheading,
+body.contentpane .componentheading, body.contentpane h2.contentheading, body.contentpane h2 {
+	color: #fff;
+	    text-shadow: 1px 1px 0 #222, 1px 2px 0 #000;
+}
+
+
+/* Acymailling Module */ 
+
+.acymailing_module_form table.acymailing_form input.inputbox:focus {
+		border-color: #8f972c;
+}
+
+a.acymailing_togglemodule {
+	background-image:	url(../images/pattern-green.gif) ;
+	border: solid 1px #8f972c;
+}

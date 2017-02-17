@@ -1,0 +1,69 @@
+/**
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+ */
+
+/* COMMON STYLE
+--------------------------------------------------------- */
+
+/* Normal links ---*/
+
+body#bd {
+  background: #fff;
+}
+
+
+body.contentpane a:hover, body.contentpane a:active, body.contentpane a:focus {
+	color: #e77d56;
+}
+
+body.contentpane .button,
+body.contentpane #ja-typo button,
+#login-form input.button {
+	background-image:	url(../images/pattern-orange.gif) ;
+	border: solid 1px #e77d56;
+}
+
+body.contentpane .inputbox:hover, 
+body.contentpane input[type=text]:hover,
+body.contentpane input[type=password]:hover,
+body.contentpane input[type=email]:hover {
+		border-color: #e77d56;
+		background-color: #f0f0f0;
+}
+
+body.contentpane .inputbox:focus,
+body.contentpane input[type=text]:focus,
+body.contentpane input[type=password]:focus,
+body.contentpane input[type=email]:focus {
+		border-color: #e77d56;
+		background-color: #f0f0f0;
+}
+
+body.contentpane .inputbox, body.contentpane input[type="text"], 
+body.contentpane input[type="password"], body.contentpane input[type="email"] {
+			background-color: #f0f0f0;
+			border-color: #e77d56;
+}
+body.contentpane h1.componentheading, body.contentpane h2.componentheading,
+body.contentpane .componentheading, body.contentpane h2.contentheading, body.contentpane h2 {
+	color: #fff;
+}
+
+/* Acymailling Module */ 
+
+.acymailing_module_form table.acymailing_form input.inputbox:focus {
+		border-color: #e77d56;
+}
+
+a.acymailing_togglemodule {
+	background-image:	url(../images/pattern-orange.gif) ;
+	border: solid 1px #e77d56;
+}

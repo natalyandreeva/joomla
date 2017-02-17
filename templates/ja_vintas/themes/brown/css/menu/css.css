@@ -1,0 +1,51 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+/* Son of Suckerfish Dropdowns
+---------------------------------------------------------
+Originally developed by Patrick Griffiths and Dan Webb
+http://www.htmldog.com/articles/suckerfish/dropdowns/
+---------------------------------------------------------
+NOTE: After a deep research, we decide to divide this
+CSS into 2 parts. The first part will define the layout.
+The second part will define the visual look for this menu.
+---------------------------------------------------------*/
+
+/* STYLING THE MENU
+-----------------------------------*/
+#ja-cssmenu {
+	background-image: url(../../images/bg-mainnav.png);
+}
+
+/* 1st level */
+
+#ja-cssmenu li a:hover,
+#ja-cssmenu li a:focus,
+#ja-cssmenu li a:active,
+#ja-cssmenu li a.active {
+	color: #6e4e29;
+}
+
+/* 2nd level and above */
+
+
+#ja-cssmenu li ul a:hover,
+#ja-cssmenu li ul a:focus,
+#ja-cssmenu li ul a:active {
+	color: #b58551;
+}
+
+#ja-cssmenu li ul a.active,
+#ja-cssmenu li ul a.active:hover,
+#ja-cssmenu li ul a.active:focus,
+#ja-cssmenu li ul a.active:active {
+	color: #b58551;
+}

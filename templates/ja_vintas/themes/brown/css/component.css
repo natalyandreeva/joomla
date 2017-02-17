@@ -1,0 +1,58 @@
+/**
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+ */
+
+/* COMMON STYLE
+--------------------------------------------------------- */
+
+/* Normal links ---*/
+
+body#bd {
+  background-image: url(../images/page-bg.gif);
+}
+
+body.contentpane a:hover, body.contentpane a:active, body.contentpane a:focus {
+	color: #b58551;
+}
+
+
+body.contentpane .button,
+body.contentpane #ja-typo button,
+#login-form input.button {
+	background-image:	url(../images/pattern-brown.gif) ;
+	border: solid 1px #b58551;
+}
+
+body.contentpane .inputbox:hover, 
+body.contentpane input[type=text]:hover,
+body.contentpane input[type=password]:hover,
+body.contentpane input[type=email]:hover {
+		border-color: #b58551;
+}
+
+body.contentpane .inputbox:focus,
+body.contentpane input[type=text]:focus,
+body.contentpane input[type=password]:focus,
+body.contentpane input[type=email]:focus {
+		border-color: #b58551;
+}
+
+
+/* Acymailling Module */ 
+
+.acymailing_module_form table.acymailing_form input.inputbox:focus {
+		border-color: #b58551;
+}
+
+a.acymailing_togglemodule {
+	background-image:	url(../images/pattern-brown.gif) ;
+	border: solid 1px #b58551;
+}

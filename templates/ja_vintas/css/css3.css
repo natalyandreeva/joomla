@@ -1,0 +1,638 @@
+/*
+ * ------------------------------------------------------------------------
+ * JA Vintas Template
+ * ------------------------------------------------------------------------
+ * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
+ * @license - Copyrighted Commercial Software
+ * Author: J.O.O.M Solutions Co., Ltd
+ * Websites:  http://www.joomlart.com -  http://www.joomlancers.com
+ * This file may not be redistributed in whole or significant part.
+ * ------------------------------------------------------------------------
+*/
+/* COMMON STYLE
+--------------------------------------------------------- */
+/* убрал описание картинки что бы не было видно урлов картинки */
+.vm-img-desc {
+    display: none !important;
+}
+#ja-topbar ul.menu li:first-child {
+	padding-left: 0px;
+}
+
+#ja-topbar ul li:last-child {
+	background: none;
+	border: none;
+}
+
+.logout-button input.button {
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
+}
+
+/* Title Heading----*/
+h1.componentheading, .componentheading {
+	text-shadow: 1px 1px 0 #F2F2F2, 1px 2px 0 #B1B1B2;
+}
+
+/* FORM
+--------------------------------------------------------- */
+.inputbox:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+textarea:focus {
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+}
+
+input.invalid:focus,
+input.invalid:hover,
+textarea.invalid:hover,
+textarea.invalid:focus {
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+}
+
+input[type="checkbox"],
+input[type="checkbox"]:hover,
+input[type="checkbox"]:focus {
+	webkit-box-shadow: none;
+     box-shadow: none;
+}
+
+.button, button,
+input[type="submit"], input[type="cancel"], input[type="reset"],
+.profile a, .profile-edit a {
+	box-shadow: 0 0px 1px #fff inset;
+}
+
+button:hover, button:focus, button:active,
+.button:hover, .button:focus, .button:active,
+input[type="submit"]:hover, input[type="submit"]:focus, input[type="submit"]:active, 
+input[type="cancel"]:hover,input[type="cancel"]:focus,input[type="cancel"]:active, 
+input[type="reset"]:hover,input[type="reset"]:focus, input[type="reset"]:active,
+.profile a:hover, .profile a:focus, .profile a:active, 
+.profile-edit a:hover, .profile-edit a:focus, .profile-edit a:active {
+	box-shadow: 0 0px 1px #fff inset;
+}
+
+/* Search ---*/
+#ja-search:hover form {
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+#ja-search .inputbox {
+	box-shadow: 0 0 3px #111 inset;
+	-webkit-box-shadow: 0 0 3px #111 inset;
+}
+
+#ja-search .inputbox:hover {
+	box-shadow: 0 0 3px #111 inset;
+	-webkit-box-shadow: 0 0 3px #111 inset;
+}
+
+#ja-search .inputbox:focus {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+}
+
+/* MODULE STYLES
+--------------------------------------------------------- */
+div.ja-moduletable h3, div.moduletable h3 {
+	text-shadow: 1px 1px 0 #F0E5DB, 1px 2px 0 #B1B1B2;
+}
+
+/* Menu Module ---*/
+div.moduletable_menu h3 {
+	text-shadow: 1px 1px 0 #E3575A, 1px 2px 0 #8a3a3c;
+}
+
+/* SPOTLIGHT
+--------------------------------------------------------- */
+/* Bost spotlight 1 ---*/
+#ja-botsl1 div.ja-moduletable h3, 
+#ja-botsl1 div.moduletable h3 {
+	text-shadow: 1px 1px 0 #F2F2F2, 1px 2px 0 #B1B1B2;
+}
+
+#ja-botsl .moduletable h3 span {
+  text-shadow: 1px 1px 2px rgba(0,0,0,.3);
+}
+
+#ja-botsl3 div.ja-moduletable h3, #ja-botsl3 div.moduletable h3 {
+	text-shadow: none;
+} 
+
+
+/* Others ---*/
+.blog-featured h2.contentheading,
+.custome-pagetitle h3.contentheading{
+  text-shadow: 1px 1px 0 #F0E5DB, 1px 2px 0 #B1B1B2;
+}
+
+/* Acymailing ---*/
+table.acymailing_form input.inputbox,
+div.acymailing_form p.onefield input.inputbox {
+	box-shadow: 0 0 3px #111 inset;
+	-webkit-box-shadow: 0 0 3px #111 inset;
+}
+
+table.acymailing_form input.inputbox:hover,
+div.acymailing_form p.onefield input.inputbox:hover {
+	box-shadow: 0 0 3px #111 inset;
+	-webkit-box-shadow: 0 0 3px #111 inset;
+}
+
+table.acymailing_form input.inputbox:focus,
+textarea:focus,
+div.acymailing_form p.onefield input.inputbox:focus {
+ box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+}
+
+table.acymailing_form input.button:hover, table.acymailing_form input.button:active,
+div.acymailing_form p.acysubbuttons input.button:hover, div.acymailing_form p.acysubbuttons input.button:active {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+#ja-botsl3 .acymailing_module a{
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+#ja-botsl3 .acymailing_module a:hover,
+#ja-botsl3 .acymailing_module a:focus,
+#ja-botsl3 .acymailing_module a:active {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+#ja-botsl3 ul li:last-child {
+  margin-bottom: 0;
+}
+
+/* Twitter module ---*/
+div.ja-twitter h4 {
+  text-shadow: 1px 1px 0 #000;
+}
+
+div.ja-twitter .ja-twitter-thumb h3 {
+  text-shadow: none;
+}
+
+body h3.title-hilite span {
+  text-shadow: 1px 1px 2px rgba(0,0,0,.3);
+}
+
+.border-image {
+	border-image: url(../images/bg-img.png) 3 repeat;
+	-moz-border-image: url(../images/bg-img.png) 3 repeat;
+	-webkit-border-image: url(../images/bg-img.png) 3 repeat;
+	-o-border-image: url(../images/bg-img.png) 3 repeat;
+}
+
+div.subCategory {
+	border-image: url(../images/bg-category.png) 3 repeat;
+	-moz-border-image: url(../images/bg-category.png) 3 repeat;
+	-webkit-border-image: url(../images/bg-category.png) 3 repeat;
+	-o-border-image: url(../images/bg-category.png) 3 repeat;
+}
+
+/* Module Login ----*/
+#ja-login > ul > li > a {
+	transition:  none;
+	 -moz-transition: none;
+	 -webkit-transition: none;
+}
+
+#ja-user-login, #ja-user-register {
+	box-shadow: 0px 1px 1px rgba(0,0,0, 0.5);
+	-webkit-box-shadow: 0px 1px 1px rgba(0,0,0, 0.5);
+}
+
+.logout-button input.button {
+	box-shadow: none;
+	-webkit-box-shadow: none;
+}
+
+.logout-button input.button:hover,
+.logout-button input.button:focus,
+.logout-button input.button:active {
+	box-shadow: none;
+}
+
+#ja-user-login .inputbox, 
+#ja-user-register input[type="text"],
+#ja-user-register input[type="password"],
+#ja-user-register input[type="email"] {
+	box-shadow: 0 0 3px #111 inset;
+	-webkit-box-shadow: 0 0 3px #111 inset;
+}
+
+#ja-user-login .inputbox:hover, 
+#ja-user-register input[type="text"]:hover,
+#ja-user-register input[type="password"]:hover,
+#ja-user-register input[type="email"]:hover {
+	box-shadow: 0 0 3px #111 inset;
+	-webkit-box-shadow: 0 0 3px #111 inset;
+}
+#ja-user-login .inputbox:focus, 
+#ja-user-register input[type="text"]:focus,
+#ja-user-register input[type="password"]:focus,
+#ja-user-register input[type="email"]:focus {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+}
+
+.custom-banner .custom-text p {
+  box-shadow: 0 0 0 4px rgba(0,0,0,.2);
+  -moz-box-shadow: 0 0 0 4px rgba(0,0,0,.2);
+  text-shadow: 1px 1px 0 rgba(0,0,0,.3);
+}
+
+
+div.local-map img {
+  border-image: url(../images/border-hoz.png) 3 repeat;
+  -moz-border-image: url(../images/border-hoz.png) 3 repeat;
+  -webkit-border-image: url(../images/border-hoz.png) 3 repeat;
+  -o-border-image: url(../images/border-hoz.png) 3 repeat;
+}
+
+div.pagination ul li a,
+div.pagination ul li span,
+.pagination ul li span.pagenav, .pagination ul li a.pagenav, ul.pagenav li a {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.pagination ul li a:hover,
+div.pagination ul li a:focus,
+div.pagination ul li a:active {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.pagination ul li span.pagenav,
+div.pagination ul li.pagination-start span.pagenav,
+div.pagination ul li.pagination-prev span.pagenav,
+div.pagination ul li.pagination-next span.pagenav,
+div.pagination ul li.pagination-end span.pagenav {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.pagination ul li.pagination-start a,
+div.pagination ul li.pagination-prev a,
+div.pagination ul li.pagination-next a,
+div.pagination ul li.pagination-end a {
+		box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+
+div.pagination ul li.pagination-start a:hover,
+div.pagination ul li.pagination-prev a:hover,
+div.pagination ul li.pagination-next a:hover,
+div.pagination ul li.pagination-end a:hover,
+div.pagination ul li.pagination-start a:focus,
+div.pagination ul li.pagination-prev a:focus,
+div.pagination ul li.pagination-next a:focus,
+div.pagination ul li.pagination-end a:focus,
+div.pagination ul li.pagination-start a:active,
+div.pagination ul li.pagination-prev a:active,
+div.pagination ul li.pagination-next a:active,
+div.pagination ul li.pagination-end a:active {
+		box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+/* Content Slider -----*/
+.ja-contentslider-center .ja-image img { filter: alpha(opacity = 50); opacity: 0.5; }
+ 
+.ja-contentslider-center .ja-image img:hover { filter: alpha(opacity = 100); opacity: 1; }
+
+.contact h2 {
+	text-shadow: 1px 1px 0 #F0E5DB, 1px 2px 0 #B1B1B2;
+}
+/* Mega Menu ----*/
+.ja-megamenu ul.level0 li.mega a.mega {
+	text-shadow: 0px 1px 1px rgba(0,0,0,0.5);
+}
+
+.ja-megamenu ul.level0 li.mega a.mega:hover,
+.ja-megamenu ul.level0 li.mega a.mega:focus,
+.ja-megamenu ul.level0 li.mega a.mega:active,
+.ja-megamenu ul.level0 li.mega a.mega.active {
+	text-shadow: 0px 1px 1px rgba(255,255,255,0.5);
+}
+
+.ja-megamenu .childcontent-inner {
+	box-shadow: 0px 2px 1px rgba(0,0,0,0.3);
+	-webkit-box-shadow: 0px 2px 1px rgba(0,0,0,0.3);
+}
+
+.ja-megamenu ul.level1 li.mega a.mega {
+	text-shadow: none;
+}
+
+.ja-megamenu ul.level1 li.mega a.mega:hover,
+.ja-megamenu ul.level1 li.mega a.mega:focus,
+.ja-megamenu ul.level1 li.mega a.mega:active {
+	text-shadow: none;
+}
+
+.ja-megamenu ul.level1 li.mega a.active,
+.ja-megamenu ul.level0 li.mega li a.mega.active {
+	text-shadow: none;
+}
+
+/* CSS Menu ---*/
+#ja-cssmenu li a {
+	text-shadow: 0px 1px 1px rgba(0,0,0,0.5);
+}
+
+#ja-cssmenu li a:hover,
+#ja-cssmenu li a:focus,
+#ja-cssmenu li a:active,
+#ja-cssmenu li a.active {
+	text-shadow: 0px 1px 1px rgba(255,255,255,0.5);
+}
+
+/* 2nd level and above */
+#ja-cssmenu li ul {
+	box-shadow: 0px 2px 1px rgba(0,0,0,0.3);
+	-webkit-box-shadow: 0px 2px 1px rgba(0,0,0,0.3);
+}
+
+
+#ja-cssmenu li ul a {
+	text-shadow: none;
+}
+
+#ja-cssmenu li ul a:hover,
+#ja-cssmenu li ul a:focus,
+#ja-cssmenu li ul a:active {
+	text-shadow: none;
+}
+
+#ja-cssmenu li ul a.active,
+#ja-cssmenu li ul a.active:hover,
+#ja-cssmenu li ul a.active:focus,
+#ja-cssmenu li ul a.active:active {
+	text-shadow: none;
+}
+
+/* Dropline Menu ---*/
+#jasdl-mainnav li a {
+	text-shadow: 0px 1px 1px rgba(0,0,0,0.5);
+}
+
+#jasdl-mainnav li a:hover,
+#jasdl-mainnav li a:focus,
+#jasdl-mainnav li a:active,
+#jasdl-mainnav li a.active {
+	text-shadow: 0px 1px 1px rgba(255,255,255,0.5);
+}
+
+/* Split Menu ----*/
+#ja-splitmenu li a {
+	text-shadow: 0px 1px 1px rgba(0,0,0,0.5);
+}
+
+#ja-splitmenu li a:hover,
+#ja-splitmenu li a:focus,
+#ja-splitmenu li a:active,
+#ja-splitmenu li a.active {
+	text-shadow: 0px 1px 1px rgba(255,255,255,0.5);
+}
+
+/* Component Page ---*/
+body.contentpane .button,
+body.contentpane #ja-typo button,
+#login-form input.button {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+body.contentpane .button:hover,
+body.contentpane #ja-typo button:hover,
+#login-form input.button:hover {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+body.contentpane .inputbox:focus,
+body.contentpane input[type=text]:focus,
+body.contentpane input[type=password]:focus,
+body.contentpane input[type=email]:focus {
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+}
+
+body.contentpane input[type="checkbox"],
+body.contentpane input[type="checkbox"]:hover,
+body.contentpane input[type="checkbox"]:focus {
+	webkit-box-shadow: none;
+     box-shadow: none;
+}
+
+body.contentpane h1.componentheading,
+body.contentpane h2.componentheading,
+body.contentpane .componentheading,
+body.contentpane h2.contentheading,
+body.contentpane h2 {
+	text-shadow: 1px 1px 0 #F0E5DB, 1px 2px 0 #B1B1B2;
+}
+
+.acymailing_module_form table.acymailing_form input.inputbox {
+	-moz-box-sizing: border-box;
+}
+
+
+.acymailing_module_form table.acymailing_form input.inputbox:hover {
+	box-shadow: 0 0 3px #111 inset;
+	-webkit-box-shadow: 0 0 3px #111 inset;
+}
+
+.acymailing_module_form table.acymailing_form input.inputbox:focus {
+ box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+}
+
+
+#ja-botsl1 div.k2ItemsBlock.list_item  ul li a.moduleItemImage {
+	border-image: url(../images/bg-img.png) 3 repeat;
+	-moz-border-image: url(../images/bg-img.png) 3 repeat;
+	-webkit-border-image: url(../images/bg-img.png) 3 repeat;
+	-o-border-image: url(../images/bg-img.png) 3 repeat;
+}
+
+body h3.title-hilite span {
+  text-shadow: 1px 1px 2px rgba(0,0,0,.3);
+}
+
+.border-image {
+	border-image: url(../images/bg-img.png) 3 repeat;
+	-moz-border-image: url(../images/bg-img.png) 3 repeat;
+	-webkit-border-image: url(../images/bg-img.png) 3 repeat;
+	-o-border-image: url(../images/bg-img.png) 3 repeat;
+}
+/* K2 Page-----*/
+div.itemToolbar ul > li:first-child {
+	border: none; /* remove the first CSS border from the left of the toolbar */
+}
+
+div.k2ArchivesBlock ul li:hover a,
+div.k2ArchivesBlock ul li a:hover,
+div.k2ArchivesBlock ul li a:focus,
+div.k2ArchivesBlock ul li a:active {
+	transition: all 0.3s ease-in-out 0s;
+	 -moz-transition: all 0.3s ease-in-out 0s;
+	 -webkit-transition: all 0.3s ease-in-out 0s;
+}
+
+div.k2Pagination ul li a,
+div.k2Pagination ul li span,
+div.itemCommentsPagination ul li a,
+div.itemCommentsPagination ul li span {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.k2Pagination ul li a:hover,
+div.k2Pagination ul li a:focus,
+div.k2Pagination ul li a:active,
+div.itemCommentsPagination ul li a:hover,
+div.itemCommentsPagination ul li a:focus,
+div.itemCommentsPagination ul li a:active {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.k2Pagination ul li span.pagenav,
+div.itemCommentsPagination ul li span.pagenav {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.k2Pagination ul li.pagination-start span.pagenav,
+div.k2Pagination ul li.pagination-prev span.pagenav,
+div.k2Pagination ul li.pagination-next span.pagenav,
+div.k2Pagination ul li.pagination-end span.pagenav,
+div.k2Pagination ul li.pagination-start a,
+div.k2Pagination ul li.pagination-prev a,
+div.k2Pagination ul li.pagination-next a,
+div.k2Pagination ul li.pagination-end a,
+div.itemCommentsPagination ul li.pagination-start span.pagenav,
+div.itemCommentsPagination ul li.pagination-prev span.pagenav,
+div.itemCommentsPagination ul li.pagination-next span.pagenav,
+div.itemCommentsPagination ul li.pagination-end span.pagenav,
+div.itemCommentsPagination ul li.pagination-start a,
+div.itemCommentsPagination ul li.pagination-prev a,
+div.k2Pagination ul li.pagination-next a,
+div.k2Pagination ul li.pagination-end a {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+
+div.catItemBlogView div.catItemCommentsLink a {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.catItemBlogView div.catItemCommentsLink a:hover,
+div.catItemBlogView div.catItemCommentsLink a:focus,
+div.catItemBlogView div.catItemCommentsLink a:active {	
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.itemCommentsForm form input#submitCommentButton {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.itemCommentsForm form input#submitCommentButton:hover,
+div.itemCommentsForm form input#submitCommentButton:focus {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+div.itemListCategoriesBlock h3 {
+	text-shadow: 1px 1px 0 #F0E5DB, 1px 2px 0 #B1B1B2;
+}
+
+.subCategoryMore {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;	
+}
+
+div.categorymore:hover .subCategoryMore,
+.subCategoryMore:hover,
+.subCategoryMore:focus,
+.subCategoryMore:active {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+}
+
+a.k2ReadMore {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;	
+}
+
+a.k2ReadMore:hover,
+a.k2ReadMore:focus,
+a.k2ReadMore:active {	
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;	
+}
+
+/* Typo Page ---*/
+a.ja-typo-btn {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+	text-shadow: none;
+}
+
+a.ja-typo-btn:hover,
+a.ja-typo-btn:active,
+a.ja-typo-btn:focus {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+	text-shadow: none;
+}
+
+/*Use for Demo Page Only*/
+#ja-typo a.ja-typo-btn, a.ja-typo-btn {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+	text-shadow: none;
+}
+
+#ja-typo a.ja-typo-btn:hover,
+#ja-typo a.ja-typo-btn:focus,
+#ja-typo a.ja-typo-btn:active,
+a.ja-typo-btn:hover, a.ja-typo-btn:focus, a.ja-typo-btn:active {
+		box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+	text-shadow: none;
+}
+
+/* Common style for Dark Buttons --- */
+a.btn-blue,
+a.btn-red,
+a.btn-green,
+a.btn-orange,
+a.btn-violet,
+a.btn-pink {
+		box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+	text-shadow: none;
+}
+
+a.btn-blue:hover, a.btn-blue:active, a.btn-blue:focus,
+a.btn-red:hover, a.btn-red:active, a.btn-red:focus,
+a.btn-green:hover, a.btn-green:active, a.btn-green:focus,
+a.btn-orange:hover, a.btn-orange:active, a.btn-orange:focus,
+a.btn-violet:hover, a.btn-violet:active, a.btn-violet:focus,
+a.btn-pink:hover, a.btn-pink:active, a.btn-pink:focus {
+	box-shadow: 0 0px 1px #fff inset;
+	-webkit-box-shadow: 0 0px 1px #fff inset;
+	text-shadow: none;
+}

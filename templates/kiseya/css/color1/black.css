@@ -1,0 +1,8 @@
+/* Copyright (C) YOOtheme GmbH, http://www.gnu.org/licenses/gpl.html GNU/GPL */
+
+a,
+.menu-dropdown li.active .level1 { color: #444; }
+
+.button-primary { background: #444; }
+
+a { text-decoration: underline;}

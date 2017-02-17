@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension
+	  type="module"
+	  version="1.1"
+	  client="site"
+	  method="upgrade">
+	<name>Joombig slider with 3d effects</name> 
+	<author>joombig.com</author> 
+	<creationDate>2014-04-14</creationDate> 
+	<copyright>(C) 2013 All rights reserved by joombig.com</copyright> 
+	<license>GNU General Public License version 2 or later; see LICENSE.txt</license> 
+	<authorEmail>admin@joombig.com</authorEmail> 
+	<authorUrl>http://www.joombig.com</authorUrl> 
+	<version>1.1</version> 
+	  <description>JOOMBIG_SLIDER_WITH_3D_EFFECTS_DESC</description>
+
+	<files>
+		<filename module="mod_joombig_slider_with_3d_effects">mod_joombig_slider_with_3d_effects.php</filename>
+		<filename>index.html</filename>
+		<filename>mod_joombig_slider_with_3d_effects.xml</filename>
+		<folder>language</folder>
+		<folder>elements</folder>
+		<folder>images</folder>
+		<folder>js</folder>
+		<folder>tmpl</folder>
+	</files>
+	
+	<languages>
+		<language tag="en-GB">language/en-GB.mod_joombig_slider_with_3d_effects.ini</language>
+	</languages>
+	
+	<config>
+		<fields name="params" addfieldpath="/modules/mod_joombig_slider_with_3d_effects/elements">
+			<fieldset name="basic">
+				<field type="loader" />
+				<field name="moduleclass_sfx" type="text" default="" label="LABEL MODULE CLASS SUFFIX" description="" />
+				<field name="enable_jQuery" type="radio" default="1" label="Enable/Disable jQuery" description="Select Enable/Disable">
+					<option value="1">Enable</option>
+					<option value="0">Disable</option>
+				</field>
+				<field name="modulewidth" type="text" default="990" label="Width of module" description="Width without px" />
+				<field name="moduleheight" type="text" default="504" label="Height of module" description="Height without px" />
+				<field name="imageWidth" type="text" default="360" label="LABEL IMAGE WIDTH" description="DESC IMAGE WIDTH" />
+				<field name="imageHeight" type="text" default="360" label="LABEL IMAGE HEIGHT" description="DESC IMAGE HEIGHT" />
+				<field name="autoplay" type="list" default="1" label="Autoplay" description="Select Yes/No">
+					<option value="1">Yes</option>
+					<option value="0">No</option>
+				</field>
+				<field name="animationspeed" type="text" default="3500" label="Animation speed" description="Animation speed" />
+				<field name="title_size" type="text" default="40" label="Font size of title" description="Font size without px" />
+				<field name="des_size" type="text" default="20" label="Font size of info text" description="Font size without px" />
+				<field name="show_button" type="list" default="1" label="Show/Hide button read more" description="Select Show/Hide">
+					<option value="1">Show</option>
+					<option value="0">Hide</option>
+				</field>
+			</fieldset>
+			<fieldset name="image1" label="LABEL IMAGE1">
+				<field name="image1" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title1" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info1" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink1" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext1" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground1" type="hotcolor" default="#E3D8FF" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image2" label="LABEL IMAGE2">
+				<field name="image2" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title2" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info2" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink2" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext2" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground2" type="hotcolor" default="#EBBBBC" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image3" label="LABEL IMAGE3">
+				<field name="image3" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title3" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info3" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink3" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext3" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground3" type="hotcolor" default="#EED9C0" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image4" label="LABEL IMAGE4">
+				<field name="image4" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title4" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info4" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink4" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext4" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground4" type="hotcolor" default="#DFEBB1" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image5" label="LABEL IMAGE5">
+				<field name="image5" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title5" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info5" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink5" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext5" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground5" type="hotcolor" default="#C1E6E5" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image6" label="LABEL IMAGE6">
+				<field name="image6" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title6" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info6" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink6" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext6" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground6" type="hotcolor" default="#E3D8FF" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image7" label="LABEL IMAGE7">
+				<field name="image7" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title7" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info7" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink7" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext7" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground7" type="hotcolor" default="#EBBBBC" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image8" label="LABEL IMAGE8">
+				<field name="image8" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title8" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info8" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink8" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext8" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground8" type="hotcolor" default="#EED9C0" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image9" label="LABEL IMAGE9">
+				<field name="image9" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title9" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info9" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink9" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext9" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground9" type="hotcolor" default="#DFEBB1" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="image10" label="LABEL IMAGE10">
+				<field name="image10" type="media" default="" label="LABEL IMAGE" description="DESC IMAGE" />
+				<field name="title10" type="text" default="joombig" label="LABEL HEADING" description="DESC HEADING" />
+				<field name="info10" type="textarea" cols="50" rows="4" filter="raw" default="banner images slider joombig.com" label="LABEL INFO" description="DESC INFO" />
+				<field name="readmorelink10" type="text" default="http://joombig.com" label="LABEL READMORE LINK" description="DESC READMORE LINK" />
+				<field name="readmoretext10" type="text" default="Read more" label="LABEL READMORE TEXT" description="DESC READMORE TEXT" />
+				<field name="imageBackground10" type="hotcolor" default="#C1E6E5" label="LABEL BACKGROUND" description="DESC BACKGROUND" />
+			</fieldset>
+			<fieldset name="responsive_setting" label="Responsive setting">
+				<field name="screen_width1" type="text" default="" label="Screen width1" description="Width without px" />
+				<field name="modulewidth1" type="text" default="" label="Width1 of module" description="Width without px" />
+				<field name="moduleheight1" type="text" default="" label="Height1 of module" description="Height without px" />
+				<field name="imageWidth1" type="text" default="" label="Width1 of image" description="Width without px" />
+				<field name="imageHeight1" type="text" default="" label="Height1 of image" description="Height without px" />
+				
+				<field name="screen_width2" type="text" default="" label="Screen width2" description="Width without px" />
+				<field name="modulewidth2" type="text" default="" label="Width2 of module" description="Width without px" />
+				<field name="moduleheight2" type="text" default="" label="Height2 of module" description="Height without px" />
+				<field name="imageWidth2" type="text" default="" label="Width2 of image" description="Width without px" />
+				<field name="imageHeight2" type="text" default="" label="Height2 of image" description="Height without px" />
+				
+				<field name="screen_width3" type="text" default="" label="Screen width3" description="Width without px" />
+				<field name="modulewidth3" type="text" default="" label="Width3 of module" description="Width without px" />
+				<field name="moduleheight3" type="text" default="" label="Height3 of module" description="Height without px" />
+				<field name="imageWidth3" type="text" default="" label="Width3 of image" description="Width without px" />
+				<field name="imageHeight3" type="text" default="" label="Height3 of image" description="Height without px" />
+				
+				<field name="screen_width4" type="text" default="" label="Screen width4" description="Width without px" />
+				<field name="modulewidth4" type="text" default="" label="Width4 of module" description="Width without px" />
+				<field name="moduleheight4" type="text" default="" label="Height4 of module" description="Height without px" />
+				<field name="imageWidth4" type="text" default="" label="Width4 of image" description="Width without px" />
+				<field name="imageHeight4" type="text" default="" label="Height4 of image" description="Height without px" />
+				
+				<field name="screen_width5" type="text" default="" label="Screen width5" description="Width without px" />
+				<field name="modulewidth5" type="text" default="" label="Width5 of module" description="Width without px" />
+				<field name="moduleheight5" type="text" default="" label="Height5 of module" description="Height without px" />
+				<field name="imageWidth5" type="text" default="" label="Width5 of image" description="Width without px" />
+				<field name="imageHeight5" type="text" default="" label="Height5 of image" description="Height without px" />
+			</fieldset>
+		</fields>
+	</config>
+</extension>
