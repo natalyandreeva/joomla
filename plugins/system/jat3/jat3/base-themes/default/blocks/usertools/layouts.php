@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@ defined('_JEXEC') or die;
 ?>
 <?php
 $layouts = T3Common::get_layouts ();
-$currlayouts = preg_split('/,/', $this->getParam('layouts'));
+$currlayouts = preg_split('/,/', $this->getParam('layouts', T3Common::get_active_layout()));
 if (count ($layouts) < 2) return;
 ?>
 

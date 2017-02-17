@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -93,14 +93,49 @@ body.contentpane .mailto-close {
 	top: 10px;
 }
 
-body.contentpane .formelm { margin: 10px 0; }
+body.contentpane .formelm {
+  margin: 10px 0;
+}
 
-body.contentpane .formelm label { min-width: 100px; display: inline-block; }
+body.contentpane .formelm label {
+  min-width: 100px;
+  display: inline-block;
+}
 
 .left {
-    margin-right: 15px;
+  margin-right: 15px;
 }
 
 .right {
-    margin-left: 15px;
+  margin-left: 15px;
+}
+
+
+/* System message */
+body.contentpane #system-message h4 {
+  margin: 10px 0 5px;
+  text-transform: none;
+}
+
+body.contentpane #system-message .close {
+  float: right;
+  font-size: 23px;
+  font-weight: bold;
+  line-height: 18px;
+  opacity: 0.5;
+  position: relative;
+  right: -25px;
+  top: 5px;
+}
+
+body.contentpane #system-message p {
+  margin: 0 0 10px;
+}
+
+body.contentpane table.adminlist th a {
+  color: #000;
+}
+
+body.contentpane fieldset.filter button {
+  margin: 0 5px 0 0;
 }

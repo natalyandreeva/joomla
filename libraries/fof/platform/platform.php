@@ -2,7 +2,7 @@
 /**
  * @package     FrameworkOnFramework
  * @subpackage  platform
- * @copyright   Copyright (C) 2010 - 2014 Akeeba Ltd. All rights reserved.
+ * @copyright   Copyright (C) 2010 - 2015 Nicholas K. Dionysopoulos / Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 // Protect from unauthorized access
@@ -527,7 +527,7 @@ abstract class FOFPlatform implements FOFPlatformInterface
 	 *
 	 * @see FOFPlatformInterface::runPlugins()
 	 *
-	 * @return  array  A simple array containing the resutls of the plugins triggered
+	 * @return  array  A simple array containing the results of the plugins triggered
 	 */
 	public function runPlugins($event, $data)
 	{

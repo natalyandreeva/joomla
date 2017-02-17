@@ -3,24 +3,18 @@
  * @package     Joomla.Platform
  * @subpackage  Document
  *
- * @copyright   Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
 defined('JPATH_PLATFORM') or die;
 
-JLoader::register('JDocumentRenderer', dirname(__FILE__) . '/renderer.php');
-jimport('joomla.environment.response');
-jimport('joomla.filter.filteroutput');
-
 /**
  * Document class, provides an easy interface to parse and display a document
  *
- * @package     Joomla.Platform
- * @subpackage  Document
- * @since       11.1
+ * @since  11.1
  */
-class JDocument extends JObject
+class JDocument
 {
 	/**
 	 * Document title
@@ -198,10 +192,20 @@ class JDocument extends JObject
 	public static $_buffer = null;
 
 	/**
-	 * @var    array  JDocument instances container.
+	 * JDocument instances container.
+	 *
+	 * @var    array
 	 * @since  11.3
 	 */
 	protected static $instances = array();
+
+	/**
+	 * Media version added to assets
+	 *
+	 * @var    string
+	 * @since  3.2
+	 */
+	protected $mediaVersion = null;
 
 	/**
 	 * Class constructor.
@@ -212,8 +216,6 @@ class JDocument extends JObject
 	 */
 	public function __construct($options = array())
 	{
-		parent::__construct();
-
 		if (array_key_exists('lineend', $options))
 		{
 			$this->setLineEnd($options['lineend']);
@@ -248,6 +250,11 @@ class JDocument extends JObject
 		{
 			$this->setBase($options['base']);
 		}
+
+		if (array_key_exists('mediaversion', $options))
+		{
+			$this->setMediaVersion($options['mediaversion']);
+		}
 	}
 
 	/**
@@ -267,35 +274,32 @@ class JDocument extends JObject
 
 		if (empty(self::$instances[$signature]))
 		{
-			$type = preg_replace('/[^A-Z0-9_\.-]/i', '', $type);
-			$path = dirname(__FILE__) . '/' . $type . '/' . $type . '.php';
+			$type  = preg_replace('/[^A-Z0-9_\.-]/i', '', $type);
 			$ntype = null;
 
-			// Check if the document type exists
-			if (!file_exists($path))
-			{
-				// Default to the raw format
-				$ntype = $type;
-				$type = 'raw';
-			}
-
 			// Determine the path and class
-			$class = 'JDocument' . $type;
+			$class = 'JDocument' . ucfirst($type);
+
 			if (!class_exists($class))
 			{
-				$path = dirname(__FILE__) . '/' . $type . '/' . $type . '.php';
+				// @deprecated 4.0 - JDocument objects should be autoloaded instead
+				$path = __DIR__ . '/' . $type . '/' . $type . '.php';
+
 				if (file_exists($path))
 				{
+					JLog::add('Non-autoloadable JDocument subclasses are deprecated, support will be removed in 4.0.', JLog::WARNING, 'deprecated');
 					require_once $path;
 				}
+				// Default to the raw format
 				else
 				{
-					JError::raiseError(500, JText::_('JLIB_DOCUMENT_ERROR_UNABLE_LOAD_DOC_CLASS'));
+					$ntype = $type;
+					$class = 'JDocumentRaw';
 				}
 			}
 
 			$instance = new $class($attributes);
-			self::$instances[$signature] = &$instance;
+			self::$instances[$signature] = $instance;
 
 			if (!is_null($ntype))
 			{
@@ -376,8 +380,6 @@ class JDocument extends JObject
 	 */
 	public function getMetaData($name, $httpEquiv = false)
 	{
-		$result = '';
-		$name = strtolower($name);
 		if ($name == 'generator')
 		{
 			$result = $this->getGenerator();
@@ -407,16 +409,13 @@ class JDocument extends JObject
 	 * @param   string   $name        Value of name or http-equiv tag
 	 * @param   string   $content     Value of the content tag
 	 * @param   boolean  $http_equiv  META type "http-equiv" defaults to null
-	 * @param   boolean  $sync        Should http-equiv="content-type" by synced with HTTP-header?
 	 *
 	 * @return  JDocument instance of $this to allow chaining
 	 *
 	 * @since   11.1
 	 */
-	public function setMetaData($name, $content, $http_equiv = false, $sync = true)
+	public function setMetaData($name, $content, $http_equiv = false)
 	{
-		$name = strtolower($name);
-
 		if ($name == 'generator')
 		{
 			$this->setGenerator($content);
@@ -430,12 +429,6 @@ class JDocument extends JObject
 			if ($http_equiv == true)
 			{
 				$this->_metaTags['http-equiv'][$name] = $content;
-
-				// Syncing with HTTP-header
-				if ($sync && strtolower($name) == 'content-type')
-				{
-					$this->setMimeEncoding($content, false);
-				}
 			}
 			else
 			{
@@ -465,6 +458,36 @@ class JDocument extends JObject
 		$this->_scripts[$url]['async'] = $async;
 
 		return $this;
+	}
+
+	/**
+	 * Adds a linked script to the page with a version to allow to flush it. Ex: myscript.js54771616b5bceae9df03c6173babf11d
+	 * If not specified Joomla! automatically handles versioning
+	 *
+	 * @param   string   $url      URL to the linked script
+	 * @param   string   $version  Version of the script
+	 * @param   string   $type     Type of script. Defaults to 'text/javascript'
+	 * @param   boolean  $defer    Adds the defer attribute.
+	 * @param   boolean  $async    [description]
+	 *
+	 * @return  JDocument instance of $this to allow chaining
+	 *
+	 * @since   3.2
+	 */
+	public function addScriptVersion($url, $version = null, $type = "text/javascript", $defer = false, $async = false)
+	{
+		// Automatic version
+		if ($version === null)
+		{
+			$version = $this->getMediaVersion();
+		}
+
+		if (!empty($version) && strpos($url, '?') === false)
+		{
+			$url .= '?' . $version;
+		}
+
+		return $this->addScript($url, $type, $defer, $async);
 	}
 
 	/**
@@ -510,6 +533,36 @@ class JDocument extends JObject
 		$this->_styleSheets[$url]['attribs'] = $attribs;
 
 		return $this;
+	}
+
+	/**
+	 * Adds a linked stylesheet version to the page. Ex: template.css?54771616b5bceae9df03c6173babf11d
+	 * If not specified Joomla! automatically handles versioning
+	 *
+	 * @param   string  $url      URL to the linked style sheet
+	 * @param   string  $version  Version of the stylesheet
+	 * @param   string  $type     Mime encoding type
+	 * @param   string  $media    Media type that this stylesheet applies to
+	 * @param   array   $attribs  Array of attributes
+	 *
+	 * @return  JDocument instance of $this to allow chaining
+	 *
+	 * @since   3.2
+	 */
+	public function addStyleSheetVersion($url, $version = null, $type = "text/css", $media = null, $attribs = array())
+	{
+		// Automatic version
+		if ($version === null)
+		{
+			$version = $this->getMediaVersion();
+		}
+
+		if (!empty($version) && strpos($url, '?') === false)
+		{
+			$url .= '?' . $version;
+		}
+
+		return $this->addStyleSheet($url, $type, $media, $attribs);
 	}
 
 	/**
@@ -646,6 +699,34 @@ class JDocument extends JObject
 	public function getTitle()
 	{
 		return $this->title;
+	}
+
+	/**
+	 * Set the assets version
+	 *
+	 * @param   string  $mediaVersion  Media version to use
+	 *
+	 * @return  JDocument instance of $this to allow chaining
+	 *
+	 * @since   3.2
+	 */
+	public function setMediaVersion($mediaVersion)
+	{
+		$this->mediaVersion = strtolower($mediaVersion);
+
+		return $this;
+	}
+
+	/**
+	 * Return the media version
+	 *
+	 * @return  string
+	 *
+	 * @since   3.2
+	 */
+	public function getMediaVersion()
+	{
+		return $this->mediaVersion;
 	}
 
 	/**
@@ -813,7 +894,7 @@ class JDocument extends JObject
 		// Syncing with meta-data
 		if ($sync)
 		{
-			$this->setMetaData('content-type', $type, true, false);
+			$this->setMetaData('content-type', $type . '; charset=' . $this->_charset, true);
 		}
 
 		return $this;
@@ -905,36 +986,43 @@ class JDocument extends JObject
 	 *
 	 * @param   string  $type  The renderer type
 	 *
-	 * @return  JDocumentRenderer  Object or null if class does not exist
+	 * @return  JDocumentRenderer
 	 *
 	 * @since   11.1
+	 * @throws  RuntimeException
 	 */
 	public function loadRenderer($type)
 	{
-		$class = 'JDocumentRenderer' . $type;
+		// New class name format adds the format type to the class name
+		$class = 'JDocumentRenderer' . ucfirst($this->getType()) . ucfirst($type);
 
 		if (!class_exists($class))
 		{
-			$path = dirname(__FILE__) . '/' . $this->_type . '/renderer/' . $type . '.php';
+			// "Legacy" class name structure
+			$class = 'JDocumentRenderer' . $type;
 
-			if (file_exists($path))
+			if (!class_exists($class))
 			{
+				// @deprecated 4.0 - Non-autoloadable class support is deprecated, only log a message though if a file is found
+				$path = __DIR__ . '/' . $this->getType() . '/renderer/' . $type . '.php';
+
+				if (!file_exists($path))
+				{
+					throw new RuntimeException('Unable to load renderer class', 500);
+				}
+
+				JLog::add('Non-autoloadable JDocumentRenderer subclasses are deprecated, support will be removed in 4.0.', JLog::WARNING, 'deprecated');
 				require_once $path;
-			}
-			else
-			{
-				JError::raiseError(500, JText::_('Unable to load renderer class'));
+
+				// If the class still doesn't exist after including the path, we've got issues
+				if (!class_exists($class))
+				{
+					throw new RuntimeException('Unable to load renderer class', 500);
+				}
 			}
 		}
 
-		if (!class_exists($class))
-		{
-			return null;
-		}
-
-		$instance = new $class($this);
-
-		return $instance;
+		return new $class($this);
 	}
 
 	/**
@@ -963,11 +1051,14 @@ class JDocument extends JObject
 	 */
 	public function render($cache = false, $params = array())
 	{
+		$app = JFactory::getApplication();
+
 		if ($mdate = $this->getModifiedDate())
 		{
-			JResponse::setHeader('Last-Modified', $mdate /* gmdate('D, d M Y H:i:s', time() + 900) . ' GMT' */);
+			$app->modifiedDate = $mdate;
 		}
 
-		JResponse::setHeader('Content-Type', $this->_mime . ($this->_charset ? '; charset=' . $this->_charset : ''));
+		$app->mimeType = $this->_mime;
+		$app->charSet  = $this->_charset;
 	}
 }

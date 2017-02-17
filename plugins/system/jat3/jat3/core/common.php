@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -284,10 +284,10 @@ class T3Common
     public static function xmltoarray($xml)
     {
         if (!$xml) return null;
-
+       
         $arr = array();
-        $arr['name'] = $xml->name();
-        $arr['data'] = $xml->data();
+        $arr['name'] = $xml->_name;
+        $arr['data'] = $xml->_data; 
 
         // Remove blank space for module position
         if ($arr['name'] == 'block') {
@@ -319,12 +319,27 @@ class T3Common
      */
     public static function getXML($xmlfile, $array = true)
     {
+/*
         $xml = JFactory::getXMLParser('Simple');
         if ($xml->loadFile($xmlfile)) {
             if ($array)
                 return T3Common::xmltoarray($xml->document);
             return $xml->document;
         }
+        return null;
+*/        
+        //$xml = JFactory::getXML ($xmlfile);
+        if(!class_exists('JSimpleXML')){
+            t3import('core.joomla.simplexml');
+        }
+
+        $xml = new JSimpleXML;
+        if ($xml->loadFile($xmlfile)) {
+            if ($array)
+                return T3Common::xmltoarray($xml->document);
+            return $xml->document;
+        }
+
         return null;
     }
 
@@ -352,7 +367,9 @@ class T3Common
         $ui = T3Parameter::_getParam('ui');
         if ($ui == 'desktop') return false;
         // Detect mobile
-        t3import('core.libs.browser');
+        if(!class_exists('Browser')){
+            t3import ('core.libs.browser');
+        }
         $browser = new Browser();
         // Bypass
         if ($browser->isRobot()) return false;
@@ -1097,7 +1114,9 @@ class T3Common
      */
     public static function getBrowserSortName()
     {
-        t3import('core.libs.browser');
+        if(!class_exists('Browser')){
+            t3import ('core.libs.browser');
+        }
         $browser = new Browser();
         $bname = $browser->getBrowser();
         switch ($bname) {
@@ -1129,7 +1148,9 @@ class T3Common
      */
     public static function getBrowserMajorVersion()
     {
-        t3import('core.libs.browser');
+        if(!class_exists('Browser')){
+            t3import ('core.libs.browser');
+        }
         $browser = new Browser();
         $bver = explode('.', $browser->getVersion());
         return $bver[0]; //Major version only
@@ -1230,7 +1251,7 @@ class T3Common
             // Set timezone offset for date
             $date->setTimezone(new DateTimeZone($tz));
             //return by the format defined in language
-            return $date->toFormat(JText::_('T3_DATE_FORMAT_LASTUPDATE'), true);
+            return $date->format(JText::_('T3_DATE_FORMAT_LASTUPDATE'), true);
         }
         return;
     }
@@ -1385,5 +1406,54 @@ class T3Common
             }
         }
         return $path;
+    }
+
+    /**
+     * check if current page is homepage
+     */
+    public static function isHome(){
+        $active = JFactory::getApplication()->getMenu()->getActive();
+        return (!$active || $active->home);
+    }
+
+    /**
+     * fix ja back link
+     * @param $buffer
+     * @return mixed
+     */
+    public static function fixJALink($buffer){
+
+        if(!self::isHome()){
+            $buffer = preg_replace_callback('@<a[^>]*>JoomlArt.com</a>@mi', array('T3Common', 'removeBacklink'), $buffer);
+        }
+
+        return $buffer;
+    }
+
+    /**
+     * fix t3-framework.org back link
+     * @param $buffer
+     * @return mixed
+     */
+    public static function fixT3Link($buffer){
+        if(!self::isHome()){
+            $buffer = preg_replace_callback('@<a[^>]*>Powered By T3 Framework</a>@mi', array('T3Common', 'removeBacklink'), $buffer);
+        }
+
+        return $buffer;
+    }
+
+    /**
+     * check nofollow attribute
+     * @param $match
+     * @return mixed
+     */
+    public static function removeBacklink($match){
+
+        if($match && isset($match[0]) && strpos($match[0], 'rel="nofollow"') === false){
+            $match[0] = str_replace('<a ', '<a rel="nofollow" ', $match[0]);
+        }
+
+        return $match[0];
     }
 }

@@ -9,6 +9,8 @@
 	<!--Extra css load for this theme-->
 	<stylesheets>
 		<file>css/addons.css</file>
+		<file compatible="3.0">css/template-j30.css</file>
+		<file compatible="3.0">/media/jui/css/icomoon.css</file>
 	</stylesheets>
 	<scripts>
 		<file>js/core.js</file>

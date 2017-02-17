@@ -1,10 +1,9 @@
 <?php
 /**
- * @package     Joomla.CLI
- * @subpackage  com_finder
+ * @package    Joomla.Cli
  *
- * @copyright   Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE
+ * @copyright  Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
 /**
@@ -20,40 +19,33 @@
  */
 
 // Make sure we're being called from the command line, not a web interface
-if (PHP_SAPI !== 'cli') die('This is a command line only application.');
+if (PHP_SAPI !== 'cli')
+{
+	die('This is a command line only application.');
+}
 
 // We are a valid entry point.
-define('_JEXEC', 1);
+const _JEXEC = 1;
 
 // Load system defines
-if (file_exists(dirname(dirname(__FILE__)) . '/defines.php'))
+if (file_exists(dirname(__DIR__) . '/defines.php'))
 {
-	require_once dirname(dirname(__FILE__)) . '/defines.php';
+	require_once dirname(__DIR__) . '/defines.php';
 }
 
 if (!defined('_JDEFINES'))
 {
-	define('JPATH_BASE', dirname(dirname(__FILE__)));
+	define('JPATH_BASE', dirname(__DIR__));
 	require_once JPATH_BASE . '/includes/defines.php';
 }
 
 define('JPATH_COMPONENT_ADMINISTRATOR', JPATH_ADMINISTRATOR . '/components/com_finder');
 
 // Get the framework.
-require_once JPATH_LIBRARIES . '/import.php';
+require_once JPATH_LIBRARIES . '/import.legacy.php';
 
 // Bootstrap the CMS libraries.
 require_once JPATH_LIBRARIES . '/cms.php';
-
-// Force library to be in JError legacy mode
-JError::$legacy = true;
-
-// Import necessary classes not handled by the autoloaders
-jimport('joomla.application.menu');
-jimport('joomla.environment.uri');
-jimport('joomla.event.dispatcher');
-jimport('joomla.utilities.utility');
-jimport('joomla.utilities.arrayhelper');
 
 // Import the configuration.
 require_once JPATH_CONFIGURATION . '/configuration.php';
@@ -76,9 +68,7 @@ $lang->load('finder_cli', JPATH_SITE, null, false, false)
 /**
  * A command line cron job to run the Smart Search indexer.
  *
- * @package     Joomla.CLI
- * @subpackage  com_finder
- * @since       2.5
+ * @since  2.5
  */
 class FinderCli extends JApplicationCli
 {
@@ -166,9 +156,7 @@ class FinderCli extends JApplicationCli
 	 */
 	private function index()
 	{
-		// Import library dependencies.
 		require_once JPATH_ADMINISTRATOR . '/components/com_finder/helpers/indexer/indexer.php';
-		jimport('joomla.application.component.helper');
 
 		// Disable caching.
 		$config = JFactory::getConfig();
@@ -185,7 +173,10 @@ class FinderCli extends JApplicationCli
 		$this->out(JText::_('FINDER_CLI_STARTING_INDEXER'), true);
 
 		// Trigger the onStartIndex event.
-		JDispatcher::getInstance()->trigger('onStartIndex');
+		JEventDispatcher::getInstance()->trigger('onStartIndex');
+
+		// Remove the script time limit.
+		@set_time_limit(0);
 
 		// Get the indexer state.
 		$state = FinderIndexer::getState();
@@ -194,7 +185,7 @@ class FinderCli extends JApplicationCli
 		$this->out(JText::_('FINDER_CLI_SETTING_UP_PLUGINS'), true);
 
 		// Trigger the onBeforeIndex event.
-		JDispatcher::getInstance()->trigger('onBeforeIndex');
+		JEventDispatcher::getInstance()->trigger('onBeforeIndex');
 
 		// Startup reporting.
 		$this->out(JText::sprintf('FINDER_CLI_SETUP_ITEMS', $state->totalItems, round(microtime(true) - $this->time, 3)), true);
@@ -216,7 +207,7 @@ class FinderCli extends JApplicationCli
 				$state->batchOffset = 0;
 
 				// Trigger the onBuildIndex event.
-				JDispatcher::getInstance()->trigger('onBuildIndex');
+				JEventDispatcher::getInstance()->trigger('onBuildIndex');
 
 				// Batch reporting.
 				$this->out(JText::sprintf('FINDER_CLI_BATCH_COMPLETE', ($i + 1), round(microtime(true) - $this->qtime, 3)), true);
@@ -250,9 +241,8 @@ class FinderCli extends JApplicationCli
 		$this->out(JText::_('FINDER_CLI_INDEX_PURGE'));
 
 		// Load the model.
-		jimport('joomla.application.component.model');
-		JModel::addIncludePath(JPATH_COMPONENT_ADMINISTRATOR . '/models', 'FinderModel');
-		$model = JModel::getInstance('Index', 'FinderModel');
+		JModelLegacy::addIncludePath(JPATH_COMPONENT_ADMINISTRATOR . '/models', 'FinderModel');
+		$model = JModelLegacy::getInstance('Index', 'FinderModel');
 
 		// Attempt to purge the index.
 		$return = $model->purge();
@@ -373,9 +363,9 @@ class FinderCli extends JApplicationCli
 			foreach ($taxonomies as $taxonomy)
 			{
 				$this->filters[$filter->filter_id][] = array(
-					'filter'	=> $filter->title,
-					'title'		=> $taxonomy->title,
-					'parent'	=> $taxonomy->parent,
+					'filter' => $filter->title,
+					'title'  => $taxonomy->title,
+					'parent' => $taxonomy->parent,
 				);
 			}
 		}
@@ -387,4 +377,3 @@ class FinderCli extends JApplicationCli
 // Instantiate the application object, passing the class name to JCli::getInstance
 // and use chaining to execute the application.
 JApplicationCli::getInstance('FinderCli')->execute();
-

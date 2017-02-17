@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,7 @@
 var wrap_W = 0;
 var JATabs = new Class({	
 	initialize: function(element, options) {
-		this.options = $extend({
+		this.options = (window.$extend || Object.append)({
 			position:			'top',
 			width:				'100%',
 			height:				'auto',
@@ -42,7 +42,7 @@ var JATabs = new Class({
 			this.options.fixheight = 0;
 		}
 		//tab colors
-		if($type(this.options.colors)=='string'){
+		if(typeOf(this.options.colors)=='string'){
 			regex = /(\d*):([^,]*)/gi;
 			var colors = [];
 			while((result = regex.exec (this.options.colors)))
@@ -144,7 +144,7 @@ var JATabs = new Class({
 		if (this.options.skipAnim) this.options.animType = 'animNone';
 		
 		//Set default type for animation if needed
-		if ((eval('typeof '+this.options.animType) == 'undefined') || (eval('$type ('+this.options.animType+')') != 'class')){
+		if (typeof this.options.animType == 'undefined'){
 			this.options.animType = 'animFade';
 		}
 		
@@ -198,17 +198,17 @@ var JATabs = new Class({
 	        return;	     
 	    }
 
-		if(! $defined(skipAnim))
+		if(typeof skipAnim == 'undefined')
 		{
 			skipAnim = false;
 		}
-		if($type(tab) == 'string') 
+		if(typeOf(tab) == 'string') 
 		{
 			myTab = $$('#' + this.elid + ' ul li').filterByAttribute('title', '=', tab)[0];
 			tab = myTab;			
 		}
 		
-		if($type(tab) == 'element')
+		if(typeOf(tab) == 'element')
 		{
 			//add 5
 			var newTab = tab.panel;

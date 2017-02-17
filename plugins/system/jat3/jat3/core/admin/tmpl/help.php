@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -20,7 +20,7 @@ if (!$obj->checkexistExtensinsManagement()) {?>
     window.addEvent ('load', function () {
         addobj.delay(1500);
     });
-    addobj = function(){var obj = new Element ('iframe', {width:500,height:311,src:'http://www.youtube.com/v/bruMQxudvdI',frameborder:0}).inject ($('ja-youtubemain-obj-content'));}
+    addobj = function(){var obj = new Element ('iframe', {width:500,height:311,src:'http://www.youtube.com/embed/bruMQxudvdI',frameborder:0}).inject ($('ja-youtubemain-obj-content'));}
 </script>
 <?php }?>
 <table width="100%" class="ja-help-support">
@@ -36,7 +36,6 @@ if (!$obj->checkexistExtensinsManagement()) {?>
     <tr  class="level3">
         <td>
             <br/>
-            <span class="version-title"><?php echo JText::_('Version')?>:</span> <span class="version-current"><?php echo $version?></span>
             <div class="help-support-content">
                 <?php if ($obj->checkexistExtensinsManagement()) {?>
                     <?php echo JText::_('EXTENSION_MANAGEMENT_HAS_INSTALLED'); ?>

@@ -3,62 +3,74 @@
  * @package     Joomla.Platform
  * @subpackage  Mail
  *
- * @copyright   Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE
  */
 
 defined('JPATH_PLATFORM') or die;
 
-jimport('phpmailer.phpmailer');
-
 /**
  * Email Class.  Provides a common interface to send email from the Joomla! Platform
  *
- * @package     Joomla.Platform
- * @subpackage  Mail
- * @since       11.1
+ * @since  11.1
  */
 class JMail extends PHPMailer
 {
 	/**
-	 * @var    array  JMail instances container.
+	 * JMail instances container.
+	 *
+	 * @var    JMail[]
 	 * @since  11.3
 	 */
 	protected static $instances = array();
 
 	/**
-	 * @var    string  Charset of the message.
+	 * Charset of the message.
+	 *
+	 * @var    string
 	 * @since  11.1
 	 */
 	public $CharSet = 'utf-8';
 
 	/**
 	 * Constructor
+	 *
+	 * @param   boolean  $exceptions  Flag if Exceptions should be thrown
+	 *
+	 * @since   11.1
 	 */
-	public function __construct()
+	public function __construct($exceptions = true)
 	{
+		parent::__construct($exceptions);
+
 		// PHPMailer has an issue using the relative path for its language files
-		$this->SetLanguage('joomla', JPATH_PLATFORM . '/phpmailer/language/');
+		$this->setLanguage('joomla', __DIR__ . '/language');
+
+		// Configure a callback function to handle errors when $this->edebug() is called
+		$this->Debugoutput = function ($message, $level)
+		{
+			JLog::add(sprintf('Error in JMail API: %s', $message), JLog::ERROR, 'mail');
+		};
 	}
 
 	/**
-	 * Returns the global email object, only creating it
-	 * if it doesn't already exist.
+	 * Returns the global email object, only creating it if it doesn't already exist.
 	 *
 	 * NOTE: If you need an instance to use that does not have the global configuration
 	 * values, use an id string that is not 'Joomla'.
 	 *
-	 * @param   string  $id  The id string for the JMail instance [optional]
+	 * @param   string   $id          The id string for the JMail instance [optional]
+	 * @param   boolean  $exceptions  Flag if Exceptions should be thrown [optional]
 	 *
 	 * @return  JMail  The global JMail object
 	 *
 	 * @since   11.1
 	 */
-	public static function getInstance($id = 'Joomla')
+	public static function getInstance($id = 'Joomla', $exceptions = true)
 	{
 		if (empty(self::$instances[$id]))
 		{
-			self::$instances[$id] = new JMail;
+			self::$instances[$id] = new JMail($exceptions);
 		}
 
 		return self::$instances[$id];
@@ -67,37 +79,92 @@ class JMail extends PHPMailer
 	/**
 	 * Send the mail
 	 *
-	 * @return  mixed  True if successful, a JError object otherwise
+	 * @return  mixed  True if successful; JError if using legacy tree (no exception thrown in that case).
 	 *
 	 * @since   11.1
+	 * @throws  RuntimeException
 	 */
 	public function Send()
 	{
-		if (($this->Mailer == 'mail') && !function_exists('mail'))
+		if (JFactory::getConfig()->get('mailonline', 1))
 		{
-			return JError::raiseNotice(500, JText::_('JLIB_MAIL_FUNCTION_DISABLED'));
+			if (($this->Mailer == 'mail') && !function_exists('mail'))
+			{
+				if (class_exists('JError'))
+				{
+					return JError::raiseNotice(500, JText::_('JLIB_MAIL_FUNCTION_DISABLED'));
+				}
+				else
+				{
+					throw new RuntimeException(sprintf('%s::Send mail not enabled.', get_class($this)));
+				}
+			}
+
+			try
+			{
+				// Try sending with default settings
+				$result = parent::send();
+
+			}
+			catch (phpmailerException $e)
+			{
+				$result = false;
+
+				if ($this->SMTPAutoTLS)
+				{
+					/**
+					 * PHPMailer has an issue with servers with invalid certificates
+					 *
+					 * See: https://github.com/PHPMailer/PHPMailer/wiki/Troubleshooting#opportunistic-tls
+					 */
+					$this->SMTPAutoTLS = false;
+
+					try
+					{
+						// Try it again with TLS turned off
+						$result = parent::send();
+					}
+					catch (phpmailerException $e)
+					{
+						// Keep false for B/C compatibility
+						$result = false;
+					}
+				}
+			}
+
+			if ($result == false)
+			{
+				if (class_exists('JError'))
+				{
+					$result = JError::raiseNotice(500, JText::_($this->ErrorInfo));
+				}
+				else
+				{
+					throw new RuntimeException(sprintf('%s::Send failed: "%s".', get_class($this), $this->ErrorInfo));
+				}
+			}
+
+			return $result;
 		}
-
-		@$result = parent::Send();
-
-		if ($result == false)
+		else
 		{
-			// TODO: Set an appropriate error number
-			$result = JError::raiseNotice(500, JText::_($this->ErrorInfo));
-		}
+			JFactory::getApplication()->enqueueMessage(JText::_('JLIB_MAIL_FUNCTION_OFFLINE'));
 
-		return $result;
+			return false;
+		}
 	}
 
 	/**
 	 * Set the email sender
 	 *
-	 * @param   array  $from  email address and Name of sender
-	 *                        <code>array([0] => email Address [1] => Name)</code>
+	 * @param   mixed  $from  email address and Name of sender
+	 *                        <code>array([0] => email Address, [1] => Name)</code>
+	 *                        or as a string
 	 *
 	 * @return  JMail  Returns this object for chaining.
 	 *
 	 * @since   11.1
+	 * @throws  UnexpectedValueException
 	 */
 	public function setSender($from)
 	{
@@ -107,22 +174,24 @@ class JMail extends PHPMailer
 			if (isset($from[2]))
 			{
 				// If it is an array with entries, use them
-				$this->SetFrom(JMailHelper::cleanLine($from[0]), JMailHelper::cleanLine($from[1]), (bool) $from[2]);
+				$this->setFrom(JMailHelper::cleanLine($from[0]), JMailHelper::cleanLine($from[1]), (bool) $from[2]);
 			}
 			else
 			{
-				$this->SetFrom(JMailHelper::cleanLine($from[0]), JMailHelper::cleanLine($from[1]));
+				$this->setFrom(JMailHelper::cleanLine($from[0]), JMailHelper::cleanLine($from[1]));
 			}
 		}
 		elseif (is_string($from))
 		{
 			// If it is a string we assume it is just the address
-			$this->SetFrom(JMailHelper::cleanLine($from));
+			$this->setFrom(JMailHelper::cleanLine($from));
 		}
 		else
 		{
-			// If it is neither, we throw a warning
-			JError::raiseWarning(0, JText::sprintf('JLIB_MAIL_INVALID_EMAIL_SENDER', $from));
+			// If it is neither, we log a message and throw an exception
+			JLog::add(JText::sprintf('JLIB_MAIL_INVALID_EMAIL_SENDER', $from), JLog::WARNING, 'jerror');
+
+			throw new UnexpectedValueException(sprintf('Invalid email Sender: %s, JMail::setSender(%s)', $from));
 		}
 
 		return $this;
@@ -165,6 +234,61 @@ class JMail extends PHPMailer
 	}
 
 	/**
+	 * Add recipients to the email.
+	 *
+	 * @param   mixed   $recipient  Either a string or array of strings [email address(es)]
+	 * @param   mixed   $name       Either a string or array of strings [name(s)]
+	 * @param   string  $method     The parent method's name.
+	 *
+	 * @return  JMail  Returns this object for chaining.
+	 *
+	 * @since   11.1
+	 * @throws  InvalidArgumentException
+	 */
+	protected function add($recipient, $name = '', $method = 'addAddress')
+	{
+		$method = lcfirst($method);
+
+		// If the recipient is an array, add each recipient... otherwise just add the one
+		if (is_array($recipient))
+		{
+			if (is_array($name))
+			{
+				$combined = array_combine($recipient, $name);
+
+				if ($combined === false)
+				{
+					throw new InvalidArgumentException("The number of elements for each array isn't equal.");
+				}
+
+				foreach ($combined as $recipientEmail => $recipientName)
+				{
+					$recipientEmail = JMailHelper::cleanLine($recipientEmail);
+					$recipientName = JMailHelper::cleanLine($recipientName);
+					call_user_func('parent::' . $method, $recipientEmail, $recipientName);
+				}
+			}
+			else
+			{
+				$name = JMailHelper::cleanLine($name);
+
+				foreach ($recipient as $to)
+				{
+					$to = JMailHelper::cleanLine($to);
+					call_user_func('parent::' . $method, $to, $name);
+				}
+			}
+		}
+		else
+		{
+			$recipient = JMailHelper::cleanLine($recipient);
+			call_user_func('parent::' . $method, $recipient, $name);
+		}
+
+		return $this;
+	}
+
+	/**
 	 * Add recipients to the email
 	 *
 	 * @param   mixed  $recipient  Either a string or array of strings [email address(es)]
@@ -176,20 +300,7 @@ class JMail extends PHPMailer
 	 */
 	public function addRecipient($recipient, $name = '')
 	{
-		// If the recipient is an array, add each recipient... otherwise just add the one
-		if (is_array($recipient))
-		{
-			foreach ($recipient as $to)
-			{
-				$to = JMailHelper::cleanLine($to);
-				$this->AddAddress($to);
-			}
-		}
-		else
-		{
-			$recipient = JMailHelper::cleanLine($recipient);
-			$this->AddAddress($recipient);
-		}
+		$this->add($recipient, $name, 'addAddress');
 
 		return $this;
 	}
@@ -204,24 +315,12 @@ class JMail extends PHPMailer
 	 *
 	 * @since   11.1
 	 */
-	public function addCC($cc, $name = '')
+	public function addCc($cc, $name = '')
 	{
 		// If the carbon copy recipient is an array, add each recipient... otherwise just add the one
 		if (isset($cc))
 		{
-			if (is_array($cc))
-			{
-				foreach ($cc as $to)
-				{
-					$to = JMailHelper::cleanLine($to);
-					parent::AddCC($to);
-				}
-			}
-			else
-			{
-				$cc = JMailHelper::cleanLine($cc);
-				parent::AddCC($cc);
-			}
+			$this->add($cc, $name, 'addCC');
 		}
 
 		return $this;
@@ -237,23 +336,58 @@ class JMail extends PHPMailer
 	 *
 	 * @since   11.1
 	 */
-	public function addBCC($bcc, $name = '')
+	public function addBcc($bcc, $name = '')
 	{
 		// If the blind carbon copy recipient is an array, add each recipient... otherwise just add the one
 		if (isset($bcc))
 		{
-			if (is_array($bcc))
+			$this->add($bcc, $name, 'addBCC');
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Add file attachment to the email
+	 *
+	 * @param   mixed   $path         Either a string or array of strings [filenames]
+	 * @param   mixed   $name         Either a string or array of strings [names]
+	 * @param   mixed   $encoding     The encoding of the attachment
+	 * @param   mixed   $type         The mime type
+	 * @param   string  $disposition  The disposition of the attachment
+	 *
+	 * @return  JMail  Returns this object for chaining.
+	 *
+	 * @since   12.2
+	 * @throws  InvalidArgumentException
+	 */
+	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream', $disposition = 'attachment')
+	{
+		// If the file attachments is an array, add each file... otherwise just add the one
+		if (isset($path))
+		{
+			if (is_array($path))
 			{
-				foreach ($bcc as $to)
+				if (!empty($name) && count($path) != count($name))
 				{
-					$to = JMailHelper::cleanLine($to);
-					parent::AddBCC($to);
+					throw new InvalidArgumentException("The number of attachments must be equal with the number of name");
+				}
+
+				foreach ($path as $key => $file)
+				{
+					if (!empty($name))
+					{
+						parent::addAttachment($file, $name[$key], $encoding, $type);
+					}
+					else
+					{
+						parent::addAttachment($file, $name, $encoding, $type);
+					}
 				}
 			}
 			else
 			{
-				$bcc = JMailHelper::cleanLine($bcc);
-				parent::AddBCC($bcc);
+				parent::addAttachment($path, $name, $encoding, $type);
 			}
 		}
 
@@ -261,33 +395,33 @@ class JMail extends PHPMailer
 	}
 
 	/**
-	 * Add file attachments to the email
-	 *
-	 * @param   mixed  $attachment  Either a string or array of strings [filenames]
-	 * @param   mixed  $name        Either a string or array of strings [names]
-	 * @param   mixed  $encoding    The encoding of the attachment
-	 * @param   mixed  $type        The mime type
+	 * Unset all file attachments from the email
 	 *
 	 * @return  JMail  Returns this object for chaining.
 	 *
-	 * @since   11.1
+	 * @since   12.2
 	 */
-	public function addAttachment($attachment, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
+	public function clearAttachments()
 	{
-		// If the file attachments is an array, add each file... otherwise just add the one
-		if (isset($attachment))
+		parent::clearAttachments();
+
+		return $this;
+	}
+
+	/**
+	 * Unset file attachments specified by array index.
+	 *
+	 * @param   integer  $index  The numerical index of the attachment to remove
+	 *
+	 * @return  JMail  Returns this object for chaining.
+	 *
+	 * @since   12.2
+	 */
+	public function removeAttachment($index = 0)
+	{
+		if (isset($this->attachment[$index]))
 		{
-			if (is_array($attachment))
-			{
-				foreach ($attachment as $file)
-				{
-					parent::AddAttachment($file, $name, $encoding, $type);
-				}
-			}
-			else
-			{
-				parent::AddAttachment($attachment, $name, $encoding, $type);
-			}
+			unset($this->attachment[$index]);
 		}
 
 		return $this;
@@ -296,9 +430,8 @@ class JMail extends PHPMailer
 	/**
 	 * Add Reply to email address(es) to the email
 	 *
-	 * @param   array  $replyto  Either an array or multi-array of form
-	 *                           <code>array([0] => email Address [1] => Name)</code>
-	 * @param   mixed  $name     Either an array or single string
+	 * @param   mixed  $replyto  Either a string or array of strings [email address(es)]
+	 * @param   mixed  $name     Either a string or array of strings [name(s)]
 	 *
 	 * @return  JMail  Returns this object for chaining.
 	 *
@@ -306,22 +439,23 @@ class JMail extends PHPMailer
 	 */
 	public function addReplyTo($replyto, $name = '')
 	{
-		// Take care of reply email addresses
-		if (is_array($replyto[0]))
-		{
-			foreach ($replyto as $to)
-			{
-				$to0 = JMailHelper::cleanLine($to[0]);
-				$to1 = JMailHelper::cleanLine($to[1]);
-				parent::AddReplyTo($to0, $to1);
-			}
-		}
-		else
-		{
-			$replyto0 = JMailHelper::cleanLine($replyto[0]);
-			$replyto1 = JMailHelper::cleanLine($replyto[1]);
-			parent::AddReplyTo($replyto0, $replyto1);
-		}
+		$this->add($replyto, $name, 'addReplyTo');
+
+		return $this;
+	}
+
+	/**
+	 * Sets message type to HTML
+	 *
+	 * @param   boolean  $ishtml  Boolean true or false.
+	 *
+	 * @return  JMail  Returns this object for chaining.
+	 *
+	 * @since   12.3
+	 */
+	public function isHtml($ishtml = true)
+	{
+		parent::isHTML($ishtml);
 
 		return $this;
 	}
@@ -341,13 +475,13 @@ class JMail extends PHPMailer
 
 		if (!empty($this->Sendmail))
 		{
-			$this->IsSendmail();
+			$this->isSendmail();
 
 			return true;
 		}
 		else
 		{
-			$this->IsMail();
+			$this->isMail();
 
 			return false;
 		}
@@ -367,7 +501,7 @@ class JMail extends PHPMailer
 	 *
 	 * @since   11.1
 	 */
-	public function useSMTP($auth = null, $host = null, $user = null, $pass = null, $secure = null, $port = 25)
+	public function useSmtp($auth = null, $host = null, $user = null, $pass = null, $secure = null, $port = 25)
 	{
 		$this->SMTPAuth = $auth;
 		$this->Host = $host;
@@ -383,13 +517,13 @@ class JMail extends PHPMailer
 		if (($this->SMTPAuth !== null && $this->Host !== null && $this->Username !== null && $this->Password !== null)
 			|| ($this->SMTPAuth === null && $this->Host !== null))
 		{
-			$this->IsSMTP();
+			$this->isSMTP();
 
 			return true;
 		}
 		else
 		{
-			$this->IsMail();
+			$this->isMail();
 
 			return false;
 		}
@@ -421,14 +555,11 @@ class JMail extends PHPMailer
 		$this->setBody($body);
 
 		// Are we sending the email as HTML?
-		if ($mode)
-		{
-			$this->IsHTML(true);
-		}
+		$this->isHtml($mode);
 
 		$this->addRecipient($recipient);
-		$this->addCC($cc);
-		$this->addBCC($bcc);
+		$this->addCc($cc);
+		$this->addBcc($bcc);
 		$this->addAttachment($attachment);
 
 		// Take care of reply email addresses
@@ -438,12 +569,12 @@ class JMail extends PHPMailer
 
 			for ($i = 0; $i < $numReplyTo; $i++)
 			{
-				$this->addReplyTo(array($replyTo[$i], $replyToName[$i]));
+				$this->addReplyTo($replyTo[$i], $replyToName[$i]);
 			}
 		}
 		elseif (isset($replyTo))
 		{
-			$this->addReplyTo(array($replyTo, $replyToName));
+			$this->addReplyTo($replyTo, $replyToName);
 		}
 
 		// Add sender to replyTo only if no replyTo received

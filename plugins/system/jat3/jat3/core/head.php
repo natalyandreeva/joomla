@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -198,8 +198,11 @@ class T3Head extends JObject
     public static function cleanUrl($strSrc)
     {
         $strSrc = preg_replace('#[?\#]+.*$#', '', $strSrc);
-        //if (!preg_match ('#\.(css|js)$#', $strSrc)) return false; //not static file
-        if (preg_match('/^https?\:/', $strSrc)) {
+        
+        // Fix bug when K2 add jQuery library without http:
+        if (strpos($strSrc, '//ajax.googleapis.com') !== false || strpos($strSrc, 'k2.js') !== false) { 
+            return false;
+        } elseif (preg_match('/^https?\:/', $strSrc)) {
             if (! preg_match('#^' . preg_quote(JURI::base()) . '#', $strSrc)) {
                 // External css
                 return false;
@@ -211,10 +214,8 @@ class T3Head extends JObject
                 return false;
             }
             $strSrc = preg_replace('#^' . preg_quote(JURI::base(true)) . '#', '', $strSrc);
-        } elseif (strpos($strSrc, '//ajax.googleapis.com') !== false) { 
-			// Fix bug when K2 add jQuery library without http:
-			return false;
-		}
+        }
+
         $strSrc = str_replace('//', '/', $strSrc); //replace double slash by one
         $strSrc = preg_replace('/^\//', '', $strSrc); //remove first slash
         return $strSrc;
@@ -754,8 +755,7 @@ class T3Head extends JObject
             if ($optimize_level < 3) {
                 return T3Path::url($cache_path) . '/' . $filename . $fileversion;
             } else {
-                //$url = JRoute::_("index.php?jat3action=gzip&jat3type=$ext&jat3file=".urlencode ($cache_path.'/'.$filename).$fileversion);
-                $url = "jat3action=gzip&amp;jat3type=$ext&amp;jat3file=" . urlencode($cache_path . '/' . $filename) . $fileversion;
+                $url = "jat3action=gzip&amp;jat3type=$ext&amp;jat3file=" . urlencode($cache_path . '/' . $filename);
                 // Fix when enable languagefilter plugin
                 $url = self::buildURL($url);
                 return $url;
@@ -775,7 +775,7 @@ class T3Head extends JObject
                     $content .= "/* " . substr(basename($f[0]), 33) . " */\n" . @JFile::read($f[0]) . "\n\n";
                 }
             } else {
-                $content .= "/* " . substr(basename($f[0]), 33) . " */\n" . @JFile::read($f[0]) . "\n\n";
+                $content .= "/* " . basename($f[0]) . " */\n" . @JFile::read($f[0]) . ";\n\n";
             }
         }
 
@@ -800,8 +800,7 @@ class T3Head extends JObject
         //return result
         //check if need compress
         if ($optimize_level == 3) { //compress
-            //$url = JRoute::_("index.php?jat3action=gzip&type=$ext&file=".urlencode ($cache_path.'/'.$filename).$fileversion);
-            $url = "jat3action=gzip&amp;jat3type=$ext&amp;jat3file=" . urlencode($cache_path . '/' . $filename) . $fileversion;
+            $url = "jat3action=gzip&amp;jat3type=$ext&amp;jat3file=" . urlencode($cache_path . '/' . $filename);
             // Fix when enable languagefilter plugin
             $url = self::buildURL($url);
             return $url;
@@ -823,7 +822,8 @@ class T3Head extends JObject
             $lang_codes = JLanguageHelper::getLanguages('lang_code');
             $default_lang = JComponentHelper::getParams('com_languages')->get('site', 'en-GB');
             $default_sef = $lang_codes[$default_lang]->sef;
-            $router = JFactory::getApplication()->getRouter();
+            $app = JFactory::getApplication();
+            $router = $app->getRouter();
             if ($router->getMode() == JROUTER_MODE_SEF) {
                 if ($app->getCfg('sef_rewrite')) {
                     $url = JURI::base(true) . "/en/?$url";

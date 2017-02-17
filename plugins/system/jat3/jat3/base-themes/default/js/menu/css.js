@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -12,7 +12,7 @@
 window.addEvent ('domready', function() {
     var sfEls = $$('#ja-cssmenu li');
     sfEls.each (function(li) {
-        if ((a = li.getElement('a')) && li.hasChild (a)) li.a = a;
+        if ((a = li.getElement('a')) && li.contains (a)) li.a = a;
         else li.a = null;
     });
     sfEls.each (function(li){

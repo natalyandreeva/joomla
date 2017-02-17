@@ -14,8 +14,8 @@ $params = &$this->item->params;
 $images = json_decode(isset($this->item->images) ? $this->item->images : null);
 $canEdit	= $this->item->params->get('access-edit');
 JHtml::addIncludePath(JPATH_COMPONENT.'/helpers/html');
+JHtmlBehavior::framework();
 JHtml::_('behavior.tooltip');
-JHtml::core();
 ?>
 
 <div class="contentpaneopen clearfix">

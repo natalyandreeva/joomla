@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,7 @@
 
 var JAIToolbox = new Class({
     initialize: function(options){
-        this.options = $extend({
+        this.options = (window.$extend || Object.append)({
             animOn        : false,
             axis          : 'x',
             slideInterval : 0,
@@ -54,13 +54,17 @@ var JAIToolbox = new Class({
                 link._h = top + link._box.getCoordinates().height;
                 if (link.hasClass('ip-button')) {
                     link.addEvent ('click', function(e){
-                        new Event(e).stop();
+                        if(e){
+                            e.stop();
+                        }
                         this.togglebox(link);
                         return false;
                     }.bind(this));
                 } else {
                     link.addEvent ('click', function(e){
-                        new Event(e).stop();
+                        if(e){
+                            e.stop();
+                        }
                         this.showbox(link, true);
                         return false;
                     }.bind(this));
@@ -70,14 +74,18 @@ var JAIToolbox = new Class({
 
         if (this._back) {
             this._back.addEvent ('click', function(e){
-                new Event(e).stop();
+                if(e){
+                    e.stop();
+                }
                 this.back();
                 return false;
             }.bind(this));
         }
         if (this._close) {
             this._close.addEvent ('click', function(e){
-                new Event(e).stop();
+                if(e){
+                    e.stop();
+                }
                 this.close();
                 return false;
             }.bind(this));

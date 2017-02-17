@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -107,7 +107,7 @@ var JAT3_THEMESETTINGS = new Class({
 			this.tip = $(this.options.param_name + '-ja-change-theme-help');
 			this.tip.setStyle('visibility', 'visible');
 			this.tip.show();
-			$clear(this.timer);			
+			clearTimeout(this.timer);			
 			this.timer = this.showTip.delay(100, this);
 		}
 		this.update (data.join (','), this.data);
@@ -123,7 +123,7 @@ var JAT3_THEMESETTINGS = new Class({
 		if($('jachangethemecheckbox').checked){
 			Cookie.write('ja-change-theme-help', true, 365);
 		}
-		$clear(this.timer);
+		clearTimeout(this.timer);
 		this.hideFade (this.tip);
 	},
 	
@@ -208,9 +208,9 @@ function jathemesettings_enable(name){
 		el.disabled = false;
 	});
 	
-	$(name + '-ja-list-themes').getElement('span.ja-theme-edit').addEvent ('click', function (event) {
+	$(name + '-ja-list-themes').getElement('span.ja-theme-edit').addEvent ('click', function (e) {
 		jaclass[name].chooseThemes(this);
-		new Event(event).stop();
+		if(e) e.stop();
 	});
 }
 
@@ -225,8 +225,10 @@ function enable_el(event, el, name){
 	}
 	else if(el.hasClass('theme_delete')){
 		jaclass[name].deleteTheme(el);
-	}	
-	event.stop();
+	}
+	if(event && event.stop){
+		event.stop();
+	}
 	return false;
 }
 

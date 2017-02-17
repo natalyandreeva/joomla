@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -31,15 +31,17 @@ class T3Framework extends jObject
         t3import('core.cache');
         t3import('core.head');
         t3import('core.hook');
-        // Remove JDocumentHTML for compatible J1.6 & J1.7
-        // if (!class_exists ('JDocumentHTML', false)) t3import ('core.joomla.documenthtml');
-        if (! class_exists('JView', false)) t3import('core.joomla.view');
+
+        if(version_compare(JVERSION, '3.0', 'ge')){
+            if (! class_exists('JViewLegacy', false)) t3import('core.joomla.viewlegacy');
+        } else {
+            if (! class_exists('JView', false)) t3import('core.joomla.view');
+        }
+
         if (! class_exists('JModuleHelper', false)) t3import('core.joomla.modulehelper');
         // if (! class_exists('JPagination', false)) t3import('core.joomla.pagination');
 
         //Load template language
-		//echo 'tpl_' . T3_ACTIVE_TEMPLATE."=".JPATH_SITE;
-        //$this->loadLanguage('tpl_' . T3_ACTIVE_TEMPLATE, JPATH_SITE);
 		$lang = JFactory::getLanguage();
 		$lang->load('tpl_' . T3_ACTIVE_TEMPLATE, JPATH_SITE);
 
@@ -88,7 +90,7 @@ class T3Framework extends jObject
 
             // Check cached data
             if (! preg_match('#<jdoc:include\ type="([^"]+)" (.*)\/>#iU', $data)) {
-                $token = JUtility::getToken();
+                $token = JSession::getFormToken();
                 $search = '#<input type="hidden" name="[0-9a-f]{32}" value="1" />#';
                 $replacement = '<input type="hidden" name="' . $token . '" value="1" />';
                 $data = preg_replace($search, $replacement, $data);
@@ -142,6 +144,11 @@ class T3Framework extends jObject
     {
         $doc = JFactory::getDocument();
         $t3  = T3Template::getInstance($doc);
+
+        if(version_compare(JVERSION, '3.0', 'ge')){
+            JHtml::_('behavior.framework', true);
+        }
+
         if (!$t3->_html) $t3->loadLayout();
     }
 }

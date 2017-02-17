@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -52,16 +52,7 @@ defined('_JEXEC') or die;
                     <table width="100%" cellspacing="1" class="paramlist admintable">
                         <tbody>
                             <?php foreach ($paramsForm->getFieldset($name) as $field) : ?>
-                                <tr>
-                                    <?php if($field->label!=''){?>
-                                    <td width="40%" class="paramlist_key">
-                                        <?php echo $field->label; ?>
-                                    </td>
-                                    <?php }?>
-                                    <td <?php if($field->label!='') {?>class="paramlist_value"<?php } else { ?> colspan="2" <?php }?>>
-                                        <?php echo $field->input; ?>
-                                    </td>
-                                </tr>
+                                <tr><?php if($field->label!=''){?><td width="40%" class="paramlist_key"><?php echo $field->label; ?></td><?php }?><td <?php if($field->label!='') {?>class="paramlist_value"<?php } else { ?> colspan="2" <?php }?>><?php echo $field->input; ?></td></tr>
                             <?php endforeach; ?>
                         </tbody>
                     </table>
@@ -87,7 +78,6 @@ window.addEvent('load', function (){
 
 if (isNewFolderStruct) {
     $$('.ja-profile-action').addEvent ('click', function (event) {
-        var event = new Event(event);
         $('ja-profile-action').setStyles ({
             'top': event.page.y,
             'left': event.page.x

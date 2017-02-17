@@ -2,7 +2,7 @@
 /**
  * @package    FrameworkOnFramework
  * @subpackage form
- * @copyright  Copyright (C) 2010 - 2014 Akeeba Ltd. All rights reserved.
+ * @copyright   Copyright (C) 2010 - 2015 Nicholas K. Dionysopoulos / Akeeba Ltd. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 // Protect from unauthorized access
@@ -46,8 +46,8 @@ class FOFFormHeaderOrdering extends FOFFormHeader
 		}
 		else
 		{
-			// The new, drag'n'drop ordering support
-			return JHtml::_(
+			// The new, drag'n'drop ordering support WITH a save order button
+			$html = JHtml::_(
 				'grid.sort',
 				'<i class="icon-menu-2"></i>',
 				'ordering',
@@ -57,6 +57,17 @@ class FOFFormHeaderOrdering extends FOFFormHeader
 				'asc',
 				'JGRID_HEADING_ORDERING'
 			);
+
+			$ordering = $view->getLists()->order == 'ordering';
+
+			if ($ordering)
+			{
+				$html .= '<a href="javascript:saveorder(' . (count($model->getList()) - 1) . ', \'saveorder\')" ' .
+					'rel="tooltip" class="save-order btn btn-micro pull-right" title="' . JText::_('JLIB_HTML_SAVE_ORDER') . '">'
+					. '<span class="icon-ok"></span></a>';
+			}
+
+			return $html;
 		}
 	}
 }

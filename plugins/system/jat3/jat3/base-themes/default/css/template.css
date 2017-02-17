@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -16,12 +16,6 @@ body {
 	color: #000000;
 	font-family: sans-serif;
 	line-height: 1.5;
-}
-
-.PricebasePrice {
-    color: #e3575a;
-    font-weight: bold;
-    padding-left: 0;
 }
 
 body#bd { background: #ffffff; color: #000000; font-size: 12px;}
@@ -43,11 +37,11 @@ a:hover, a:active, a:focus { }
 /* Content spacing ---*/
 .column p, .column pre, .column blockquote,
 .column h1, .column h2, .column h3, .column h4, .column h5, .column h6,
-.column ol, .column ul, .column dl { padding: 0; }
+.column ol, .column ul, .column dl { margin: 15px 0; padding: 0; }
 
 /* Headings & Titles ---*/
 h1 { font-size: 180%; }
-h2 { font-size: 100%; }
+h2 { font-size: 150%; }
 h3 { font-size: 125%; }
 h4 { font-size: 100%; text-transform: UPPERCASE; }
 h5 { font-size: 100%; }
@@ -95,7 +89,7 @@ small, .small { }
 .column dd { margin-left: 15px; }
 
 /* Readon links ---*/
-p.readmore { margin: 0; border-bottom: 1px solid #ccc; }
+p.readmore { margin: 0; }
 
 p.readmore a {}
 
@@ -473,7 +467,7 @@ div.jcat-children dd {
 
 /*Leading*/
 .items-leading {}
-.items-leading .leading { padding-bottom: 25px; }
+.items-leading .leading { padding-bottom: 15px; }
 
 /*Articles grids*/
 .items-row { padding-bottom: 15px; padding-top: 15px; }
@@ -611,7 +605,7 @@ p.img_caption { clear: both; margin: 0; padding: 0; text-align: center; }
 /* Tables ---*/
 th { font-weight: bold; padding: 5px; text-align: left; }
 
-td { font-size: 100%; }
+td { font-size: 100%; padding: 5px; }
 
 thead tr th { }
 
@@ -620,6 +614,17 @@ thead tr th a:hover,
 thead tr th a:focus,
 thead tr th a:active { }
 
+ul li.cat-list-row0,
+ul li.cat-list-row1 {
+	background: none;
+	margin: 0px;
+	padding: 5px;
+}
+
+ul li.cat-list-row1 {
+	border: solid 1px #ddd;
+}
+
 .cat-list-row2,
 .cat-list-row1,
 tr.cat-list-row2 td,
@@ -627,8 +632,8 @@ tr.cat-list-row1 td {
 	border-color: #ddd;
 }
 
-.cat-list-row2:hover,
-.cat-list-row2:hover {}
+.cat-list-row1:hover,
+.cat-list-row2:hover {background-color: #ffffcc;}
 
 .cat-list-row2,
 tr.cat-list-row2 td {}
@@ -636,6 +641,7 @@ tr.cat-list-row2 td {}
 table.contentpane, table.tablelist, table.category { width: 100%; }
 
 table.contentpaneopen { border: none; border-collapse: collapse; border-spacing: 0; }
+
 
 /* Content Toc */
 table.contenttoc { float: right; margin: 0 0 10px 12px; padding: 0; width: 30%; }
@@ -741,6 +747,44 @@ div.back_button a:active { display: block; margin: 10px 0; }
 #system-message dd.error ul li,
 #system-message dd.notice ul li { background: none; margin: 0; padding: 5px; }
 
+
+#system-message .alert {
+    background-color: #FCF8E3;
+    border: 1px solid #FBEED5;
+    color: #C09853;
+    margin-bottom: 18px;
+    padding: 8px 35px 8px 14px;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+#system-message .alert-heading {
+	font-weight: bold;
+}
+
+#system-message .close {
+    color: #000000;
+    float: right;
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 18px;
+    opacity: 0.2;
+    filter: alpha(opacity = 20);
+    text-shadow: 0 1px 0 #FFFFFF;
+}
+
+#system-message .alert .close {
+    line-height: 18px;
+    position: relative;
+    right: -21px;
+    top: -2px;
+}
+
+#system-message .close:hover,
+#system-message .close:focus,
+#system-message .close:active {
+	    opacity: 1;
+	    filter: alpha(opacity = 100);
+}
 /* System Standard Messages */
 #system-message dd.message ul { }
 

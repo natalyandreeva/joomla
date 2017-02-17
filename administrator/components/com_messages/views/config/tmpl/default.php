@@ -1,54 +1,40 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_messages
- * @copyright	Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_messages
+ *
+ * @copyright   Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access.
 defined('_JEXEC') or die;
 
 // Include the HTML helpers.
-JHtml::addIncludePath(JPATH_COMPONENT.'/helpers/html');
-JHtml::_('behavior.tooltip');
-JHtml::_('behavior.formvalidation');
+JHtml::addIncludePath(JPATH_COMPONENT . '/helpers/html');
+
+JHtml::_('behavior.formvalidator');
 JHtml::_('behavior.keepalive');
+
+JFactory::getDocument()->addScriptDeclaration(
+	"
+		Joomla.submitbutton = function(task)
+		{
+			if (task == 'config.cancel' || document.formvalidator.isValid(document.getElementById('config-form')))
+			{
+				Joomla.submitform(task, document.getElementById('config-form'));
+			}
+		};
+	"
+);
 ?>
-<script type="text/javascript">
-	Joomla.submitbutton = function(task)
-	{
-		if (task == 'config.cancel' || document.formvalidator.isValid(document.id('config-form'))) {
-			Joomla.submitform(task, document.getElementById('config-form'));
-		}
-	}
-</script>
-<form action="<?php echo JRoute::_('index.php?option=com_messages'); ?>" method="post" name="adminForm" id="message-form" class="form-validate">
+<form action="<?php echo JRoute::_('index.php?option=com_messages&view=config'); ?>" method="post" name="adminForm" id="message-form" class="form-validate form-horizontal">
 	<fieldset>
-		<div class="fltrt">
-			<button type="button" onclick="Joomla.submitform('config.save', this.form);window.top.setTimeout('window.parent.SqueezeBox.close()', 1400);">
-				<?php echo JText::_('JSAVE');?></button>
-			<button type="button" onclick="window.parent.SqueezeBox.close();">
-				<?php echo JText::_('JCANCEL');?></button>
-		</div>
-		<div class="configuration" >
-			<?php echo JText::_('COM_MESSAGES_MY_SETTINGS') ?>
-		</div>
+		<?php echo $this->form->renderField('lock'); ?>
+		<?php echo $this->form->renderField('mail_on_new'); ?>
+		<?php echo $this->form->renderField('auto_purge'); ?>
 	</fieldset>
+	<button id="saveBtn" type="button" class="hidden" onclick="Joomla.submitform('config.save', this.form);"></button>
 
-	<fieldset class="adminform">
-	<ul  class="adminformlist">
-		<li><?php echo $this->form->getLabel('lock'); ?>
-		<?php echo $this->form->getInput('lock'); ?></li>
-
-		<li><?php echo $this->form->getLabel('mail_on_new'); ?>
-		<?php echo $this->form->getInput('mail_on_new'); ?></li>
-
-		<li><?php echo $this->form->getLabel('auto_purge'); ?>
-		<?php echo $this->form->getInput('auto_purge'); ?></li>
-	</ul>
-
-		<input type="hidden" name="task" value="" />
-		<?php echo JHtml::_('form.token'); ?>
-	</fieldset>
+	<input type="hidden" name="task" value="" />
+	<?php echo JHtml::_('form.token'); ?>
 </form>

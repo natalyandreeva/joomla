@@ -1,6 +1,6 @@
 <?php
 /**
- * @version $Id: default.php 33 2016-06-28 15:10:53Z szymon $
+ * @version $Id: default.php 37 2016-10-28 08:35:10Z szymon $
  * @package DJ-ImageSlider
  * @subpackage DJ-ImageSlider Component
  * @copyright Copyright (C) 2012 DJ-Extensions.com, All rights reserved.
@@ -55,7 +55,7 @@ $wcag = $params->get('wcag', 1) ? ' tabindex="0"' : ''; ?>
 	            			<?php if (($slide->link && $action==1) || $action>1) { ?>
 								<a <?php echo $attr; ?> href="<?php echo ($action>1 ? $slide->image : $slide->link); ?>" target="<?php echo $slide->target; ?>">
 							<?php } ?>
-								<img class="dj-image" src="<?php echo $slide->image; ?>" alt="<?php echo $slide->alt; ?>" style="<?php echo $style['image'] ?>"/>
+								<img class="dj-image" src="<?php echo $slide->image; ?>" alt="<?php echo $slide->alt; ?>" <?php echo (!empty($slide->img_title) ? ' title="'.$slide->img_title.'"':''); ?> style="<?php echo $style['image'] ?>"/>
 							<?php if (($slide->link && $action==1) || $action>1) { ?>
 								</a>
 							<?php } ?>

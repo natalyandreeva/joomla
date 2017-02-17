@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -70,7 +70,7 @@ class JAT3_AdminUtil
             . ' FROM #__template_styles'
             . ' WHERE client_id = 0 AND home <> \'0\' ';
         $db->setQuery($query);
-        $templates = $db->loadResultArray();
+        $templates = $db->loadColumn();
         return $templates;
     }
 
@@ -168,7 +168,7 @@ class JAT3_AdminUtil
             ' AND `enabled` = 1' .
             ' ORDER BY `name`'
         );
-        $components = $db->loadResultArray();
+        $components = $db->loadColumn();
         $list = array();
         foreach ($components as $k=>$component) {
             $mainFolder = JPATH_SITE.'/components/'.$component;
@@ -388,6 +388,7 @@ class JAT3_AdminUtil
             // Read custom parameters
             $dparams = array();
             $xmlpath = JPATH_SITE.DS.'templates'.DS.$this->template.DS.'templateDetails.xml';
+            /*
             $xml     = JFactory::getXMLParser('Simple');
             if ($xml->loadFile($xmlpath)) {
                 $params =& $xml->document->params;
@@ -400,10 +401,23 @@ class JAT3_AdminUtil
                         }
                     }
                 }
+            }*/
+            $xml    = JFactory::getXML($xmlpath);
+            if ($xml && isset($xml->params)) {
+                $params = $xml->params;
+                if ($params) {
+                    foreach ($params as $param) {
+                        foreach ($param->children() as $p) {
+                            if ($p->attributes('name') && isset($p->_attributes['default'])) {
+                                $dparams [$p->attributes('name')] = $p->attributes('default');
+                            }
+                        }
+                    }
+                }
             }
 
             $filelist = array();
-        $profiles = array();
+            $profiles = array();
 
             // Get filename list from profiles folder
             $file_list = JFolder::files($path, '\.ini');
@@ -471,7 +485,7 @@ class JAT3_AdminUtil
                 if ($name == 'default.ini') {
                         // Read custom parameters
                     $xmlpath = JPATH_SITE.DS.'templates'.DS.$this->template.DS.'templateDetails.xml';
-                    $xml =  JFactory::getXMLParser('Simple');
+                    /*$xml =  JFactory::getXMLParser('Simple');
 
                     if ($xml->loadFile($xmlpath)) {
                         if ($params =& $xml->document->params) {
@@ -480,6 +494,17 @@ class JAT3_AdminUtil
                                     if ($p->attributes('name') && isset($p->_attributes['default'])) {
                                         $dparams [$p->attributes('name')] = $p->attributes('default');
                                     }
+                                }
+                            }
+                        }
+                    }*/
+                    $xml = JFactory::getXML ($xmlpath);
+                    if ($xml && isset($xml->params)) {
+                        $params = $xml->params;
+                        foreach ($params as $param) {
+                            foreach ($param->children() as $p) {
+                                if ($p->attributes('name') && isset($p->_attributes['default'])) {
+                                    $dparams [$p->attributes('name')] = $p->attributes('default');
                                 }
                             }
                         }
@@ -545,7 +570,7 @@ class JAT3_AdminUtil
         if (!file_exists($path)) {
             return JText::_('Not information about the version of this template');
         }
-        $xml = JFactory::getXMLParser('Simple');
+        /*$xml = JFactory::getXMLParser('Simple');
 
         if ($xml->loadFile($path)) {
             $temp_info =& $xml->document;
@@ -559,7 +584,10 @@ class JAT3_AdminUtil
                     }
                 }
             }
-        }
+        }*/
+        $xml = JFactory::getXML ($path);
+        $name = $xml->name;
+        $version = $xml->version;
         if (!$version) $version = '1.0.0';
         return $version;
     }
@@ -601,18 +629,20 @@ class JAT3_AdminUtil
      */
     function getThemeinfo($theme_info_path)
     {
-        $data = array();
-
-        $xml = JFactory::getXMLParser('Simple');
-        if ($xml->loadFile($theme_info_path)) {
+        $xml = JFactory::getXML($theme_info_path);
+        if ($xml) {
+            /*
             $theme_info = & $xml->document;
             if (isset($theme_info->_children) && count($theme_info->_children)) {
                 foreach ($theme_info->_children as $node) {
                     $data[$node->_name] = $node->_data;
                 }
             }
+            */
+            return get_object_vars($xml);
         }
-        return $data;
+        
+        return array();
     }
 
     /**
@@ -669,7 +699,7 @@ class JAT3_AdminUtil
                 ' FROM #__modules' .
                 ' WHERE client_id = '.(int) $client->id;
         $db->setQuery($query);
-        $positions = $db->loadResultArray();
+        $positions = $db->loadColumn();
         $positions = (is_array($positions)) ? $positions : array();
 
         // Get a list of all template xml files for a given application
@@ -677,8 +707,8 @@ class JAT3_AdminUtil
         for ($i = 0, $n = count($templates); $i < $n; $i++) {
             $path = $client->path.DS.'templates'.DS.$templates[$i]->value;
 
-            $xml = JFactory::getXMLParser('Simple');
-            if ($xml->loadFile($path.DS.'templateDetails.xml')) {
+            $xml = JFactory::getXML($path.DS.'templateDetails.xml');
+            if($xml){
                 $p =& $xml->document->getElementByPath('positions');
                 if (is_a($p, 'JSimpleXMLElement') && count($p->children())) {
                     foreach ($p->children() as $child) {
@@ -804,11 +834,12 @@ class JAT3_AdminUtil
 			// Strict standards: Declaration of JParameter::loadSetupFile() should be compatible with that of JRegistry::loadSetupFile() 
 			$params =  new JRegistry('');
         }
-        $xml = JFactory::getXMLParser('Simple');
-        if ($xml->loadString($xmlstring)) {
+        $xml = JFactory::getXML($xmlstring, false);
+        if ($xml) {
             $document =& $xml->document;
             $params->setXML($document->getElementByPath('state/params'));
         }
+                    
         return $params->render('params');
     }
 
@@ -989,6 +1020,11 @@ class JAT3_AdminUtil
             JHTML::stylesheet($path. 'admin/assets/css/jat3.css');
             JHTML::stylesheet($path. 'admin/assets/tooltips/style.css');
             JHTML::stylesheet($path. 'element/assets/css/japaramhelper.css');
+
+            //add compatible j3.0
+            if(version_compare(JVERSION, '3.0', 'ge')){
+                JHTML::stylesheet($path. 'admin/assets/css/jat3.ex.css');
+            }
         }
     }
 
@@ -1006,11 +1042,7 @@ class JAT3_AdminUtil
             $path = JURI::root() . 'plugins/system/jat3/jat3/core/';
 
             $javersion = new JVersion();
-            if ($javersion->RELEASE == '1.7') {
-                JHtml::_('behavior.framework', true);
-            } else {
-                JHTML::_('behavior.mootools');
-            }
+            JHtml::_('behavior.framework', true);
             JHTML::script($path . 'admin/assets/js/ja_tabs.js');
             JHTML::script($path . 'admin/assets/js/jat3.js?v=1.6');
             //JHTML::script( $path. 'admin/assets/js/swfobject.js');
@@ -1033,24 +1065,40 @@ class JAT3_AdminUtil
         ?>
         <script type="text/javascript">
             window.addEvent('load', function(){
-                if($('module-status')!=null){
-                    $('module-status').setStyle('background', 'none');
-                    var request = {'a':'hong'};
-                    var span = new Element('span', {'class':'ja-t3-clearcache', 'style':'background: url(<?php echo JURI::root()?>plugins/system/jat3/jat3/core/admin/assets/images/ja.png) no-repeat'}).injectTop($('module-status'));
-                    var bttclear = new Element('a', {
-                        'href':'javascript:void(0)',
-                        'events': {
-                            'click': function(){
-                                var linkurl = 'index.php?jat3action=clearCache&jat3type=plugin';
-                                new Request({url: linkurl, method:'post',
-                                    onSuccess: function(result){
+                var placeholder = $('module-status'),
+                    type = 0;
+
+                if(!placeholder){
+                    placeholder = $('menu');
+
+                    if(placeholder){
+                        placeholder = placeholder.getNext();
+                        type = 1;
+                    }
+                }
+
+                if(placeholder){
+                    placeholder.setStyle('background', 'none');
+                    new Element(type == 0 ? 'span' : 'li', {
+                        'class':'ja-t3-clearcache',
+                        'style': type == 0 ? 'background: url(<?php echo JURI::root()?>plugins/system/jat3/jat3/core/admin/assets/images/ja.png) no-repeat' : ''
+                    }).adopt(
+                        new Element('a', {
+                            'href':'javascript:void(0)',
+                            'html': 'JAT3 Clean Cache',
+                            'events': {
+                                'click': function(){
+                                    new Request({
+                                        url: 'index.php?jat3action=clearCache&jat3type=plugin',
+                                        method:'post',
+                                        onSuccess: function(result){
                                             alert(result);
-                                    }
-                                }).send();
+                                        }
+                                    }).send();
+                                }
                             }
-                        }
-                    }).inject(span);
-                    bttclear.set('text', 'JAT3 Clean Cache');
+                        })
+                    ).inject(placeholder, 'top');
                 }
             })
 
@@ -1067,7 +1115,7 @@ class JAT3_AdminUtil
     {
         $db = JFactory::getDbo();
         $db->setQuery('SELECT a.menutype FROM #__menu_types AS a');
-        return $db->loadResultArray();
+        return $db->loadColumn();
     }
 
     /**
@@ -1201,7 +1249,7 @@ class JAT3_AdminUtil
         // for client_id = 1 do we need to check language table also ?
         $db->setQuery($query);
 
-        $langlist = $db->loadResultArray();
+        $langlist = $db->loadColumn();
 
         if (count($langlist) > 1) {
             $langlist = array_pad($langlist, -(count($langlist)+1), 'All');

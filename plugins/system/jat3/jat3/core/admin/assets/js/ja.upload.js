@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -34,35 +34,35 @@ function stopUpload(k, theme, version, date, author, template){
 	if(length%2==0) classname = 'row0';
 	else classname = 'row1';
 	var tr = new Element ('tr', {'class':classname});
-	tr.injectInside($('ja-user-themes').tBodies[0]);
+	tr.inject($('ja-user-themes').tBodies[0]);
 
 	var td = new Element ('td', {'width': '15'});
 	td.set('text', k);
-	td.injectInside(tr);
+	td.inject(tr);
 
 	var td = new Element ('td', {'width': '35%', 'align':'left'});
 	td.set('text', theme);
-	td.injectInside(tr);
+	td.inject(tr);
 
 	var td = new Element ('td', {'width': '15%'});
 	td.set('text', version);
-	td.injectInside(tr);
+	td.inject(tr);
 
 	var td = new Element ('td', {'width': '15%'});
 	td.set('text', date);
-	td.injectInside(tr);
+	td.inject(tr);
 
 	var td = new Element ('td', {'width': '15%'});
 	td.set('text', author);
-	td.injectInside(tr);
+	td.inject(tr);
 
 	var td = new Element ('td', {'width': '15%'});
-	td.injectInside(tr);
+	td.inject(tr);
 	var span = new Element('span', {'class': 'ja_close', 'events': {'click': function(){
 		jat3admin.removeTheme(this, theme, template);
 	}}});
 	span.innerHTML = '<img border="0" alt="Remove" src="../plugins/system/jat3/jat3/core/admin/assets/images/icon-16-deny.png"/>';
-	span.injectInside(td);
+	span.inject(td);
 
 	/* add theme */
 	var els_themepopup = $$('ul.ja-popup-themes');
@@ -72,9 +72,11 @@ function stopUpload(k, theme, version, date, author, template){
 
 		var li = new Element('li');
 		li.innerHTML = '<span class="theme core">'+theme+'</span><span class="cb-span"></span>';
-		li.injectInside(el);
+		li.inject(el);
 		li.getElement('.cb-span').addEvent ('click', function(e) {
-			new Event(e).stop();
+			if(e){
+                e.stop();
+            }
 			if (this.getParent().hasClass ('default')) return;
 			if (!this.checked) {
 				this.checked = true;
@@ -91,7 +93,7 @@ function stopUpload(k, theme, version, date, author, template){
 	document.adminForm.action = "index.php?option=com_templates&view=styles";
 	$('err_myfile').innerHTML = '<span style="color:blue">Upload successfully.</span>';
 
-	if($type(jatabs)){
+	if(typeof jatabs != 'undefined'){
 		jatabs.resize();
 	}
 }
@@ -99,7 +101,7 @@ function errorUpload(text){
 	$('err_myfile').innerHTML = text;
 	$('ja_upload_process').setStyle('display', 'none');
 	$('install_package').value = '';
-	if($type(jatabs)){
+	if(typeof(jatabs) != 'undefined'){
 		jatabs.resize();
 	}
 }

@@ -1,22 +1,20 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_cache
- * @copyright	Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_cache
+ *
+ * @copyright   Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// no direct access
 defined('_JEXEC') or die;
 
-jimport('joomla.application.component.modellist');
+use Joomla\Utilities\ArrayHelper;
 
 /**
  * Cache Model
  *
- * @package		Joomla.Administrator
- * @subpackage	com_cache
- * @since		1.6
+ * @since  1.6
  */
 class CacheModelCache extends JModelList
 {
@@ -42,25 +40,73 @@ class CacheModelCache extends JModelList
 	protected $_pagination = null;
 
 	/**
+	 * Constructor.
+	 *
+	 * @param   array  $config  An optional associative array of configuration settings.
+	 *
+	 * @since   3.5
+	 */
+	public function __construct($config = array())
+	{
+		if (empty($config['filter_fields']))
+		{
+			$config['filter_fields'] = array(
+				'group',
+				'count',
+				'size',
+				'cliend_id',
+			);
+		}
+
+		parent::__construct($config);
+	}
+
+	/**
 	 * Method to auto-populate the model state.
 	 *
 	 * Note. Calling getState in this method will result in recursion.
 	 *
-	 * @since	1.6
+	 * @param   string  $ordering   Field for ordering.
+	 * @param   string  $direction  Direction of ordering.
+	 *
+	 * @return  void
+	 *
+	 * @since   1.6
 	 */
-	protected function populateState($ordering = null, $direction = null)
+	protected function populateState($ordering = 'group', $direction = 'asc')
 	{
-		$app = JFactory::getApplication();
+		// Load the filter state.
+		$this->setState('filter.search', $this->getUserStateFromRequest($this->context . '.filter.search', 'filter_search', '', 'string'));
 
-		$clientId = $this->getUserStateFromRequest($this->context.'.filter.client_id', 'filter_client_id', 0, 'int');
-		$this->setState('clientId', $clientId == 1 ? 1 : 0);
+		// Special case for client id.
+		$clientId = (int) $this->getUserStateFromRequest($this->context . '.client_id', 'client_id', 0, 'int');
+		$clientId = (!in_array($clientId, array (0, 1))) ? 0 : $clientId;
+		$this->setState('client_id', $clientId);
 
-		$client	= JApplicationHelper::getClientInfo($clientId);
-		$this->setState('client', $client);
-
-		parent::populateState('group', 'asc');
+		parent::populateState($ordering, $direction);
 	}
 
+	/**
+	 * Method to get a store id based on model configuration state.
+	 *
+	 * This is necessary because the model is used by the component and
+	 * different modules that might need different sets of data or different
+	 * ordering requirements.
+	 *
+	 * @param   string  $id  A prefix for the store id.
+	 *
+	 * @return  string  A store id.
+	 *
+	 * @since   3.5
+	 */
+	protected function getStoreId($id = '')
+	{
+		// Compile the store id.
+		$id	.= ':' . $this->getState('client_id');
+		$id	.= ':' . $this->getState('filter.search');
+
+		return parent::getStoreId($id);
+	}
 
 	/**
 	 * Method to get cache data
@@ -69,38 +115,53 @@ class CacheModelCache extends JModelList
 	 */
 	public function getData()
 	{
-		if (empty($this->_data)) {
-		    $cache 	= $this->getCache();
-			$data 	= $cache->getAll();
+		if (empty($this->_data))
+		{
+			$cache = $this->getCache();
+			$data  = $cache->getAll();
 
-			if ($data != false) {
-				$this->_data = $data;
-				$this->_total = count($data);
-
-				if ($this->_total) {
-					// Apply custom ordering
-					$ordering 	= $this->getState('list.ordering');
-					$direction 	= ($this->getState('list.direction') == 'asc') ? 1 : -1;
-
-					jimport('joomla.utilities.arrayhelper');
-					$this->_data = JArrayHelper::sortObjects($data, $ordering, $direction);
-
-					// Apply custom pagination
-					if ($this->_total > $this->getState('list.limit') && $this->getState('list.limit')) {
-						$this->_data = array_slice($this->_data, $this->getState('list.start'), $this->getState('list.limit'));
+			if ($data && count($data) > 0)
+			{
+				// Process filter by search term.
+				if ($search = $this->getState('filter.search'))
+				{
+					foreach ($data as $key => $cacheItem)
+					{
+						if (stripos($cacheItem->group, $search) === false)
+						{
+							unset($data[$key]);
+							continue;
+						}
 					}
 				}
-			} else {
+
+				// Process ordering.
+				$listOrder = $this->getState('list.ordering', 'group');
+				$listDirn  = $this->getState('list.direction', 'ASC');
+
+				$this->_data = ArrayHelper::sortObjects($data, $listOrder, strtolower($listDirn) === 'desc' ? -1 : 1, true, true);
+
+				// Process pagination.
+				$limit = (int) $this->getState('list.limit', 25);
+
+				if ($limit !== 0)
+				{
+					$start = (int) $this->getState('list.start', 0);
+
+					return array_slice($this->_data, $start, $limit);
+				}
+			}
+			else
+			{
 				$this->_data = array();
 			}
 		}
+
 		return $this->_data;
 	}
 
-
-
 	/**
-	 * Method to get cache instance
+	 * Method to get cache instance.
 	 *
 	 * @return object
 	 */
@@ -109,10 +170,10 @@ class CacheModelCache extends JModelList
 		$conf = JFactory::getConfig();
 
 		$options = array(
-			'defaultgroup'	=> '',
-			'storage' 		=> $conf->get('cache_handler', ''),
-			'caching'		=> true,
-			'cachebase'		=> ($this->getState('clientId') == 1) ? JPATH_ADMINISTRATOR . '/cache' : $conf->get('cache_path', JPATH_SITE . '/cache')
+			'defaultgroup' => '',
+			'storage'      => $conf->get('cache_handler', ''),
+			'caching'      => true,
+			'cachebase'    => ($this->getState('client_id') === 1) ? JPATH_ADMINISTRATOR . '/cache' : $conf->get('cache_path', JPATH_SITE . '/cache')
 		);
 
 		$cache = JCache::getInstance('', $options);
@@ -121,23 +182,24 @@ class CacheModelCache extends JModelList
 	}
 
 	/**
-	 * Method to get client data
+	 * Method to get client data.
 	 *
 	 * @return array
 	 */
 	public function getClient()
 	{
-		return $this->getState('client');
+		return JApplicationHelper::getClientInfo($this->getState('client_id', 0));
 	}
 
 	/**
-	 * Get the number of current Cache Groups
+	 * Get the number of current Cache Groups.
 	 *
-	 * @return int
+	 * @return  int
 	 */
 	public function getTotal()
 	{
-		if (empty($this->_total)) {
+		if (empty($this->_total))
+		{
 			$this->_total = count($this->getData());
 		}
 
@@ -145,14 +207,14 @@ class CacheModelCache extends JModelList
 	}
 
 	/**
-	 * Method to get a pagination object for the cache
+	 * Method to get a pagination object for the cache.
 	 *
-	 * @return integer
+	 * @return  integer
 	 */
 	public function getPagination()
 	{
-		if (empty($this->_pagination)) {
-			jimport('joomla.html.pagination');
+		if (empty($this->_pagination))
+		{
 			$this->_pagination = new JPagination($this->getTotal(), $this->getState('list.start'), $this->getState('list.limit'));
 		}
 
@@ -163,7 +225,9 @@ class CacheModelCache extends JModelList
 	 * Clean out a cache group as named by param.
 	 * If no param is passed clean all cache groups.
 	 *
-	 * @param String $group
+	 * @param   string  $group  Cache group name.
+	 *
+	 * @return  void
 	 */
 	public function clean($group = '')
 	{
@@ -171,16 +235,30 @@ class CacheModelCache extends JModelList
 		$cache->clean($group);
 	}
 
+	/**
+	 * Purge an array of cache groups.
+	 *
+	 * @param   array  $array  Array of cache group names.
+	 *
+	 * @return  void
+	 */
 	public function cleanlist($array)
 	{
-		foreach ($array as $group) {
+		foreach ($array as $group)
+		{
 			$this->clean($group);
 		}
 	}
 
+	/**
+	 * Purge all cache items.
+	 *
+	 * @return  boolean  True if successful; false otherwise.
+	 */
 	public function purge()
 	{
 		$cache = JFactory::getCache('');
+
 		return $cache->gc();
 	}
 }

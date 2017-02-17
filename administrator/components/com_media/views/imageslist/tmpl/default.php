@@ -1,30 +1,49 @@
 <?php
 /**
- * @package		Joomla.Administrator
- * @subpackage	com_media
- * @copyright	Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
- * @license		GNU General Public License version 2 or later; see LICENSE.txt
+ * @package     Joomla.Administrator
+ * @subpackage  com_media
+ *
+ * @copyright   Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
+ * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access.
 defined('_JEXEC') or die;
-?>
-<?php if (count($this->images) > 0 || count($this->folders) > 0) { ?>
-<div class="manager">
 
-		<?php for ($i=0, $n=count($this->folders); $i<$n; $i++) :
+$lang = JFactory::getLanguage();
+
+JHtml::_('stylesheet', 'media/popup-imagelist.css', array(), true);
+
+if ($lang->isRtl())
+{
+	JHtml::_('stylesheet', 'media/popup-imagelist_rtl.css', array(), true);
+}
+
+JFactory::getDocument()->addScriptDeclaration("var ImageManager = window.parent.ImageManager;");
+JFactory::getDocument()->addStyleDeclaration(
+	"
+		@media (max-width: 767px) {
+			li.imgOutline.thumbnail.height-80.width-80.center {
+				float: left;
+				margin-left: 15px;
+			}
+		}
+	"
+);
+?>
+<?php if (count($this->images) > 0 || count($this->folders) > 0) : ?>
+	<ul class="manager thumbnails">
+		<?php for ($i = 0, $n = count($this->folders); $i < $n; $i++) :
 			$this->setFolder($i);
 			echo $this->loadTemplate('folder');
 		endfor; ?>
 
-		<?php for ($i=0, $n=count($this->images); $i<$n; $i++) :
+		<?php for ($i = 0, $n = count($this->images); $i < $n; $i++) :
 			$this->setImage($i);
 			echo $this->loadTemplate('image');
 		endfor; ?>
-
-</div>
-<?php } else { ?>
+	</ul>
+<?php else : ?>
 	<div id="media-noimages">
-		<p><?php echo JText::_('COM_MEDIA_NO_IMAGES_FOUND'); ?></p>
+		<div class="alert alert-info"><?php echo JText::_('COM_MEDIA_NO_IMAGES_FOUND'); ?></div>
 	</div>
-<?php } ?>
+<?php endif; ?>

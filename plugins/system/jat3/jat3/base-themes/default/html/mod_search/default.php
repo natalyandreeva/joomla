@@ -20,6 +20,8 @@ defined('_JEXEC') or die;
 				else :
 					$button = '<input type="submit" value="'.$button_text.'" class="button'.$moduleclass_sfx.'" onclick="this.form.searchword.focus();"/>';
 				endif;
+			else :
+				$button = '';
 			endif;
 
 			switch ($button_pos) :

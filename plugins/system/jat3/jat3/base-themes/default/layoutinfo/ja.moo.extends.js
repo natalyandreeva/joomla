@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -43,8 +43,8 @@ HSortables = Sortables.extend ({
 		var up = ((this.previous - now) > 0);
 		var prev = this.active.getPrevious();
 		var next = this.active.getNext();
-		if (prev && up && now < prev.getCoordinates().right) this.active.injectBefore(prev);
-		if (next && !up && now > next.getCoordinates().left) this.active.injectAfter(next);
+		if (prev && up && now < prev.getCoordinates().right) this.active.inject(prev, 'before');
+		if (next && !up && now > next.getCoordinates().left) this.active.inject(next, 'after');
 		this.previous = now;
 	}, 
 	

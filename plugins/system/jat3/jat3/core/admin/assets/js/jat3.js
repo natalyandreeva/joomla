@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -33,7 +33,7 @@ var JAT3_ADMIN = new Class({
 		for (name in profiles) {
 			profile = profiles[name];
 			if (!profile.local && !profile.core) continue;
-			profile.working = $extend({},profile.local?profile.local:profile.core);
+			profile.working = (window.$extend || Object.append)({},profile.local?profile.local:profile.core);
 		};
 
 		this.fillData('default', 'jform\\[params\\]');
@@ -90,7 +90,7 @@ var JAT3_ADMIN = new Class({
 		if (tab.hasClass ('profiles')) {
 			working = this.rebuildData('jform\\[params\\]');
 			var profile = profiles[this.active_profile];
-			if(!$type(profile) || (!$type(profile.local) && !$type(profile.core))) return;
+			if(!profile || (!profile.local && !profile.core)) return;
 
 			var saved = profile.local ? profile.local : profile.core;
 			var changed = false;
@@ -117,7 +117,7 @@ var JAT3_ADMIN = new Class({
 			},this);
 
 			var li = $('ja-profiles-content').getElement('.ja-profile-titles .active');
-			if ($type(li)) {
+			if (li) {
 				if (changed) {
 					li.addClass ('changed');
 					tab.addClass ('changed');
@@ -244,14 +244,14 @@ var JAT3_ADMIN = new Class({
 
 		var url = 'index.php?jat3action=saveData&jat3type=plugin&template='+template+'&id='+styleid;
 
-		if($type(document.adminForm['default'])){
+		if(typeof (document.adminForm['default']) != 'undefined'){
 			url += '&default='+document.adminForm['default'].value;
 		}
 		else{
 			url += '&default=0';
 		}
-		if($type($('selections'))){
-			url += '&selections='+$('selections').getValue();
+		if($('selections')){
+			url += '&selections=' + $('selections').getValue();
 		}
 		var json = {};
 
@@ -293,7 +293,7 @@ var JAT3_ADMIN = new Class({
 		} else return;
 
 		obj = $(obj);
-		if ($type(obj))	obj.addClass('jat3-loading');
+		if (obj) obj.addClass('jat3-loading');
 		var jSonRequest = new Request.JSON( {
 
 			url: link,
@@ -302,7 +302,7 @@ var JAT3_ADMIN = new Class({
 
 				requesting = false;
 
-				if($type(obj))	obj.removeClass('jat3-loading');
+				if(obj)	obj.removeClass('jat3-loading');
 				var contentHTML = '';
 				if (result.successful) {
 					contentHTML += "<div class=\"success-message\"><span class=\"success-icon\">"+result.successful+"</span></div>";
@@ -360,20 +360,19 @@ var JAT3_ADMIN = new Class({
 								 }
     						});
 							tab.addClass('active');
-							tab.injectBefore($('ja-profiles-content').getElement('ul.ja-profile-titles li.ja-profile-new'));
+							tab.inject($('ja-profiles-content').getElement('ul.ja-profile-titles li.ja-profile-new'), 'before');
 
 							var span = new Element('span', {'class':'ja-profile-title'});
 							span.set('text',profilename);
-							span.injectInside(tab);
+							span.inject(tab);
 
 							var span = $('ja-profiles-content').getElement('span.ja-profile-action').clone();
 							span.setStyle('display', 'inline');
-							span.injectInside(tab);
+							span.inject(tab);
 
 							span.addEvent ('click', function (event){
 								if(span.getParent().hasClass('active')){
 									this.showProfileAction(span);
-									event = new Event(event);
 									$('ja-profile-action').setStyles ({
 										'top': event.page.y,
 										'left': event.page.x,
@@ -387,7 +386,7 @@ var JAT3_ADMIN = new Class({
 
 							/* add new tab */
 							li = new Element('li');
-							li.injectInside($('pages_profile-ja-popup-profiles').getElement('ul.ja-popup-profiles'));
+							li.inject($('pages_profile-ja-popup-profiles').getElement('ul.ja-popup-profiles'));
 							li.innerHTML = '<a onclick="jaclass_pages_profile.select_profile(this);" href="javascript:void(0)">'+result.profile+'</a>'
 						}break;
 
@@ -400,7 +399,7 @@ var JAT3_ADMIN = new Class({
 							});
 
 							var span = $('ja-profiles-content').getElement('li.active span.ja-profile-title');
-							if($type(span)){
+							if(span){
 								span.set('text',result.profile);
 								this.active_profile = result.profile;
 							}
@@ -480,31 +479,10 @@ var JAT3_ADMIN = new Class({
 				else if(result.layout){
 					$('ja-layout-container').hide();
 
-					if($type(layouts[this.layout])){
+					if(layouts[this.layout]){
 						layouts[result.layout] = layouts[this.layout];
 					}
-					// @todo clean code
-					/*
-					if(layouts[result.layout].local!=null && layouts[result.layout].core!=null && !this.isnew){
-						var spanexist = $('layout_' + result.layout ).getElement('span.reset');
-						if(!$type(spanexist)){
-							var span = new Element('span', {
-								'class': 'reset'
-							});
-							var args = new Array(span, result.layout);
-							span.addEvent('click', this.resetLayout.pass(args, this));
-							span.set('text','Reset to default');
-							if($type($('layout_' +result.layout))){
-								span.injectInside($('layout_' +result.layout).getLast());
-							}
-							span.show();
-						}
-						else{
-							spanexist.show();
-						}
-					}
-					*/
-
+					
 					this.layout = result.layout;
 
 					switch (result.type){
@@ -519,12 +497,12 @@ var JAT3_ADMIN = new Class({
 							tds[0].set('text',lis.length);
 							tds[1].set('text',result.layout);
 
-							tr.injectAfter(lis[lis.length-1]);
+							tr.inject(lis[lis.length-1], 'after');
 							tds[2].set('text','');
-							contentHTML = '<span class="edit" onclick="jat3admin.editLayout(\''+ result.layout +'\')">Edit</span> ';
-							contentHTML += '<span class="clone" onclick="jat3admin.saveasLayout(this, \''+ result.layout +'\')">Clone</span> ';
-							contentHTML += '<span class="rename" onclick="jat3admin.renameLayout(this, \''+ result.layout +'\')">Rename</span> ';
-							contentHTML += '<span class="delete" onclick="jat3admin.deleteLayout(this, \''+ result.layout +'\')">Delete</span>';
+							contentHTML = '<span class="edit" data-layout="' + result.layout + '">Edit</span> ';
+							contentHTML += '<span class="clone" data-layout="' + result.layout + '">Clone</span> ';
+							contentHTML += '<span class="rename" data-layout="' + result.layout + '">Rename</span> ';
+							contentHTML += '<span class="delete" data-layout="' + result.layout + '">Delete</span>';
 							tds[2].innerHTML = contentHTML;
 
 							/* Add item in profile page */
@@ -596,7 +574,7 @@ var JAT3_ADMIN = new Class({
 
 				}
 
-				if(result.reset && $type(obj)){
+				if(result.reset && obj){
 					obj.hide();
 				}
 
@@ -629,16 +607,24 @@ var JAT3_ADMIN = new Class({
 	},
 
 	showMessage: function(content) {
-        if ($type($('toolbar-box'))) {
-            if(!$type($('system-message'))){
-                var msgobj = new Element('div', {'id': 'system-message', 'class':'clearfix'});
-                msgobj.injectAfter($('toolbar-box'));
+        if ($('system-message-container')) {
+            if(!$('system-message')){
+                var msgobj = new Element('div', {'id': 'system-message', 'class':'clearfix'}),
+                	placeholder = $('toolbar-box'),
+                	rel = 'after';
+
+                if(!placeholder){
+                	placeholder = $('system-message-container');
+                	rel = '';
+                }
+
+                msgobj.inject(placeholder, rel);	
             }
             $('system-message').innerHTML = content;
             if (!this.msgslider) {
                 this.msgslider = new Fx.Slide('system-message');
             }
-            $clear(this.timer);
+            clearTimeout(this.timer);
             this.msgslider.slideIn.delay(100, this.msgslider, 'vertical');
             this.timer = this.msgslider.slideOut.delay(10000, this.msgslider, 'vertical');
         }
@@ -678,7 +664,7 @@ var JAT3_ADMIN = new Class({
 	renameProfile: function (current_profile){
 		var profilename = prompt(lg_confirm_rename_profile + '\n\n' + lg_enter_profile_name , current_profile);
 		var item = null;
-		if($type(profilename)){
+		if(profilename){
 			profilename = profilename.replace(/[^0-9a-zA-Z_-]/g, '').replace(/ /g, '').toLowerCase().trim();
 			
 			if(profilename==''){
@@ -713,7 +699,7 @@ var JAT3_ADMIN = new Class({
 		if(oldprofilename==null) oldprofilename = '';
 		var profilename = prompt(lg_enter_profile_name, oldprofilename);
 
-		if($type(profilename)){
+		if(profilename){
 			profilename = profilename.replace(/[^0-9a-zA-Z_-]/g, '').replace(/ /g, '').toLowerCase().trim();
 			
 			if(profilename == ''){
@@ -733,7 +719,7 @@ var JAT3_ADMIN = new Class({
 
 			var url = 'index.php?jat3action=saveProfile&jat3type=plugin&template='+template+'&profile='+profilename+'&id='+styleid;
 
-			if($type(document.adminForm['default'])){
+			if(typeof(document.adminForm['default']) != 'undefined'){
 				url += '&default='+document.adminForm['default'].value;
 			}
 			else{
@@ -772,7 +758,7 @@ var JAT3_ADMIN = new Class({
 			}
 		}
 		var profile = '';
-		if($type(pre_Obj) && $type(pre_Obj.getFirst())){
+		if(pre_Obj && pre_Obj.getFirst()){
 			profile = pre_Obj.getFirst().get('text').trim().toLowerCase();
 			profiles[profile] = this.rebuildData('jform\\[params\\]');
 		}
@@ -783,13 +769,13 @@ var JAT3_ADMIN = new Class({
 
 		var url = 'index.php?jat3action=saveProfile&jat3type=plugin&template='+template+'&profile='+profile+'&id='+styleid;
 
-		if($type(document.adminForm['default'])){
+		if(typeof(document.adminForm['default']) != 'undefined'){
 			url += '&default='+document.adminForm['default'].value;
 		}
 		else{
 			url += '&default=0';
 		}
-		if($type($('selections'))){
+		if($('selections')){
 			url += '&selections[]='+$('selections').getValue();
 		}
 
@@ -868,7 +854,7 @@ var JAT3_ADMIN = new Class({
 		obj.addClass('active');
 
 		/* Rebuild data */
-		if($type(pre_Obj) && $type(pre_Obj.getFirst())){
+		if(pre_Obj && pre_Obj.getFirst()){
 			profiles[pre_Obj.getElement('.ja-profile-title').get('text').trim().toLowerCase()].working = this.rebuildData('jform\\[params\\]');
 		}
 		this.fillData (obj.getElement('.ja-profile-title').get('text').trim().toLowerCase(), 'jform\\[params\\]');
@@ -972,7 +958,7 @@ var JAT3_ADMIN = new Class({
 		obj = $(obj);
 		var layoutname = prompt( lg_confirm_rename_layout + '\n\n' + lg_enter_layout_name, current_layout);
 		var item = null;
-		if($type(layoutname)){
+		if(layoutname){
 			layoutname = layoutname.replace(/[^0-9a-zA-Z_-]/g, '').replace(/ /g, '').toLowerCase();
 			if (layoutname == '') {
 				alert(lg_please_enter_layout_name);
@@ -1005,7 +991,7 @@ var JAT3_ADMIN = new Class({
 		this.isnew = false;
 		var item = null;
 
-		if($type(layoutname)){
+		if(layoutname){
 			layoutname = layoutname.replace(/[^0-9a-zA-Z_-]/g, '').replace(/ /g, '').toLowerCase();
 			
 			if(layoutname == ''){
@@ -1106,13 +1092,13 @@ var JAT3_ADMIN = new Class({
 		var json = {};
 		var link = 'index.php?jat3action=updateGfont&jat3type=plugin&template='+template;
 
-		if ($type(obj)) obj.addClass('jat3-loading');
+		if (obj) obj.addClass('jat3-loading');
 		var jSonRequest = new Request.JSON({
 			url: link,
 			onFailure: function() {alert('failure');},
 			onSuccess: function(result){
 				requesting = false;
-				if ($type(obj)) obj.removeClass('jat3-loading');
+				if (obj) obj.removeClass('jat3-loading');
 
 				if (result.successful) {
 					if (confirm(result.successful)) {
@@ -1132,8 +1118,9 @@ var JAT3_ADMIN = new Class({
 		els.each(function(el){
 			var rel = el.getProperty('rel');
 			var name = this.getName(el, group);
+			var cb = $('cb_'+name);
 
-			if( name!='' && ( !$type($('cb_'+name)) || ( $type($('cb_'+name)) &&  $('cb_'+name).checked==true )) ){
+			if( name != '' && ( !cb || ( cb &&  cb.checked==true )) ){
 				json[name] = el.getValue(rel).toString().replace (/\n/g, '\\n').replace (/\t/g, '\\t').replace (/\r/g, '');
 			}
 
@@ -1329,16 +1316,6 @@ var JAT3_ADMIN = new Class({
 			} else {
 				window.location.href = window.location.href + '&tab=theme';
 			}
-			/*var els_themepopup = $$('ul.ja-popup-themes');
-			els_themepopup.each(function (el){
-				lis = el.getChildren();
-				lis.each(function(li){
-					if($type(li.getFirst()) && li.getFirst().get('text').trim().toLowerCase()==this.theme_active.toLowerCase()){
-						li.destroy();
-					}
-				}, this)
-			}, this);
-			$(this.row_active.getParent().getParent()).destroy();*/
 		}
 	},
 
@@ -1372,7 +1349,8 @@ var JAT3_ADMIN = new Class({
 		}
 
 		var wrap = $('style-form').getElement('fieldset.adminform');
-		helpwrap.setStyle('width', wrap.offsetWidth + $('style-form').getElement('.width-60').offsetLeft+10);
+
+		helpwrap.setStyle('width', (wrap ? wrap.offsetWidth : Math.floor($(window).getWidth() * 40 / 100)) +10 );
 		helpwrap.setStyle('height', $(document.body).getSize().y);
 
 
@@ -1398,7 +1376,7 @@ var JAT3_ADMIN = new Class({
 			}
 		});
 
-		bthelp.injectBefore($('ja-tabswrapmain'));
+		bthelp.inject($('ja-tabswrapmain'), 'before');
 		bthelp.innerHTML = '<a href="javascript:void(0)" title="Help">Help</a>';
 
 		$$('#ja-tabswrap ul.ja-tabs-title li').each(function(el){
@@ -1423,12 +1401,9 @@ var JAT3_ADMIN = new Class({
 	resizeHelp: function(){
 		var wrap = $('style-form').getElement('div.width-60');
 		var helpwrapcontent = $('jat3-help-content-wrap');//alert($('style-form').getElement('div.width-40').offsetLeft)
+		var bleft = $('style-form').getElement('div.width-40');
 
-		if(Browser.Engine.trident && Browser.Engine.version < 6){
-			helpwrapcontent.setStyle('width', $('style-form').getElement('div.width-40').offsetLeft);
-		} else {
-			helpwrapcontent.setStyle('width', $('style-form').getElement('div.width-40').offsetLeft-25);
-		}
+		helpwrapcontent.setStyle('width', bleft ? bleft.offsetLeft : Math.floor($(window).getWidth() * 40 / 100));
 		helpwrapcontent.setStyle('top', 165);
 		helpwrapcontent.setStyle('left', 10);
 		helpwrapcontent.className = $('ja-tabswrap').getElement('ul.ja-tabs-title li.active span').className;
@@ -1492,7 +1467,7 @@ Element.implement ({
 			case 'textarea':
 				return tag;
 			case 'input':
-				if($type(this.type) && ( this.type=='text' || this.type=='password' || this.type=='hidden')){
+				if(this.type && ( this.type=='text' || this.type=='password' || this.type=='hidden')){
 					return this.type;
 				}
 				else{
@@ -1503,13 +1478,15 @@ Element.implement ({
 		}
 	},
 	show: function(){
-		this.setStyle('display', 'block');
+		if(this.getStyle('display') == 'none'){
+			this.setStyle('display', 'block');
+		}
 	},
 	hide: function(){
 		this.setStyle('display', 'none');
 	},
 	disable: function (rel){
-		if(rel!='null' && $type(window[rel+'_disable'])=='function'){
+		if(rel!='null' && typeOf(window[rel+'_disable'])=='function'){
 			window[rel+'_disable'](this.id);
 		}
 		else{
@@ -1525,7 +1502,7 @@ Element.implement ({
 				case 'checkbox':
 				case 'radio':
 					fields = document.getElementsByName(this.name);
-					$each(fields, function(option){
+					(Array.each || window.$each)(fields, function(option){
 						option.disabled = true;
 					});
 
@@ -1534,7 +1511,7 @@ Element.implement ({
 	},
 
 	enable: function (rel){
-		if(rel!='null' && $type(window[rel+'_enable'])=='function'){
+		if(rel!='null' && typeOf(window[rel+'_enable'])=='function'){
 			window[rel+'_enable'](this.id);
 		}
 		else{
@@ -1550,7 +1527,7 @@ Element.implement ({
 				case 'checkbox':
 				case 'radio':
 					fields = document.getElementsByName(this.name);
-					$each(fields, function(option){
+					(Array.each || window.$each)(fields, function(option){
 						option.disabled = false;
 					});
 
@@ -1559,7 +1536,7 @@ Element.implement ({
 	},
 
 	setValue : function(newValue, rel) {
-		if(rel!='null' && $type(window[rel+'_setValue'])=='function'){
+		if(rel!='null' && typeOf(window[rel+'_setValue'])=='function'){
 			window[rel+'_setValue'](this.id, newValue);
 		}
 		else{
@@ -1588,7 +1565,7 @@ Element.implement ({
 	},
 
 	getValue: function (rel){
-		if(rel!='null' && $type(window[rel+'_getValue'])=='function'){
+		if(rel!='null' && typeOf(window[rel+'_getValue'])=='function'){
 			return window[rel+'_getValue'](this.id);
 		}
 		else{
@@ -1660,7 +1637,7 @@ Element.implement ({
 		fields = document.getElementsByName(this.name);
 		for(var i=0; i<fields.length; i++){
 			var option = fields[i];
-			if (option.checked) values.push($pick(option.value, option.text));
+			if (option.checked) values.push(Array.pick([option.value, option.text]));
 		}
 		return values;
 	},
@@ -1668,8 +1645,8 @@ Element.implement ({
 	getInputRadio : function( ) {
 		var values = [];
 		fields = document.getElementsByName(this.name);
-		$each(fields, function(option){
-			if (option.checked) values.push($pick(option.value, option.text));
+		(Array.each || window.$each)(fields, function(option){
+			if (option.checked) values.push(Array.pick([option.value, option.text]));
 		});
 		return values;
 	},
@@ -1678,7 +1655,7 @@ Element.implement ({
 		var values = [];
 		for(var i=0; i<this.options.length; i++){
 			var option = this.options[i];
-			if (option.selected) values.push($pick(option.value, option.text));
+			if (option.selected) values.push(Array.pick([option.value, option.text]));
 		}
 		return (this.multiple) ? values : values[0];
 	}

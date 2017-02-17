@@ -9,7 +9,7 @@ if(MooTools.version.split(".")[1].slice(0,1) > 1){
         },
         getSize: function(){
             var size = getSize.apply(this, arguments);
-            return $merge(size, {
+            return (Object.merge || $merge)(size, {
                 size: size,
                 scroll: this.getScroll(),
                 scrollSize: this.getScrollSize()
@@ -121,7 +121,9 @@ function loadEvents(){
             if(eleToOverlay){
                 eleToOverlay.removeEvents().addEvents({
                     click: function(e) {
-                        new Event(e).stop();
+                        if(e){
+                            e.stop();
+                        }
                     },
                     mouseenter: function() {
                         loadInfoBox(ele_id);
@@ -139,7 +141,9 @@ function loadEvents(){
         if($("ja-content-main")){
             $("ja-content-main").removeEvents().addEvents({
                 click: function(e) {
-                    new Event(e).stop();
+                    if(e){
+                            e.stop();
+                }
                 },
                 mouseenter: function() {
                     loadInfoBox("content-main");
@@ -175,7 +179,9 @@ function loadEvents(){
             if(eleToOverlay){
                 eleToOverlay.removeEvents().addEvents({
                     click: function(e) {
-                        new Event(e).stop();
+                        if(e){
+                            e.stop();
+                }
                     },
                     mouseenter: function() {
                         $$("div.hover[id^=jainfo-block-]").removeClass("hover");
@@ -195,7 +201,9 @@ function loadEvents(){
         if($("ja-content-main")){
             $("ja-content-main").removeEvents().addEvents({
                 click: function(e) {
-                    new Event(e).stop();
+                    if(e){
+                            e.stop();
+                }
                 },
                 mouseenter: function() {
                     loadInfoBox("content-main");
@@ -438,7 +446,9 @@ function initInfoTable(){
         'class': "jainfo-info-table",
         events: {
             click: function(e){
-                new Event(e).stop();
+                if(e){
+                    e.stop();
+                }
             }
         }
     }).addClass("jainfo-table-full").inject(document.body);
@@ -461,7 +471,9 @@ function initInfoTable(){
         'events': {
             click: function(e){
                 //window.event.cancelBubble=true,
-                new Event(e).stop();
+                if(e){
+                    e.stop();
+                }
                 toggleShowHideInfoBox();
             }
         }
@@ -498,7 +510,9 @@ function initInfoTable(){
         'class': curClass,
         'events': {
             click: function(e){
-                new Event(e).stop();
+                if(e){
+                            e.stop();
+                        }
 
                 var query_opts = [];
 
@@ -543,7 +557,9 @@ function initInfoTable(){
         'class': curClass,
         'events': {
             click: function(e){
-                new Event(e).stop();
+                if(e){
+                            e.stop();
+                        }
                 if(this.hasClass("jainfo-opt-on")){
                     toggleAllBlocksOff();
                 }else{
@@ -561,7 +577,9 @@ function initInfoTable(){
         'value': 'OK',
         'events':  {
             click: function(e){
-                new Event(e).stop();
+                if(e){
+                            e.stop();
+                        }
                 //window.location.href
                 var query_str = "";
 
@@ -598,7 +616,9 @@ function initInfoTable(){
         'class': curClass,
         'events':  {
             click: function(e){
-                new Event(e).stop();
+                if(e){
+                    e.stop();
+                }
                 //$(document.body).toggleClass("jainfo-nocontent");
                 if(this.hasClass("jainfo-opt-on")){
                     toggleContentOff();
@@ -632,7 +652,9 @@ function browserCompartiableAlert(){
         'class': "jainfo-info-table",
         events: {
             click: function(e){
-                new Event(e).stop();
+                if(e){
+                    e.stop();
+                }
             }
         }
     }).inject(document.body);

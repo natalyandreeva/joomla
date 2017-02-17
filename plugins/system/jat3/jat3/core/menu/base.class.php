@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -412,7 +412,7 @@ if (!defined('_JA_BASE_MENU_CLASS')) {
             $Itemid = $this->Itemid;
             $app = JFactory::getApplication();
             $user = JFactory::getUser();
-            $groups = implode(',', $user->authorisedLevels());
+            $groups = implode(',', $user->getAuthorisedViewLevels());
             $db = JFactory::getDbo();
 
             //$query = new JDatabaseQuery;
@@ -424,7 +424,7 @@ if (!defined('_JA_BASE_MENU_CLASS')) {
             $query->where('m.id = ' . $id);
 
             $date = JFactory::getDate();
-            $now = $date->toMySQL();
+            $now = $date->toSql();
             $nullDate = $db->getNullDate();
             $query->where('(m.publish_up = ' . $db->Quote($nullDate) . ' OR m.publish_up <= ' . $db->Quote($now) . ')');
             $query->where('(m.publish_down = ' . $db->Quote($nullDate) . ' OR m.publish_down >= ' . $db->Quote($now) . ')');
@@ -551,8 +551,7 @@ if (!defined('_JA_BASE_MENU_CLASS')) {
                                 $attribs = 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,' . $this->getParam('window_open');
 
                                 // hrm...this is a bit dickey
-                                $link = str_replace('index.php', 'index2.php', $tmp->url);
-                                $data = '<a href="' . $link . '" onclick="window.open(this.href,\'targetWindow\',\'' . $attribs . '\');return false;" ' . $active . ' ' . $id . ' ' . $title . '>' . $txt . '</a>';
+                                $data = '<a href="' . $tmp->url . '" onclick="window.open(this.href,\'targetWindow\',\'' . $attribs . '\');return false;" ' . $active . ' ' . $id . ' ' . $title . '>' . $txt . '</a>';
                                 break;
                         }
                     } else {

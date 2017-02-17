@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -71,7 +71,10 @@ T3Common::set_node_attributes($block, 'no-main', 1);
             } else {
                 this.removeClass ('close').addClass ('open');
             }
-            new Event(e).stop();
+
+            if(e){
+                e.stop();
+            }
         });
     });
 </script>

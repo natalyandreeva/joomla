@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -13,7 +13,6 @@
 // No direct access
 defined('_JEXEC') or die;
 ?>
-
 <div class="ja-copyright">
     <jdoc:include type="modules" name="footer" />
 </div>
@@ -24,11 +23,10 @@ defined('_JEXEC') or die;
 </div>
 <?php endif; ?>
 
-
 <?php
 $t3_logo = $this->getParam ('setting_t3logo', 't3-logo-light', 't3-logo-dark');
 if ($t3_logo != 'none') : ?>
 <div id="ja-poweredby" class="<?php echo $t3_logo ?>">
-    <a href="http://t3.joomlart.com" title="Powered By T3 Framework" target="_blank">Powered By T3 Framework</a>
+    <a href="http://t3.joomlart.com" title="Powered By T3 Framework" target="_blank" <?php echo T3Common::isHome() ? '' : 'rel="nofollow"' ?>>Powered By T3 Framework</a>
 </div>
 <?php endif; ?>

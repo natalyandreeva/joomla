@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -129,11 +129,7 @@ class JFormFieldJaparamhelper extends JFormField
             $uri = str_replace(DS, "/", str_replace(JPATH_SITE, JURI::base(), dirname(__FILE__)));
             $uri = str_replace("/administrator", "", $uri);
             $javersion = new JVersion();
-            if ($javersion->RELEASE == '1.7') {
-                JHtml::_('behavior.framework', true);
-            } else {
-                JHTML::_('behavior.mootools');
-            }
+            JHtml::_('behavior.framework', true);
             JHTML::stylesheet($uri . '/assets/css/japaramhelper.css');
             JHTML::script($uri . '/assets/js/japaramhelper.js');
         }

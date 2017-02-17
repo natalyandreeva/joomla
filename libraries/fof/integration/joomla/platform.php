@@ -2,7 +2,7 @@
 /**
  * @package     FrameworkOnFramework
  * @subpackage  platform
- * @copyright   Copyright (C) 2010 - 2014 Akeeba Ltd. All rights reserved.
+ * @copyright   Copyright (C) 2010 - 2015 Nicholas K. Dionysopoulos / Akeeba Ltd. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 // Protect from unauthorized access
@@ -133,7 +133,8 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 				}
 				else
 				{
-					$isCLI = JFactory::getApplication() instanceof JException;
+                    $app = JFactory::getApplication();
+					$isCLI = $app instanceof JException || $app instanceof JApplicationCli;
 				}
 			}
 			catch (Exception $e)
@@ -531,13 +532,22 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 	 *
 	 * @see FOFPlatformInterface::runPlugins()
 	 *
-	 * @return  array  A simple array containing the resutls of the plugins triggered
+	 * @return  array  A simple array containing the results of the plugins triggered
 	 */
 	public function runPlugins($event, $data)
 	{
 		if (!$this->isCli())
 		{
-			$dispatcher = FOFUtilsObservableDispatcher::getInstance();
+			// IMPORTANT: DO NOT REPLACE THIS INSTANCE OF JDispatcher WITH ANYTHING ELSE. WE NEED JOOMLA!'S PLUGIN EVENT
+			// DISPATCHER HERE, NOT OUR GENERIC EVENTS DISPATCHER
+			if (version_compare($this->version, '3.0', 'ge'))
+			{
+				$dispatcher = JEventDispatcher::getInstance();
+			}
+			else
+			{
+				$dispatcher = JDispatcher::getInstance();
+			}
 
 			return $dispatcher->trigger($event, $data);
 		}
@@ -775,6 +785,46 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 		$authenticate = JAuthentication::getInstance();
 		$response = $authenticate->authenticate($authInfo, $options);
 
+        // User failed to authenticate: maybe he enabled two factor authentication?
+        // Let's try again "manually", skipping the check vs two factor auth
+        // Due the big mess with encryption algorithms and libraries, we are doing this extra check only
+        // if we're in Joomla 2.5.18+ or 3.2.1+
+        if($response->status != JAuthentication::STATUS_SUCCESS && method_exists('JUserHelper', 'verifyPassword'))
+        {
+            $db    = JFactory::getDbo();
+            $query = $db->getQuery(true)
+                        ->select('id, password')
+                        ->from('#__users')
+                        ->where('username=' . $db->quote($authInfo['username']));
+            $result = $db->setQuery($query)->loadObject();
+
+            if ($result)
+            {
+
+                $match = JUserHelper::verifyPassword($authInfo['password'], $result->password, $result->id);
+
+                if ($match === true)
+                {
+                    // Bring this in line with the rest of the system
+                    $user = JUser::getInstance($result->id);
+                    $response->email = $user->email;
+                    $response->fullname = $user->name;
+
+                    if (JFactory::getApplication()->isAdmin())
+                    {
+                        $response->language = $user->getParam('admin_language');
+                    }
+                    else
+                    {
+                        $response->language = $user->getParam('language');
+                    }
+
+                    $response->status = JAuthentication::STATUS_SUCCESS;
+                    $response->error_message = '';
+                }
+            }
+        }
+
 		if ($response->status == JAuthentication::STATUS_SUCCESS)
 		{
 			$this->importPlugin('user');
@@ -817,7 +867,7 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
 	 * Logs a deprecated practice. In Joomla! this results in the $message being output in the
 	 * deprecated log file, found in your site's log directory.
 	 *
-	 * @param   $message  The deprecated practice log message
+	 * @param   string  $message  The deprecated practice log message
 	 *
 	 * @return  void
 	 */
@@ -872,11 +922,25 @@ class FOFIntegrationJoomlaPlatform extends FOFPlatform implements FOFPlatformInt
      */
     public function setHeader($name, $value, $replace = false)
     {
-        JResponse::setHeader($name, $value, $replace);
+		if (version_compare($this->version, '3.2', 'ge'))
+		{
+			JFactory::getApplication()->setHeader($name, $value, $replace);
+		}
+		else
+		{
+			JResponse::setHeader($name, $value, $replace);
+		}
     }
 
     public function sendHeaders()
     {
-        JResponse::sendHeaders();
+    	if (version_compare($this->version, '3.2', 'ge'))
+		{
+			JFactory::getApplication()->sendHeaders();
+		}
+		else
+		{
+			JResponse::sendHeaders();
+		}
     }
 }

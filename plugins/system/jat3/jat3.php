@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -13,6 +13,7 @@
 // No direct access
 defined('_JEXEC') or die;
 
+if (!defined('DS')) define ('DS', DIRECTORY_SEPARATOR);
 jimport('joomla.plugin.plugin');
 jimport('joomla.application.module.helper');
 jimport('joomla.html.parameter');
@@ -68,7 +69,7 @@ class plgSystemJAT3 extends JPlugin
             $util->show_button_clearCache();
             $content = ob_get_clean();
             $buffer = JResponse::getBody();
-            $buffer = preg_replace('/<\/body>/', $content . "\n</body>", $buffer);
+            $buffer = str_replace('</body>', $content . "\n</body>", $buffer);
             JResponse::setBody($buffer);
         }
 
@@ -147,8 +148,10 @@ class plgSystemJAT3 extends JPlugin
     {
         // Load t3 language file for front-end & template admin.
         //$this->loadLanguage(null, JPATH_ADMINISTRATOR);
+
+        //this language should be loaded by joomla
 		$lang = JFactory::getLanguage();
-		$lang->load(null, JPATH_ADMINISTRATOR);
+		$lang->load('plg_system_jat3', JPATH_ADMINISTRATOR);
 		
         t3import('core.framework');
 
@@ -176,8 +179,8 @@ class plgSystemJAT3 extends JPlugin
             if (JAT3_AdminUtil::checkPermission()) {
 
                 if (JAT3_AdminUtil::checkCondition_for_Menu()) {
-                    JHTML::stylesheet('', JURI::root() . T3_CORE . '/element/assets/css/japaramhelper.css');
-                    JHTML::script('', JURI::root() . T3_CORE . '/element/assets/js/japaramhelper.js', true);
+                    JHTML::stylesheet( JURI::root() . T3_CORE . '/element/assets/css/japaramhelper.css');
+                    JHTML::script( JURI::root() . T3_CORE . '/element/assets/js/japaramhelper.js', true);
                 }
 
                 if (JRequest::getCmd('jat3type') == 'plugin') {
@@ -185,8 +188,10 @@ class plgSystemJAT3 extends JPlugin
 
                     t3import('core.ajax');
                     $obj = new JAT3_Ajax();
-
                     if ($action && method_exists($obj, $action)) {
+                        jimport('joomla.filesystem.folder');
+                        jimport('joomla.filesystem.file');
+                    
                         $obj->$action();
                     }
                     return;
@@ -286,6 +291,11 @@ class plgSystemJAT3 extends JPlugin
             JForm::addFormPath(JPATH_SITE . DS . T3_CORE . DS . 'params');
             $form->loadFile('params', false);
         }
+
+        if(T3Common::detect() && !JFactory::getApplication()->isAdmin() && $form->getName() == 'com_config.templates'){
+            JForm::addFormPath(JPATH_SITE . DS . T3_CORE . DS . 'admin');
+            $form->loadFile('frontedit', false);
+        }
     }
 
     /**
@@ -307,6 +317,11 @@ class plgSystemJAT3 extends JPlugin
             // T3 template provide an advanced tp mode which could show more information than the default
             if (JRequest::getCmd('t3info')) {
                 $attribs ['style'] = preg_replace('/\s\boutline\b/i', '', $attribs ['style']);
+            }
+
+            // fix JA Backlink
+            if($module->module == 'mod_footer'){
+                $module->content = T3Common::fixJALink($module->content);
             }
 
             // Chrome for module

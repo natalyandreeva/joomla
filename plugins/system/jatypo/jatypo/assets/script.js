@@ -1,6 +1,6 @@
 var JATypo = new Class ({
 	initialize: function(options) {
-		this.options = $extend({
+		this.options = Object.append({
 			offsets: {x:10, y: 10}
 		}, options || {});
 		this.wrapper = $('jatypo-wrap');		

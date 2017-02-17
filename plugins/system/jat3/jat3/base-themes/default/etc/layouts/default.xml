@@ -11,6 +11,9 @@
 		<file>css/color.css</file>
 		<file>css/usertools.css</file>
 		<file>css/css3.css</file>
+		<file compatible="3.0">/media/jui/css/icomoon.css</file>
+		<!--file compatible="3.0">font/font-awesome-v2.0/css/font-awesome.css</file>
+		<file compatible="3.0" condition="ie 7">font/font-awesome-v2.0/css/font-awesome-ie7.css</file-->
 	</stylesheets>
 	<blocks name="top" style="xhtml">
 		<block name="header" type="header"></block>

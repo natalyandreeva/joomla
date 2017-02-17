@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA Typo Plugin for Joomla 2.5
+ * JA Typo Plugin for Joomla 2.5 & J34
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -47,25 +47,19 @@ ul#ja-typo-nav li.active a {
 
 /* Clearfix
 -------------------------------------------------------------*/
-.clearfix:after {
-	content: ".";
-	display: block;
-	clear: both;
-	visibility: hidden;
-	line-height: 0;
-	height: 0;
-}
-
 .clearfix {
-	display: inline-block;
+  *zoom: 1;
 }
 
-html[xmlns] .clearfix {
-	display: block;
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: "";
+  line-height: 0;
 }
 
-* html .clearfix {
-	height: 1%;
+.clearfix:after {
+   clear: both;
 }
 
 /* TYPO PAGE LAYOUT
@@ -355,23 +349,6 @@ ja-typo-blockrow-no-border{
 
 #jatypo-wrap span:hover.title {
 	color: navy;
-}
-
-/* Addon */
-* html .clearfix {
-	height: 1%; /* IE5-6 */
-}
-
-html[xmlns] .clearfix { /* O */
-	display: block;
-}
-
-.clearfix:after { /* FF, O, etc. */
-	content: ".";
-	display: block;
-	height: 0;
-	clear: both;
-	visibility: hidden;
 }
 
 /*Fix error K2 conflict css*/

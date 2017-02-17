@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -50,7 +50,7 @@ defined('_JEXEC') or die;
         <?php foreach ($layouts  as $layoutname=>$layout){?>
             <?php if($layoutname!='default'){?>
             <tr id="layout_<?php echo $layoutname?>" class="row<?php echo $i?>">
-                <td width="15">
+                <td width="15" style="border-left: none !important">
                     <?php echo $k+1?>
                 </td>
                 <td>

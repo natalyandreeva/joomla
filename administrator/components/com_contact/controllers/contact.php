@@ -3,19 +3,18 @@
  * @package     Joomla.Administrator
  * @subpackage  com_contact
  *
- * @copyright   Copyright (C) 2005 - 2014 Open Source Matters, Inc. All rights reserved.
+ * @copyright   Copyright (C) 2005 - 2016 Open Source Matters, Inc. All rights reserved.
  * @license     GNU General Public License version 2 or later; see LICENSE.txt
  */
 
-// No direct access
 defined('_JEXEC') or die;
 
-jimport('joomla.application.component.controllerform');
+use Joomla\Utilities\ArrayHelper;
 
 /**
- * @package     Joomla.Administrator
- * @subpackage  com_contact
- * @since       1.6
+ * Controller for a single contact
+ *
+ * @since  1.6
  */
 class ContactControllerContact extends JControllerForm
 {
@@ -30,15 +29,13 @@ class ContactControllerContact extends JControllerForm
 	 */
 	protected function allowAdd($data = array())
 	{
-		// Initialise variables.
-		$user = JFactory::getUser();
-		$categoryId = JArrayHelper::getValue($data, 'catid', JRequest::getInt('filter_category_id'), 'int');
+		$categoryId = ArrayHelper::getValue($data, 'catid', $this->input->getInt('filter_category_id'), 'int');
 		$allow = null;
 
 		if ($categoryId)
 		{
 			// If the category has been passed in the URL check it.
-			$allow = $user->authorise('core.create', $this->option . '.category.' . $categoryId);
+			$allow = JFactory::getUser()->authorise('core.create', $this->option . '.category.' . $categoryId);
 		}
 
 		if ($allow === null)
@@ -46,10 +43,8 @@ class ContactControllerContact extends JControllerForm
 			// In the absense of better information, revert to the component permissions.
 			return parent::allowAdd($data);
 		}
-		else
-		{
-			return $allow;
-		}
+
+		return $allow;
 	}
 
 	/**
@@ -64,7 +59,6 @@ class ContactControllerContact extends JControllerForm
 	 */
 	protected function allowEdit($data = array(), $key = 'id')
 	{
-		// Initialise variables.
 		$recordId = (int) isset($data[$key]) ? $data[$key] : 0;
 		$categoryId = 0;
 
@@ -78,11 +72,9 @@ class ContactControllerContact extends JControllerForm
 			// The category has been set. Check the category permissions.
 			return JFactory::getUser()->authorise('core.edit', $this->option . '.category.' . $categoryId);
 		}
-		else
-		{
-			// Since there is no asset tracking, revert to the component permissions.
-			return parent::allowEdit($data, $key);
-		}
+
+		// Since there is no asset tracking, revert to the component permissions.
+		return parent::allowEdit($data, $key);
 	}
 
 	/**
@@ -90,7 +82,7 @@ class ContactControllerContact extends JControllerForm
 	 *
 	 * @param   object  $model  The model.
 	 *
-	 * @return  boolean	 True if successful, false otherwise and internal error is set.
+	 * @return  boolean   True if successful, false otherwise and internal error is set.
 	 *
 	 * @since   2.5
 	 */
@@ -99,6 +91,7 @@ class ContactControllerContact extends JControllerForm
 		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 
 		// Set the model
+		/** @var ContactModelContact $model */
 		$model = $this->getModel('Contact', '', array());
 
 		// Preset the redirect

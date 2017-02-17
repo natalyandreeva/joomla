@@ -175,7 +175,7 @@ abstract class JModuleHelper
 		$path = JPATH_BASE.'/modules/'.$module->module.'/'.$module->module.'.php';
 
 		// Load the module
-		if (!$module->user && file_exists($path)) {
+		if (empty($module->user) && file_exists($path)) {
 			$lang = JFactory::getLanguage();
 			// 1.5 or Core then 1.6 3PD
 				$lang->load($module->module, JPATH_BASE, null, false, false)
@@ -346,7 +346,7 @@ abstract class JModuleHelper
 			$query->where[] = 'e.enabled = 1';
 
 			$date = JFactory::getDate();
-			$now = $date->toMySQL();
+			$now = $date->toSql();
 			$nullDate = $db->getNullDate();
 			$query->where[] = '(m.publish_up = '.$db->Quote($nullDate).' OR m.publish_up <= '.$db->Quote($now).')';
 			$query->where[] = '(m.publish_down = '.$db->Quote($nullDate).' OR m.publish_down >= '.$db->Quote($now).')';
@@ -536,9 +536,15 @@ abstract class JModuleHelper
 					foreach ($cacheparams->modeparams AS $key => $value) {
 						// Use int filter for id/catid to clean out spamy slugs
 						if (isset($uri[$key])) {
-							$safeuri->$key = JRequest::_cleanVar($uri[$key], 0,$value);
+							if(version_compare(JVERSION, '3.0')){
+								$noHtmlFilter = JFilterInput::getInstance();
+								$safeuri->$key = $noHtmlFilter->clean($uri[$key], $value);
+							} else {
+								$safeuri->$key = JRequest::_cleanVar($uri[$key], 0,$value);
+							}
 						}
-					} }
+					} 
+				}
 				$secureid = md5(serialize(array($safeuri, $cacheparams->method, $moduleparams)));
 				$ret = $cache->get(array($cacheparams->class, $cacheparams->method), $cacheparams->methodparams, $module->id. $view_levels.$secureid, $wrkarounds, $wrkaroundoptions);
 				break;

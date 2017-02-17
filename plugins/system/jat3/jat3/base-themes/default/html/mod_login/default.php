@@ -12,17 +12,19 @@ defined('_JEXEC') or die;
 
 JHtml::_('behavior.keepalive');
 ?>
+
 <?php if ($type == 'logout') : ?>
 <form action="<?php echo JRoute::_('index.php', true, $params->get('usesecure')); ?>" method="post" id="login-form">
-<?php if ($params->get('greeting')) : ?>
+	<?php if ($params->get('greeting')) : ?>
 	<div class="login-greeting">
-	<?php if($params->get('name') == 0) : {
-		echo JText::sprintf('MOD_LOGIN_HINAME', $user->get('name'));
-	} else : {
-		echo JText::sprintf('MOD_LOGIN_HINAME', $user->get('username'));
-	} endif; ?>
+		<?php if($params->get('name') == 0) : {
+			echo JText::sprintf('MOD_LOGIN_HINAME', $user->get('name'));
+		} else : {
+			echo JText::sprintf('MOD_LOGIN_HINAME', $user->get('username'));
+		} endif; ?>
 	</div>
-<?php endif; ?>
+	<?php endif; ?>
+	
 	<div class="logout-button">
 		<input type="submit" name="Submit" class="button" value="<?php echo JText::_('JLOGOUT'); ?>" />
 		<input type="hidden" name="option" value="com_users" />
@@ -34,33 +36,87 @@ JHtml::_('behavior.keepalive');
 <?php else : ?>
 <form action="<?php echo JRoute::_('index.php', true, $params->get('usesecure')); ?>" method="post" id="login-form" >
 	<?php if ($params->get('pretext')): ?>
-		<div class="pretext">
+	<div class="pretext">
 		<p><?php echo $params->get('pretext'); ?></p>
-		</div>
+	</div>
 	<?php endif; ?>
+	
 	<fieldset class="userdata">
-	<p id="form-login-username">
-		<label for="modlgn-username"><?php echo JText::_('MOD_LOGIN_VALUE_USERNAME') ?></label>
-		<input id="modlgn-username" type="text" name="username" class="inputbox"  size="18" />
-	</p>
-	<p id="form-login-password">
-		<label for="modlgn-passwd"><?php echo JText::_('JGLOBAL_PASSWORD') ?></label>
-		<input id="modlgn-passwd" type="password" name="password" class="inputbox" size="18"  />
-	</p>
-	<?php if (JPluginHelper::isEnabled('system', 'remember')) : ?>
-	<p id="form-login-remember">
-		<label for="modlgn-remember"><?php echo JText::_('MOD_LOGIN_REMEMBER_ME') ?></label>
-		<input id="modlgn-remember" type="checkbox" name="remember" class="inputbox" value="yes"/>
-	</p>
-	<?php endif; ?>
-	<p id="form-login-submit">
-        <input type="submit" name="Submit" class="button" value="<?php echo JText::_('JLOGIN') ?>" />
+		<p id="form-login-username">
+			<?php if (!$params->get('usetext')) : ?>
+				<span class="input-prepend">
+					<span class="add-on">
+						<span class="icon-user hasTooltip" title="<?php echo JText::_('MOD_LOGIN_VALUE_USERNAME') ?>"></span>
+						<label for="modlgn-username" class="element-invisible"><?php echo JText::_('MOD_LOGIN_VALUE_USERNAME'); ?></label>
+					</span>
+					<input id="modlgn-username" type="text" name="username" class="input-small" tabindex="0" size="18" placeholder="<?php echo JText::_('MOD_LOGIN_VALUE_USERNAME') ?>" />
+				</span>
+			<?php else: ?>
+			<label for="modlgn-username"><?php echo JText::_('MOD_LOGIN_VALUE_USERNAME') ?></label>
+			<input id="modlgn-username" type="text" name="username" class="inputbox"  size="18" />
+			<?php endif; ?>
+		</p>
+		
+		<p id="form-login-password">
+			<?php if (!$params->get('usetext')) : ?>
+				<span class="input-prepend">
+					<span class="add-on">
+						<span class="icon-lock hasTooltip" title="<?php echo JText::_('JGLOBAL_PASSWORD') ?>">
+						</span>
+							<label for="modlgn-passwd" class="element-invisible"><?php echo JText::_('JGLOBAL_PASSWORD'); ?>
+						</label>
+					</span>
+					<input id="modlgn-passwd" type="password" name="password" class="input-small" tabindex="0" size="18" placeholder="<?php echo JText::_('JGLOBAL_PASSWORD') ?>" />
+				</span>
+			<?php else: ?>
+			<label for="modlgn-passwd"><?php echo JText::_('JGLOBAL_PASSWORD') ?></label>
+			<input id="modlgn-passwd" type="password" name="password" class="inputbox" size="18"  />
+			<?php endif; ?>
+		</p>
+		
+		<?php if (method_exists('ModLoginHelper', 'getTwoFactorMethods') && count(ModLoginHelper::getTwoFactorMethods()) > 1): ?>
+		<p id="form-login-secretkey">
+			<?php if (!$params->get('usetext')) : ?>
+			<span class="input-prepend">
+				<span class="add-on">
+					<span class="icon-star hasTooltip" title="<?php echo JText::_('JGLOBAL_SECRETKEY'); ?>">
+					</span>
+						<label for="modlgn-secretkey" class="element-invisible"><?php echo JText::_('JGLOBAL_SECRETKEY'); ?>
+					</label>
+				</span>
+				<input id="modlgn-secretkey" type="text" name="secretkey" class="input-small" tabindex="0" size="18" placeholder="<?php echo JText::_('JGLOBAL_SECRETKEY') ?>" />
+				<span class="btn width-auto hasTooltip" title="<?php echo JText::_('JGLOBAL_SECRETKEY_HELP'); ?>">
+					<span class="icon-help"></span>
+				</span>
+			</span>
+			<?php else: ?>
+			<label for="modlgn-secretkey"><?php echo JText::_('JGLOBAL_SECRETKEY') ?></label>
+			<input id="modlgn-secretkey" type="text" name="secretkey" class="input-small" tabindex="0" size="18" placeholder="<?php echo JText::_('JGLOBAL_SECRETKEY') ?>" />
+			<span class="btn width-auto hasTooltip" title="<?php echo JText::_('JGLOBAL_SECRETKEY_HELP'); ?>">
+				<span class="icon-help"></span>
+			</span>
+			<?php endif; ?>
+		</p>
+		<?php endif; ?>
+		
+		<?php if (JPluginHelper::isEnabled('system', 'remember')) : ?>
+		<p id="form-login-remember">
+			<label for="modlgn-remember"><?php echo JText::_('MOD_LOGIN_REMEMBER_ME') ?></label>
+			<input id="modlgn-remember" type="checkbox" name="remember" class="inputbox" value="yes"/>
+		</p>
+		<?php endif; ?>
+		
+		<p id="form-login-submit">
+			<input type="submit" name="Submit" class="button" value="<?php echo JText::_('JLOGIN') ?>" />
     </p>
-	<input type="hidden" name="option" value="com_users" />
-	<input type="hidden" name="task" value="user.login" />
-	<input type="hidden" name="return" value="<?php echo $return; ?>" />
-	<?php echo JHtml::_('form.token'); ?>
+		
+		<input type="hidden" name="option" value="com_users" />
+		<input type="hidden" name="task" value="user.login" />
+		<input type="hidden" name="return" value="<?php echo $return; ?>" />
+		
+		<?php echo JHtml::_('form.token'); ?>
 	</fieldset>
+	
 	<ul>
 		<li>
 			<a href="<?php echo JRoute::_('index.php?option=com_users&view=reset'); ?>">
@@ -79,10 +135,12 @@ JHtml::_('behavior.keepalive');
 		</li>
 		<?php endif; ?>
 	</ul>
+	
 	<?php if ($params->get('posttext')): ?>
-		<div class="posttext">
+	<div class="posttext">
 		<p><?php echo $params->get('posttext'); ?></p>
-		</div>
+	</div>
 	<?php endif; ?>
+	
 </form>
 <?php endif; ?>

@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -41,11 +41,7 @@ class JFormFieldJaparamhelpert3 extends JFormField
             $uri = str_replace(DS, "/", str_replace(JPATH_SITE, JURI::base(), dirname(__FILE__)));
             $uri = str_replace("/administrator", "", $uri);
             $javersion = new JVersion();
-            if ($javersion->RELEASE == '1.7') {
-                JHtml::_('behavior.framework', true);
-            } else {
-                JHTML::_('behavior.mootools');
-            }
+            JHtml::_('behavior.framework', true);
             JHTML::stylesheet($uri.'/assets/css/japaramhelper.css');
             JHTML::script($uri.'/assets/js/japaramhelper.js');
         }
@@ -131,6 +127,31 @@ class JFormFieldJaparamhelpert3 extends JFormField
         return $html;
     }
 
+    /**
+     * Render legend: name="@legend"
+     *
+     * @return string
+     */
+    function legend()
+    {
+        $_title       = (string)$this->element['label'];
+        $_description = $this->description;
+        $class        = ( isset( $this->element['class'] ) ) ? (string)$this->element['class'] : '';
+        if ( $_title ) {
+            $_title = html_entity_decode(JText::_($_title));
+        } else {
+            $_title = '';
+        }
+
+        if ($_description) {
+            $_description = html_entity_decode(JText::_($_description));
+        } else {
+            $_description = '';
+        }
+        
+        return '<legend class="t3-legend block-head">' . $_title . '<small class="t3-legend-desc">' . $_description . '</small> </legend>';
+    }
+
 
     /**
      * Render js to control setting form.
@@ -142,6 +163,7 @@ class JFormFieldJaparamhelpert3 extends JFormField
         preg_match_all('/jform\\[([^\]]*)\\]/', $this->name, $matches);
 
         ?>
+        <span class="t3anchor-hide"></span>
         <script type="text/javascript">
         <?php
         foreach ($this->element->children() as $option) {

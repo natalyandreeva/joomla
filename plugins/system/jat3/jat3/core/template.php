@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -266,6 +266,12 @@ class T3Template extends ObjectExtendable
     function showBlock($block)
     {
         $data = $this->loadBlock($block);
+
+        //fix t3 link
+        if(!T3Common::isHome() && is_array($block) && $block['attributes']['name'] == 'footer'){
+            $data = T3Common::fixT3Link($data);
+        }
+
         if (!$data)
             return;
         if (is_array($block)) {
@@ -831,7 +837,7 @@ class T3Template extends ObjectExtendable
             // Replace none cache content
             // $data = str_replace($nonecachesearch, $nonecachereplace, $data);
         } else {
-            $token = JUtility::getToken();
+            $token = JSession::getFormToken();
             $search = '#<input type="hidden" name="[0-9a-f]{32}" value="1" />#';
             $replacement = '<input type="hidden" name="' . $token . '" value="1" />';
             $data = preg_replace($search, $replacement, $data);
@@ -1330,9 +1336,14 @@ class T3Template extends ObjectExtendable
             // if (is_array($node)) {
             // $url = T3Common::node_data($node);;
             // }
-            if (!preg_match('#^https?:\/\/#i', $url)) {
+            if(substr($url, 0, 2) == '//'){
+                //nothing todo, since they try to use a link like //www.abc.com
+            } else if ($url[0] == '/'){
+                $url = substr($url, 1); //absolute link from root
+            } else if (!preg_match('#^https?:\/\/#i', $url)) { //external link
                 $url = 'templates/' . $this->template . '/' . $url;
             }
+
             if ($condition) {
                 $this->_css_condition[] = array(
                     'url' => $url,
@@ -1406,14 +1417,22 @@ class T3Template extends ObjectExtendable
         $css = array();
         $stylesheets = T3Common::node_children($this->_theme_info, 'stylesheets', 0);
         // isset($this->_theme_info->stylesheets)?$this->_theme_info->stylesheets[0]:null;
+
+        $jversion = new JVersion;
+
         if ($stylesheets) {
             $files = $stylesheets['children'];
             foreach ($files as $file) {
-                if ($file['name'] != 'file')
+                if ($file['name'] != 'file'){
                     continue;
+                }
                 $media = T3Common::node_attributes($file, 'media');
                 $cond  = T3Common::node_attributes($file, 'condition');
-                $this->addCSS($file, $media, $cond);
+                $compat= T3Common::node_attributes($file, 'compatible');
+
+                if(empty($compat) || (!empty($compat) && $jversion->isCompatible($compat) > 0)){
+                    $this->addCSS($file, $media, $cond);
+                }
             }
         }
         // get layout extra css
@@ -1422,11 +1441,16 @@ class T3Template extends ObjectExtendable
         if ($stylesheets) {
             $files = $stylesheets['children'];
             foreach ($files as $file) {
-                if ($file['name'] != 'file')
+                if ($file['name'] != 'file'){
                     continue;
+                }
                 $media = T3Common::node_attributes($file, 'media');
                 $cond  = T3Common::node_attributes($file, 'condition');
-                $this->addCSS($file, $media, $cond);
+                $compat= T3Common::node_attributes($file, 'compatible');
+
+                if(empty($compat) || (!empty($compat) && $jversion->isCompatible($compat) > 0)){
+                    $this->addCSS($file, $media, $cond);
+                }
             }
         }
 
@@ -1652,7 +1676,7 @@ class T3Template extends ObjectExtendable
                 $buff = $_tpl->getBuffer($type, $name, $attribs);
                 // # Fix bug when render custom module
                 if ($type == 'module') {
-                    $_tpl->setBuffer(null, array('type' => $type, 'name' => $name));
+                    $_tpl->setBuffer(null, array('type' => $type, 'name' => $name, 'title' => null));
                 }
                 return $buff;
                 break;

@@ -70,7 +70,7 @@
 				  <option value="none">None</option>
 				  <option value="slide">Slide</option>
 				  <option value="fade">Fade</option>
-				  <option value="slide_fade">Slide &amp; Fade</option>
+				  <option value="slide_fade">Slide + Fade</option>
 				</field>
 				<field name="ja_menu_mega_duration" type="text" default="300" label="ANIMATION_DURATION" description="ANIMATION_DURATION_DESC" />
 				<field name="ja_menu_mega_delayhide" type="text" default="300" label="DELAY_HIDE_TIME" description="DELAY_HIDE_TIME_DESC" />

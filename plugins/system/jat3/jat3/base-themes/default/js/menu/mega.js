@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -433,6 +433,7 @@ var jaMegaMenuMoo = new Class({
 				item.fx.set(item.stylesOff);
 			}
 
+			clearTimeout(item.sid);
 			item.child.setStyles({
 				display: 'block',
 				zIndex: this.zindex++
@@ -461,7 +462,8 @@ var jaMegaMenuMoo = new Class({
 		this.childopen.erase(item);
 
 		if (!item.fx && item.child) {
-			item.child.setStyle('display', 'none');
+			clearTimeout(item.sid);
+			item.sid = setTimeout(function(){ item.child.setStyle('display', 'none'); }, this.options.delayHide);
 		}
 
 		if (!item.fx || !item.child || item.child.getStyle('opacity') == '0') {
@@ -529,9 +531,17 @@ var jaMegaMenuMoo = new Class({
 			}
 		});
 
-		var last = this.childopen.getLast();
-		if (last && last.intent == 'close') {
-			this.itemHide(last);
+		if (this.options.slide || this.options.fading) {
+			var last = this.childopen.getLast();
+			if (last && last.intent == 'close') {
+				this.itemHide(last);
+			}
+		} else {
+			this.childopen.each(function (item) {
+				if(item.intent == 'close'){
+					this.itemHide(item);	
+				}
+			}, this);
 		}
 	},
 

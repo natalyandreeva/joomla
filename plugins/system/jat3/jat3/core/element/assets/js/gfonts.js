@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -144,7 +144,7 @@ function gfonts_init(family_obj, variant_obj, subset_obj, custom_obj, style_obj,
 
     // Prevent fire body click event when click autocompleter
     $$('ul.autocompleter-choices')[0].addEvent('click', function(e) {
-        new Event(e).stopPropagation();
+       if(e) e.stopPropagation();
     });
 }
 /**
@@ -155,7 +155,7 @@ function gfonts_init(family_obj, variant_obj, subset_obj, custom_obj, style_obj,
  * @return void
  */
 function gfonts_disable(name) {
-	$(name+'-edit').onclick = null;
+	$(name+'-edit').removeEvents('click');
 }
 
 /**
@@ -166,13 +166,17 @@ function gfonts_disable(name) {
  * @return void
  */
 function gfonts_enable(name) {
-	$(name+'-edit').onclick = function(e) {
+	$(name+'-edit').addEvent('click', function(e) {
 	    gfonts_popup(name);
-	    new Event(e).stopPropagation();
-	};
-	$('ja-popup-gfont').onclick = function(e) {
-	    new Event(e).stopPropagation();
-	};
+        if(e){
+	       e.stopPropagation();
+        }
+	});
+	$('ja-popup-gfont').addEvent('click', function(e) {
+	    if(e){
+            e.stopPropagation();
+        }
+	});
 }
 
 /**

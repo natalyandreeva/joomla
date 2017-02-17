@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -43,7 +43,9 @@ defined('_JEXEC') or die;
         $('<?php echo $name?>-ja-popup-themes').inject($(document.body));
 
         $$('.ja-popup-themes .cb-span').addEvent ('click', function(e) {
-            new Event(e).stop();
+            if(e){
+                e.stop();
+            }
             if (this.getParent().hasClass ('default')) return;
             if (!this.checked) {
                 this.checked = true;
@@ -56,7 +58,7 @@ defined('_JEXEC') or die;
             }
         });
 
-        $$('.ja-popup-themes').addEvent ('click', function(e){new Event(e).stop()});
+        $$('.ja-popup-themes').addEvent ('click', function(e){ if(e) e.stop() });
         $('<?php echo $name?>-ja-change-theme-help').setStyle('visibility', 'hidden');
 
         $('<?php echo $name?>-ja-change-theme-help').inject($(document.body));

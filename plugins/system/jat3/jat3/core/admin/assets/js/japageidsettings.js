@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -28,7 +28,7 @@ var JAT3_PAGEIDSETTINGS = new Class({
 
     choosePageids: function(obj, k) {
         obj = $(obj);
-        if (!typeOf(k)) {
+        if (typeof (k) == 'undefined') {
             k = this.options.page_select;
         }
 
@@ -98,7 +98,7 @@ var JAT3_PAGEIDSETTINGS = new Class({
 
     chooseProfile: function(obj, k) {
         obj = $(obj);
-        if (typeOf(k)) {
+        if (typeof (k) != 'undefined') {
             this.options.theme_select = k;
         } else {
             k = this.options.theme_select;
@@ -125,7 +125,7 @@ var JAT3_PAGEIDSETTINGS = new Class({
     add_chooseProfile: function(obj, k) {
         obj = $(obj);
         this.chooseProfile(obj, k);
-        obj.setOpacity('1');
+        obj.setStyle('opacity', '1');
     },
 
     setPosition_for_poup: function(popup_obj, position_obj) {
@@ -154,8 +154,11 @@ var JAT3_PAGEIDSETTINGS = new Class({
         for (var i = 0; i < selections.length; i++) {
             selected.push(selections[i].id);
         }
+
         // Join them
+        var selids = selected; //clone
         selected = selected.join(', ');
+
         // If language isn't all, append it with selected pages
         if (selectedLang != 'All' || selected.length > 0) {
             if (selected.length > 0) {
@@ -182,7 +185,8 @@ var JAT3_PAGEIDSETTINGS = new Class({
                 }
             }
         }
-        if (parseInt(this.options.page_select) > -1 && selected != '') {
+	
+        if (parseInt(this.options.page_select) > -1 && selids.length > 0) {
             var row    = $(this.options.param_name + '-row-' + this.options.page_select);
             var pageid = row.getElement('.pageid_text');
             pageid.set('text', selected);
@@ -233,7 +237,7 @@ var JAT3_PAGEIDSETTINGS = new Class({
         var last = table.rows[table.rows.length - 1];
         var li = $(last).clone();
 
-        li.injectAfter(last);
+        li.inject(last, 'after');
         last.set({'id': this.options.param_name + '-row-'+k });
         last.getElement('span.pageid_text').innerHTML = '&nbsp';
 
@@ -255,13 +259,13 @@ var JAT3_PAGEIDSETTINGS = new Class({
         //}
 
         // Set opacity for new added row
-        obj.getFirst().setOpacity(1);
-        obj.getNext().getFirst().setOpacity(1);
-        //obj.getNext().getNext().getFirst().setOpacity(1);
-        //obj.getNext().getNext().getNext().getElement('img').setOpacity(1);
-        obj.getNext().getNext().getElement('img').setOpacity(1);
+        obj.getFirst().setStyle('opacity', 1);
+        obj.getNext().getFirst().setStyle('opacity', 1);
+        //obj.getNext().getNext().getFirst().setStyle('opacity', 1);
+        //obj.getNext().getNext().getNext().getElement('img').setStyle('opacity', 1);
+        obj.getNext().getNext().getElement('img').setStyle('opacity', 1);
 
-        last.setOpacity('1');
+        last.setStyle('opacity', '1');
         last.getElement('span.ja_close').setStyle('display', '');
         last.getFirst().onclick = function() {
             void(0);
@@ -270,7 +274,7 @@ var JAT3_PAGEIDSETTINGS = new Class({
             void(0);
         };
 
-        if (typeOf(jatabs)) {
+        if (typeof (jatabs) != 'undefined') {
             jatabs.resize();
         }
 
@@ -412,8 +416,8 @@ var JAT3_PAGEIDSETTINGS = new Class({
         this.options.active_pop_in = 1;
         //  Remove active row of profile popup
         if (parseInt(this.options.theme_select) > -1 &&
-            $type($(this.options.param_name + '-row-' + this.options.theme_select)) &&
-            $type($(this.options.param_name + '-row-' + this.options.theme_select).getElement('span.active'))
+            $(this.options.param_name + '-row-' + this.options.theme_select) &&
+            $(this.options.param_name + '-row-' + this.options.theme_select).getElement('span.active')
         ) {
             $(this.options.param_name + '-row-' + this.options.theme_select).getElement('span.active').removeClass('active');
         }

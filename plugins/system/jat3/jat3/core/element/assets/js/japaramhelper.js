@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA T3 System Plugin for Joomla 2.5
+ * JA T3v2 System Plugin for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -21,7 +21,7 @@ JAFormController_T3 = new Class( {
 	
 	add: function (control, options) {		
 		var control_name = options.group+'['+control+']';
-		options = $extend ({'group': 'params', 'hideRow': true, 'control':control_name}, options);
+		options = (window.$extend || Object.append)({'group': 'params', 'hideRow': true, 'control':control_name}, options);
 		options.hideRow = Boolean(options.hideRow); 
 		if (!this.controls.contains(control_name)) this.controls.push (control_name);
 		//elements
@@ -85,7 +85,7 @@ JAFormController_T3 = new Class( {
 		var val = options.val;
 
 		if(group){
-			var type = $type(group);
+			var type = typeOf(group);
 			if(type == 'collection' || type == 'array'){
 				for(var i=0; i<group.length; i++){
 					var subgroup = group[i];
@@ -117,7 +117,7 @@ JAFormController_T3 = new Class( {
 	enable: function (el) {
 		var el_ = this.getElement(el);
 		var options = this.data[this.data[this._(el)][0]];
-		var type = $type(el_);
+		var type = typeOf(el_);
 		if(type == 'collection' || type == 'array'){
 			for(var i=0; i<el_.length; i++){
 				this.toggle_el ($(el_[i]), true, options.hideRow);
@@ -131,7 +131,7 @@ JAFormController_T3 = new Class( {
 	disable: function (el) {
 		var options = this.data[this.data[this._(el)][0]];
 		var el_ = this.getElement(el);
-		var type = $type(el_);
+		var type = typeOf(el_);
 		if(type == 'collection' || type == 'array'){
 			for(var i=0; i<el_.length; i++){
 				this.toggle_el ($(el_[i]), false, options.hideRow);
@@ -149,7 +149,7 @@ JAFormController_T3 = new Class( {
 			
 			//bind event
 			if(group){
-				var type = $type(group);
+				var type = typeOf(group);
 				if(type == 'collection' || type == 'array'){
 					for(var i=0; i<group.length; i++){
 						var subgroup = $(group[i]);
@@ -193,7 +193,7 @@ JAFormController_T3 = new Class( {
 		});
 		window.fireEvent('resize');
 	},
-	
+
 	getParentByTagName: function (el, tag) {
 		if(el){
 			var parent = $(el).getParent();
@@ -204,6 +204,7 @@ JAFormController_T3 = new Class( {
 				return parent;
 			}
 		}
+
 		return null;
 	},
 
@@ -271,7 +272,7 @@ function showGroup(regionID){
 		tr.addClass('enable-row');		
 		
 		var h4 = tr.getFirst().getElement('h4.block-head');
-		if($type(h4)){
+		if(h4){
 			 h4.removeClass("open");
 			 h4.removeClass("close");
 			 h4.addClass("open");
@@ -285,7 +286,7 @@ function showGroup(regionID){
 function hideGroup(regionID){
 	$$('#'+regionID+' tr').each(function (tr){		
 		var h4 = tr.getFirst().getElement('h4.block-head');
-		if($type(h4)){
+		if(h4){
 			tr.removeClass('disable-row');
 			tr.addClass('enable-row');		
 			h4.removeClass("open");
@@ -309,7 +310,7 @@ function showRegion(regionID, level){
 	
 	while( tr.getNext()!=null && $(tr.getNext().getFirst()).getElement('h4.block-head')==null){
 		var h4 = tr.getNext().getFirst().getElement('h4.block-head');
-		if($type(h4)){
+		if(h4){
 			 h4.removeClass("open");
 			 h4.removeClass("close");
 			 h4.addClass("open");
@@ -327,7 +328,7 @@ function hideRegion(regionID, level){
 	var tr = $(regionID).getParent().getParent();
 	while( tr.getNext()!=null && $(tr.getNext().getFirst()).getElement('h4.block-head')==null){
 		var h4 = $(tr.getNext().getFirst()).getElement('h4.block-head');
-		if($type(h4)){
+		if(h4){
 			 tr.getNext().removeClass('disable-row');
 			 tr.getNext().addClass('enable-row');			
 			 h4.removeClass("open");
@@ -366,24 +367,42 @@ function showHideRegion(regionID, level){
 	window.fireEvent('resize');
 }
 
+function closest (elm, sel){
+	var parents = elm.getParents(sel),
+		cur = elm;
+		
+	while(cur){
+		if(parents.contains(cur)){
+			return cur;
+		}
+		
+		cur = cur.getParent();
+	}
+}
+	
+
+
 function updateFormMenu(obj, changeHeight){
 	if(!obj) return;
 	switch(obj.value.trim()){
 		case '0':
-			$('jformparamsmega_subcontent_mod_modules').getParent().setStyle('display', 'none');
-			$('jformparamsmega_subcontent_pos_positions').getParent().setStyle('display', 'none');
+			closest($('jformparamsmega_subcontent_mod_modules'), 'li, .control-group').setStyle('display', 'none');
+			closest($('jformparamsmega_subcontent_pos_positions'), 'li, .control-group').setStyle('display', 'none');
 			break;
 		case 'mod':
-			$('jformparamsmega_subcontent_mod_modules').getParent().setStyle('display', 'block');
-			$('jformparamsmega_subcontent_pos_positions').getParent().setStyle('display', 'none');
+			closest($('jformparamsmega_subcontent_mod_modules'), 'li, .control-group').setStyle('display', 'block');
+			closest($('jformparamsmega_subcontent_pos_positions'), 'li, .control-group').setStyle('display', 'none');
 			break;
 		case 'pos':
-			$('jformparamsmega_subcontent_mod_modules').getParent().setStyle('display', 'none');
-			$('jformparamsmega_subcontent_pos_positions').getParent().setStyle('display', 'block');
+			closest($('jformparamsmega_subcontent_mod_modules'), 'li, .control-group').setStyle('display', 'none');
+			closest($('jformparamsmega_subcontent_pos_positions'), 'li, .control-group').setStyle('display', 'block');
 			break;
 	}
-	if(changeHeight){
-		$('mega-params-options').getNext().setStyle('height', $('mega-params-options').getNext().getElement('fieldset.panelform').offsetHeight)		
+	if($('mega-params-options')){
+		$('mega-params-options')
+			.getNext()
+			.setStyle('height', $('mega-params-options')
+			.getNext().getElement('fieldset.panelform').offsetHeight)		
 		window.fireEvent('resize');
 	}
 }
