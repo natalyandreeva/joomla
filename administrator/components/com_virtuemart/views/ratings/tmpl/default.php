@@ -21,20 +21,23 @@
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 /* Get the component name */
-$option = JRequest::getWord('option');
+$option = vRequest::getCmd('option');
 ?>
-<form action="index.php" method="post" name="adminForm" id="adminForm">
+<form action="index.php?option=com_virtuemart&view=ratings" method="post" name="adminForm" id="adminForm">
 <div id="header">
 	<div id="filterbox">
 	<table>
 	  <tr>
 		 <td align="left" width="100%">
-			<?php echo JText::_('COM_VIRTUEMART_FILTER'); ?>:
-			<input type="text" name="filter_ratings" value="<?php echo JRequest::getVar('filter_ratings', ''); ?>" />
-			<button onclick="this.form.submit();"><?php echo JText::_('COM_VIRTUEMART_GO'); ?></button>
-			<button onclick="document.adminForm.filter_ratings.value='';"><?php echo JText::_('COM_VIRTUEMART_RESET'); ?></button>
+			<?php echo vmText::_('COM_VIRTUEMART_FILTER'); ?>:
+			<input type="text" name="filter_ratings" value="<?php echo vRequest::getVar('filter_ratings', ''); ?>" />
+			<button class="btn btn-small" onclick="this.form.submit();"><?php echo vmText::_('COM_VIRTUEMART_GO'); ?></button>
+			<button class="btn btn-small" onclick="document.adminForm.filter_ratings.value='';"><?php echo vmText::_('COM_VIRTUEMART_RESET'); ?></button>
+			<?php if($this->showVendors()){
+				echo Shopfunctions::renderVendorList(vmAccess::getVendorId());
+			} ?>
 		 </td>
 	  </tr>
 	</table>
@@ -43,13 +46,13 @@ $option = JRequest::getWord('option');
 </div>
 
 <div style="text-align: left;">
-	<table class="adminlist" cellspacing="0" cellpadding="0">
+	<table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 	<thead>
 	<tr>
-		<th><input type="checkbox" name="toggle" value="" onclick="checkAll('<?php echo count($this->ratingslist); ?>')" /></th>
-		<th><?php echo $this->sort('created_on', 'COM_VIRTUEMART_DATE') ; ?></th>
-		<th><?php echo $this->sort('product_name') ; ?></th>
-		<th><?php echo $this->sort('rating', 'COM_VIRTUEMART_RATE_NOM') ; ?></th>
+		<th class="admin-checkbox"><input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" /></th>
+		<th width="40%"><?php echo $this->sort('created_on', 'COM_VIRTUEMART_DATE') ; ?></th>
+		<th width="40%"><?php echo $this->sort('product_name') ; ?></th>
+		<th width="10%"><?php echo $this->sort('rating', 'COM_VIRTUEMART_RATE_NOM') ; ?></th>
 		<th width="20"><?php echo $this->sort('published') ?></th>
 	</tr>
 	</thead>
@@ -58,20 +61,21 @@ $option = JRequest::getWord('option');
 	if (count($this->ratingslist) > 0) {
 		$i = 0;
 		$k = 0;
-		$keyword = JRequest::getWord('keyword');
+		$keyword = vRequest::getCmd('keyword');
 		foreach ($this->ratingslist as $key => $review) {
-			$checked = JHTML::_('grid.id', $i , $review->virtuemart_rating_id);
-			$published = JHTML::_('grid.published', $review, $i );
+			$checked = JHtml::_('grid.id', $i , $review->virtuemart_rating_id);
+			$published = $this->gridPublished( $review, $i );
+
 			?>
 			<tr class="row<?php echo $k ; ?>">
 				<!-- Checkbox -->
-				<td><?php echo $checked; ?></td>
+				<td class="admin-checkbox"><?php echo $checked; ?></td>
 				<!-- Username + time -->
 				<?php $link = 'index.php?option='.$option.'&view=ratings&task=listreviews&virtuemart_product_id='.$review->virtuemart_product_id; ?>
-				<td><?php echo JHTML::_('link', $link,vmJsApi::date($review->created_on,'LC2',true) , array("title" => JText::_('COM_VIRTUEMART_RATING_EDIT_TITLE'))); ?></td>
+				<td><?php echo JHtml::_('link', $link,vmJsApi::date($review->created_on,'LC2',true) , array("title" => vmText::_('COM_VIRTUEMART_RATING_EDIT_TITLE'))); ?></td>
 				<!-- Product name -->
 				<?php $link = 'index.php?option='.$option.'&view=product&task=edit&virtuemart_product_id='.$review->virtuemart_product_id ; ?>
-				<td><?php echo JHTML::_('link', JRoute::_($link), $review->product_name, array('title' => JText::_('COM_VIRTUEMART_EDIT').' '.$review->product_name)); ?></td>
+				<td><?php echo JHtml::_('link', JRoute::_($link), $review->product_name, array('title' => vmText::_('COM_VIRTUEMART_EDIT').' '.htmlentities($review->product_name))); ?></td>
 				<!-- Stars rating -->
 				<td align="center">
 					
@@ -80,7 +84,7 @@ $option = JRequest::getWord('option');
 				    $ratingwidth = round($review->rating) * 24;
 				    ?>
 	
-				    <span title="<?php echo (JText::_("COM_VIRTUEMART_RATING_TITLE").' '. round($review->rating) . '/' . $maxrating) ?>" class="ratingbox" style="display:inline-block;">
+				    <span title="<?php echo (vmText::_("COM_VIRTUEMART_RATING_TITLE").' '. round($review->rating) . '/' . $maxrating) ?>" class="ratingbox" style="display:inline-block;">
 						<span class="stars-orange" style="width:<?php echo $ratingwidth.'px'; ?>">
 						</span>
 				    </span>

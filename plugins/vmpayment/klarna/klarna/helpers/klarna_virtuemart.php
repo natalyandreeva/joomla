@@ -2,7 +2,7 @@
 defined('_JEXEC') or die('Direct Access to ' . basename(__FILE__) . ' is not allowed.');
 
 /**
- * @version $Id: klarna_virtuemart.php 6369 2012-08-22 14:33:46Z alatak $
+ * @version $Id: klarna_virtuemart.php 7953 2014-05-18 14:06:25Z alatak $
  *
  * @author Valérie Isaksen
  * @package VirtueMart
@@ -20,7 +20,7 @@ if (!class_exists('Klarna'))
 class Klarna_virtuemart extends Klarna {
 
     public function __construct() {
-        $this->VERSION = 'PHP'.phpversion().':VirtueMart:2.0.12f';
+        $this->VERSION = 'PHP'.phpversion().':3.0.18';
         Klarna::$debug =  false;
     }
 }

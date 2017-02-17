@@ -13,7 +13,7 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: edit_vmshopper.php 6203 2012-07-03 09:48:00Z enytheme $
+ * @version $Id: edit_vmshopper.php 8951 2015-08-19 09:41:44Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
@@ -23,7 +23,7 @@ defined('_JEXEC') or die('Restricted access');
 
 <fieldset>
 	<span class="userfields_info">
-		<?php echo JText::_('COM_VIRTUEMART_SHOPPER_FORM_LBL') ?>
+		<?php echo vmText::_('COM_VIRTUEMART_SHOPPER_FORM_LBL') ?>
 	</span>
 	<table class="adminForm user-details">
 <?php	if(Vmconfig::get('multix','none')!=='none'){ ?>
@@ -31,7 +31,7 @@ defined('_JEXEC') or die('Restricted access');
 		<tr>
 			<td class="key">
 				<label for="virtuemart_vendor_id">
-					<?php echo JText::_('COM_VIRTUEMART_PRODUCT_FORM_VENDOR') ?>:
+					<?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_VENDOR') ?>:
 				</label>
 			</td>
 			<td>
@@ -42,23 +42,13 @@ defined('_JEXEC') or die('Restricted access');
 
 		<tr>
 			<td class="key">
-				<label for="perms">
-					<?php echo JText::_('COM_VIRTUEMART_USER_FORM_PERMS') ?>:
-				</label>
-			</td>
-			<td>
-				<?php echo $this->lists['perms']; ?>
-			</td>
-		</tr>
-
-		<tr>
-			<td class="key">
 				<label for="customer_number">
-					<?php echo JText::_('COM_VIRTUEMART_USER_FORM_CUSTOMER_NUMBER') ?>:
+					<?php echo vmText::_('COM_VIRTUEMART_USER_FORM_CUSTOMER_NUMBER') ?>:
 				</label>
 			</td>
 			<td>
-			 <?php if(Permissions::getInstance()->check('admin')) { ?>
+			 <?php
+			 if(vmAccess::manager('user.edit')) { ?>
 				<input type="text" class="inputbox" name="customer_number" id="customer_number" size="40" value="<?php echo  $this->lists['custnumber'];
 					?>" />
 			<?php } else {
@@ -70,7 +60,7 @@ defined('_JEXEC') or die('Restricted access');
 		<tr>
 			<td class="key">
 				<label for="virtuemart_shoppergroup_id">
-					<?php echo JText::_('COM_VIRTUEMART_SHOPPER_FORM_GROUP') ?>:
+					<?php echo vmText::_('COM_VIRTUEMART_SHOPPER_FORM_GROUP') ?>:
 				</label>
 			</td>
 			<td>

@@ -19,14 +19,14 @@ defined ('_JEXEC') or die('Direct Access to ' . basename (__FILE__) . ' is not a
  */
 // Load the helper functions that are needed by all plugins
 if (!class_exists ('VmHTML')) {
-	require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'html.php');
+	require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 }
 
 // Get the plugin library
 jimport ('joomla.plugin.plugin');
 
 if (!class_exists ('vmPlugin')) {
-	require(JPATH_VM_PLUGINS . DS . 'vmplugin.php');
+	require(VMPATH_PLUGINLIBS . DS . 'vmplugin.php');
 }
 
 /**
@@ -53,6 +53,7 @@ abstract class vmCustomPlugin extends vmPlugin {
 		$this->_tablename = '#__virtuemart_product_' . $this->_psType . '_plg_' . $this->_name;
 		$this->_idName = 'virtuemart_custom_id';
 		$this->_configTableFileName = $this->_psType . 's';
+		$this->_configTableFieldName = 'custom_params';
 		$this->_configTableClassName = 'Table' . ucfirst ($this->_psType) . 's'; //TablePaymentmethods
 		$this->_configTable = '#__virtuemart_customs';
 
@@ -73,7 +74,7 @@ abstract class vmCustomPlugin extends vmPlugin {
 
 			if (empty($this->plugin->virtuemart_vendor_id)) {
 				if (!class_exists ('VirtueMartModelVendor')) {
-					require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'vendor.php');
+					require(VMPATH_ADMIN . DS . 'models' . DS . 'vendor.php');
 				}
 				$this->plugin->virtuemart_vendor_id = VirtueMartModelVendor::getLoggedVendor ();
 			}
@@ -87,34 +88,32 @@ abstract class vmCustomPlugin extends vmPlugin {
 	 * helper to parse plugin parameters as object
 	 *
 	 */
-	public function parseCustomParams (&$field, $xParams = 'custom_params') {
+	public function parseCustomParams (&$field, $xParams = 'customfield_params') {
 
 		VmTable::bindParameterable ($field, $xParams, $this->_varsToPushParam);
 
 		if (empty($field->custom_element)) {
 			return 0;
 		}
-		if (!empty($field->custom_param) && is_string ($field->custom_param)) {
-			$custom_param = json_decode ($field->custom_param, TRUE);
-		}
-		else {
-			return;
-		}
-		//$field->custom_param = $custom_param;
-		foreach ($custom_param as $k => $v) {
-			if (!empty($v)) {
-				$field->$k = $v;
+		if (!empty($field->customfield_params) && is_string ($field->customfield_params)) {
+			$custom_params = json_decode ($field->customfield_params, TRUE);
+			foreach ($custom_params as $k => $v) {
+				if (!empty($v)) {
+					$field->$k = $v;
+				}
 			}
 		}
+
 	}
 
 	/*
-		 * helper to get plugin parameters as object
-		 * All params are added to $this->params plugin
-		 */
+	 * helper to get plugin parameters as object
+	 * All params are added to $this->params plugin
+	 * @deprecated
+	 */
 	public function getCustomParams (&$field) {
 
-		VmTable::bindParameterable ($field, 'custom_params', $this->_varsToPushParam);
+		VmTable::bindParameterable ($field, 'customfield_params', $this->_varsToPushParam);
 
 		//Why do we have this?
 		if (empty($field->custom_element)) {
@@ -130,17 +129,17 @@ abstract class vmCustomPlugin extends vmPlugin {
 			// vmdebug('fields org '.$this->_name,$this->params);
 		}
 		$this->virtuemart_custom_id = $field->virtuemart_custom_id;
-		if (!empty($field->custom_param) && is_string ($field->custom_param)) {
-			$this->params = json_decode ($field->custom_param);
+		if (!empty($field->custom_params) && is_string ($field->custom_params)) {
+			$this->params = json_decode ($field->custom_params);
 		}
 		else {
 			return;
 		}
 
-		//$field->custom_param = $custom_param;
+		//$field->custom_params = $custom_params;
 		//vmdebug('$this->_varsToPushParam '.$this->_name,$this->_varsToPushParam );
 		foreach ($this->_varsToPushParam as $k => $v) {
-			if (!isset($this->params->$k)) {
+			if (!isset($this->params->$k) and isset($field->$k)) {
 				$this->params->$k = $field->$k;
 			}
 		}
@@ -243,31 +242,6 @@ abstract class vmCustomPlugin extends vmPlugin {
 		$this->storePluginInternalData ($values);
 
 		return $values;
-
-	}
-
-	/**
-	 * Calculate the variant price by The plugin
-	 * override calculateModificators() in calculatorh.
-	 * Eg. recalculate price by a quantity set in the plugin
-	 * You must reimplement modifyPrice() in your plugin
-	 * or price is returned defaut custom_price
-	 */
-	// 	 public function plgVmCalculatePluginVariant( $product, $field,$selected,$row){
-	public function getCustomVariant ($product, &$productCustomsPrice, $selected) {
-		if ($productCustomsPrice->custom_element !== $this->_name) {
-			return FALSE;
-		}
-
-		vmPlugin::declarePluginParams ('custom', $productCustomsPrice->custom_element, $productCustomsPrice->custom_jplugin_id, $productCustomsPrice);
-// 		VmTable::bindParameterable($productCustomsPrice,'custom_params',$this->_varsToPushParam);
-
-		$pluginFields = JRequest::getVar ('customPlugin', NULL);
-		if ($pluginFields == NULL) {
-			$pluginFields = json_decode ($product->customPlugin, TRUE);
-		}
-
-		return $pluginFields[$productCustomsPrice->virtuemart_customfield_id][$this->_name];
 
 	}
 

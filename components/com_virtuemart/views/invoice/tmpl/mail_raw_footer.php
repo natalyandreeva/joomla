@@ -25,17 +25,14 @@ if (empty($this->vendor)) {
 		$this->vendor = $vendorModel->getVendor();
 }
 
-// $uri    = JURI::getInstance();
-// $prefix = $uri->toString(array('scheme', 'host', 'port'));
-
 $link = JURI::root(). 'index.php?option=com_virtuemart' ;
 
 echo "\n\n";
-$link= JHTML::_('link', $link, $this->vendor->vendor_name) ;
+$link= JHtml::_('link', $link, $this->vendor->vendor_name) ;
 
-//	echo JText::_('COM_VIRTUEMART_MAIL_VENDOR_TITLE').$this->vendor->vendor_name.'<br/>';
+//	echo vmText::_('COM_VIRTUEMART_MAIL_VENDOR_TITLE').$this->vendor->vendor_name.'<br/>';
 /* GENERAL FOOTER FOR ALL MAILS */
-	echo JText::_('COM_VIRTUEMART_MAIL_FOOTER' ) . $link;
+	echo vmText::_('COM_VIRTUEMART_MAIL_FOOTER' ) . $link;
         echo "\n";
-	echo $this->vendor->vendor_name ."\n".$this->vendor->vendor_phone .' '.$this->vendor->vendor_store_name ."\n".strip_tags($this->vendor->vendor_store_desc)."\n".str_replace('<br />',"\n",$this->vendor->vendor_legal_info);
+	echo $this->vendor->vendor_name ."\n".$this->vendor->vendor_phone .' '.$this->vendor->vendor_store_name ."\n".strip_tags($this->vendor->vendor_store_desc)."\n".strip_tags(str_replace('<br />',"\n",$this->replaceVendorFields($this->vendor->vendor_letter_footer_html, $this->vendor)));
 

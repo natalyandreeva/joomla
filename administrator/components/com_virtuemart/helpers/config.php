@@ -6,9 +6,8 @@
  *
  * @package	VirtueMart
  * @subpackage Helpers
- * @author RickG
  * @author Max Milbers
- * @copyright Copyright (c) 2004-2008 Soeren Eberhardt-Biermann, 2009 VirtueMart Team. All rights reserved.
+ * @copyright Copyright (c) 2004-2008 Soeren Eberhardt-Biermann, 2009-2014 VirtueMart Team. All rights reserved.
  */
 defined('_JEXEC') or die('Restricted access');
 
@@ -20,56 +19,104 @@ defined('_JEXEC') or die('Restricted access');
  *  $vmConfig -> jQuery(); // for use of jQuery
  *  Then always use the defined paths below to ensure future stability
  */
-define( 'JPATH_VM_SITE', JPATH_ROOT.DS.'components'.DS.'com_virtuemart' );
-defined('JPATH_VM_ADMINISTRATOR') or define('JPATH_VM_ADMINISTRATOR', JPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_virtuemart');
-// define( 'JPATH_VM_ADMINISTRATOR', JPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_virtuemart' );
-define( 'JPATH_VM_PLUGINS', JPATH_VM_ADMINISTRATOR.DS.'plugins' );
+defined('DS') or define('DS', DIRECTORY_SEPARATOR);
+//defined('_JEXEC') or define('_JEXEC', 1);
 
-if(version_compare(JVERSION,'1.7.0','ge')) {
-	defined('JPATH_VM_LIBRARIES') or define ('JPATH_VM_LIBRARIES', JPATH_PLATFORM);
-	defined('JVM_VERSION') or define ('JVM_VERSION', 2);
+$app = JFactory::getApplication();
+$admin = '';
+if(!$app->isSite()){
+	$admin = '/administrator';//echo('in administrator');
 }
-else {
-	if (version_compare (JVERSION, '1.6.0', 'ge')) {
-		defined ('JPATH_VM_LIBRARIES') or define ('JPATH_VM_LIBRARIES', JPATH_LIBRARIES);
-		defined ('JVM_VERSION') or define ('JVM_VERSION', 2);
+
+if(defined('JPATH_ROOT')){	//We are in joomla
+	defined ('VMPATH_ROOT') or define ('VMPATH_ROOT', JPATH_ROOT);
+	if(version_compare(JVERSION,'3.0.0','ge')) {
+		defined('JVM_VERSION') or define ('JVM_VERSION', 3);
+	}
+	if(version_compare(JVERSION,'1.7.0','ge')) {
+		defined('JPATH_VM_LIBRARIES') or define ('JPATH_VM_LIBRARIES', JPATH_PLATFORM);
+		defined('JVM_VERSION') or define ('JVM_VERSION', 2);
 	}
 	else {
-		defined ('JPATH_VM_LIBRARIES') or define ('JPATH_VM_LIBRARIES', JPATH_LIBRARIES);
-		defined ('JVM_VERSION') or define ('JVM_VERSION', 1);
+		if (version_compare (JVERSION, '1.6.0', 'ge')) {
+			defined ('JPATH_VM_LIBRARIES') or define ('JPATH_VM_LIBRARIES', JPATH_LIBRARIES);
+			defined ('JVM_VERSION') or define ('JVM_VERSION', 2);
+		}
+		else {
+			defined ('JPATH_VM_LIBRARIES') or define ('JPATH_VM_LIBRARIES', JPATH_LIBRARIES);
+			defined ('JVM_VERSION') or define ('JVM_VERSION', 1);
+		}
 	}
+	$vmPathLibraries = JPATH_VM_LIBRARIES;
+} else {
+	defined ('JVM_VERSION') or define ('JVM_VERSION', 0);
+	defined ('VMPATH_ROOT') or define ('VMPATH_ROOT', dirname( __FILE__ ));
+	$vmPathLibraries = '';
 }
 
-defined('DS') or define('DS', DIRECTORY_SEPARATOR);
+defined ('VMPATH_LIBS') or define ('VMPATH_LIBS', $vmPathLibraries);
+defined ('VMPATH_SITE') or define ('VMPATH_SITE', VMPATH_ROOT.'/components/com_virtuemart' );
+defined ('VMPATH_ADMIN') or define ('VMPATH_ADMIN', VMPATH_ROOT.'/administrator/components/com_virtuemart' );
+defined ('VMPATH_BASE') or define ('VMPATH_BASE',VMPATH_ROOT.$admin);
+defined ('VMPATH_PLUGINLIBS') or define ('VMPATH_PLUGINLIBS', VMPATH_ADMIN.'/plugins');
+defined ('VMPATH_PLUGINS') or define ('VMPATH_PLUGINS', VMPATH_ROOT.'/plugins' );
+defined ('VMPATH_MODULES') or define ('VMPATH_MODULES', VMPATH_ROOT.'/modules' );
+defined ('VMPATH_THEMES') or define ('VMPATH_THEMES', VMPATH_ROOT.$admin.'/templates' );
+
+//legacy
+defined ('JPATH_VM_SITE') or define('JPATH_VM_SITE', VMPATH_SITE );
+defined ('JPATH_VM_ADMINISTRATOR') or define('JPATH_VM_ADMINISTRATOR', VMPATH_ADMIN);
+// define( 'VMPATH_ADMIN', JPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_virtuemart' );
+define( 'JPATH_VM_PLUGINS', VMPATH_PLUGINLIBS );
+define( 'JPATH_VM_MODULES', VMPATH_MODULES );
+
+
+defined('VM_VERSION') or define ('VM_VERSION', 3);
 
 //This number is for obstruction, similar to the prefix jos_ of joomla it should be avoided
 //to use the standard 7, choose something else between 1 and 99, it is added to the ordernumber as counter
 // and must not be lowered.
-define('VM_ORDER_OFFSET',3);
+defined('VM_ORDER_OFFSET') or define('VM_ORDER_OFFSET',3);
 
-require(JPATH_VM_ADMINISTRATOR.DS.'version.php');
+if(!class_exists('vmVersion')) require(VMPATH_ADMIN.DS.'version.php');
+defined('VM_REV') or define('VM_REV',vmVersion::$REVISION);
 
-JTable::addIncludePath(JPATH_VM_ADMINISTRATOR.DS.'tables');
+if(!class_exists('VmTable')){
+	require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
+}
+VmTable::addIncludePath(VMPATH_ADMIN.DS.'tables');
 
 if (!class_exists ('VmModel')) {
-	require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmmodel.php');
+	require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
 }
 
+if(!class_exists('vRequest')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vrequest.php');
+if(!class_exists('vmText')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtext.php');
+if(!class_exists('vmJsApi')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmjsapi.php');
+
 /**
- * This function shows an info message, the messages gets translated with JText::,
+ * Where type can be one of
+ * 'warning' - yellow
+ * 'notice' - blue
+ * 'error' - red
+ * 'message' (or empty) - green
+ * This function shows an info message, the messages gets translated with vmText::,
  * you can overload the function, so that automatically sprintf is taken, when needed.
  * So this works vmInfo('COM_VIRTUEMART_MEDIA_NO_PATH_TYPE',$type,$link )
  * and also vmInfo('COM_VIRTUEMART_MEDIA_NO_PATH_TYPE');
  *
  * @author Max Milbers
- * @param unknown_type $publicdescr
- * @param unknown_type $value
+ * @param string $publicdescr
+ * @param string $value
  */
+
 
 function vmInfo($publicdescr,$value=NULL){
 
-	VmConfig::$maxMessageCount++;
 	$app = JFactory::getApplication();
+
+	$msg = '';
+	$type = VmConfig::$mType;//'info';
 
 	if(VmConfig::$maxMessageCount<VmConfig::$maxMessage){
 		$lang = JFactory::getLanguage();
@@ -78,21 +125,30 @@ function vmInfo($publicdescr,$value=NULL){
 			$args = func_get_args();
 			if (count($args) > 0) {
 				$args[0] = $lang->_($args[0]);
-				$app ->enqueueMessage(call_user_func_array('sprintf', $args),'info');
+				$msg = call_user_func_array('sprintf', $args);
 			}
 		}	else {
-			// 		$app ->enqueueMessage('Info: '.JText::_($publicdescr));
-			$publicdescr = $lang->_($publicdescr);
-			$app ->enqueueMessage('Info: '.JText::_($publicdescr),'info');
-			// 		debug_print_backtrace();
+			$msg = vmText::_($publicdescr);
 		}
 	}
 	else {
 		if (VmConfig::$maxMessageCount == VmConfig::$maxMessage) {
-			$app->enqueueMessage ('Max messages reached', 'info');
+			$msg = 'Max messages reached';
+			$type = 'warning';
+			VmConfig::$maxMessageCount++;
+		} else {
+			return false;
 		}
 	}
 
+	if(!empty($msg)){
+		VmConfig::$maxMessageCount++;
+		$app ->enqueueMessage($msg,$type);
+	} else {
+		vmTrace('vmInfo Message empty '.$msg);
+	}
+
+	return $msg;
 }
 
 /**
@@ -102,9 +158,8 @@ function vmInfo($publicdescr,$value=NULL){
  */
 function vmAdminInfo($publicdescr,$value=NULL){
 
-	if(!class_exists('Permissions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'permissions.php');
-	if(Permissions::getInstance()->isSuperVendor()){
-		VmConfig::$maxMessageCount++;
+	if(VmConfig::$echoAdmin){
+
 		$app = JFactory::getApplication();
 
 		if(VmConfig::$maxMessageCount<VmConfig::$maxMessage){
@@ -114,18 +169,21 @@ function vmAdminInfo($publicdescr,$value=NULL){
 				$args = func_get_args();
 				if (count($args) > 0) {
 					$args[0] = $lang->_($args[0]);
+					VmConfig::$maxMessageCount++;
 					$app ->enqueueMessage(call_user_func_array('sprintf', $args),'info');
 				}
 			}	else {
-				// 		$app ->enqueueMessage('Info: '.JText::_($publicdescr));
+				VmConfig::$maxMessageCount++;
 				$publicdescr = $lang->_($publicdescr);
-				$app ->enqueueMessage('Info: '.JText::_($publicdescr),'info');
-				// 		debug_print_backtrace();
+				$app ->enqueueMessage('Info: '.vmText::_($publicdescr),'info');
 			}
 		}
 		else {
 			if (VmConfig::$maxMessageCount == VmConfig::$maxMessage) {
 				$app->enqueueMessage ('Max messages reached', 'info');
+				VmConfig::$maxMessageCount++;
+			}else {
+				return false;
 			}
 		}
 	}
@@ -134,9 +192,9 @@ function vmAdminInfo($publicdescr,$value=NULL){
 
 function vmWarn($publicdescr,$value=NULL){
 
-	VmConfig::$maxMessageCount++;
-	$app = JFactory::getApplication();
 
+	$app = JFactory::getApplication();
+	$msg = '';
 	if(VmConfig::$maxMessageCount<VmConfig::$maxMessage){
 		$lang = JFactory::getLanguage();
 		if($value!==NULL){
@@ -144,19 +202,29 @@ function vmWarn($publicdescr,$value=NULL){
 			$args = func_get_args();
 			if (count($args) > 0) {
 				$args[0] = $lang->_($args[0]);
-				$app ->enqueueMessage(call_user_func_array('sprintf', $args),'warning');
+				$msg = call_user_func_array('sprintf', $args);
+
 			}
 		}	else {
-			// 		$app ->enqueueMessage('Info: '.JText::_($publicdescr));
-			$publicdescr = $lang->_($publicdescr);
-			$app ->enqueueMessage('Info: '.$publicdescr,'warning');
-			// 		debug_print_backtrace();
+			$msg = $lang->_($publicdescr);
 		}
 	}
 	else {
 		if (VmConfig::$maxMessageCount == VmConfig::$maxMessage) {
-			$app->enqueueMessage ('Max messages reached', 'info');
+			$msg = 'Max messages reached';
+			VmConfig::$maxMessageCount++;
+		} else {
+			return false;
 		}
+	}
+
+	if(!empty($msg)){
+		VmConfig::$maxMessageCount++;
+		$app ->enqueueMessage($msg,'warning');
+		return $msg;
+	} else {
+		vmTrace('vmWarn Message empty');
+		return false;
 	}
 
 }
@@ -167,36 +235,42 @@ function vmWarn($publicdescr,$value=NULL){
  */
 function vmError($descr,$publicdescr=''){
 
-	VmConfig::$maxMessageCount++;
-	$app = JFactory::getApplication();
+	$msg = '';
+	$lang = JFactory::getLanguage();
+	$descr = $lang->_($descr);
+	$adminmsg =  'vmError: '.$descr;
+	if (empty($descr)) {
+		vmTrace ('vmError message empty');
+		return;
+	}
+	logInfo($adminmsg,'error');
+	if(VmConfig::$maxMessageCount< (VmConfig::$maxMessage+5)){
 
-	if(VmConfig::$maxMessageCount<VmConfig::$maxMessage){
-		if (empty($descr)) {
-			vmTrace ('vmError message empty');
-		}
-		$lang = JFactory::getLanguage();
-		if (!class_exists ('Permissions')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'permissions.php');
-		}
-		if(Permissions::getInstance()->check('admin')){
-			$app = JFactory::getApplication();
-			$descr = $lang->_($descr);
-			$app ->enqueueMessage('vmError: '.$descr,'error');
+		if(VmConfig::$echoAdmin){
+			$msg = $adminmsg;
 		} else {
 			if(!empty($publicdescr)){
-				$app = JFactory::getApplication();
-
-				$publicdescr = $lang->_($publicdescr);
-				$app ->enqueueMessage($publicdescr,'error');
+				$msg = $lang->_($publicdescr);
 			}
 		}
 	}
 	else {
-		if (VmConfig::$maxMessageCount == VmConfig::$maxMessage) {
-			$app->enqueueMessage ('Max messages reached', 'info');
+		if (VmConfig::$maxMessageCount == (VmConfig::$maxMessage+5)) {
+			$msg = 'Max messages reached';
+			VmConfig::$maxMessageCount++;
+		} else {
+			return false;
 		}
 	}
 
+	if(!empty($msg)){
+		VmConfig::$maxMessageCount++;
+		$app = JFactory::getApplication();
+		$app ->enqueueMessage($msg,'error');
+		return $msg;
+	}
+
+	return $msg;
 
 }
 
@@ -210,17 +284,12 @@ function vmError($descr,$publicdescr=''){
 function vmdebug($debugdescr,$debugvalues=NULL){
 
 	if(VMConfig::showDebug()  ){
-
-		VmConfig::$maxMessageCount++;
 		$app = JFactory::getApplication();
 
 		if(VmConfig::$maxMessageCount<VmConfig::$maxMessage){
 			if($debugvalues!==NULL){
-				// 			$debugdescr .=' <pre>'.print_r($debugvalues,1).'<br />'.print_r(get_class_methods($debugvalues),1).'</pre>';
-
 				$args = func_get_args();
 				if (count($args) > 1) {
-					// 				foreach($args as $debugvalue){
 					for($i=1;$i<count($args);$i++){
 						if(isset($args[$i])){
 							$debugdescr .=' Var'.$i.': <pre>'.print_r($args[$i],1).'<br />'.print_r(get_class_methods($args[$i]),1).'</pre>';
@@ -230,17 +299,22 @@ function vmdebug($debugdescr,$debugvalues=NULL){
 				}
 			}
 
-			if(!VmConfig::$echoDebug){
+			if(VmConfig::$echoDebug){
+				VmConfig::$maxMessageCount++;
+				echo $debugdescr."\n";
+			} else if(VmConfig::$logDebug){
+				logInfo($debugdescr,'vmdebug');
+			}else {
+				VmConfig::$maxMessageCount++;
 				$app = JFactory::getApplication();
 				$app ->enqueueMessage('<span class="vmdebug" >vmdebug '.$debugdescr.'</span>');
-			} else {
-				echo $debugdescr;
 			}
 
 		}
 		else {
 			if (VmConfig::$maxMessageCount == VmConfig::$maxMessage) {
 				$app->enqueueMessage ('Max messages reached', 'info');
+				VmConfig::$maxMessageCount++;
 			}
 		}
 
@@ -251,19 +325,20 @@ function vmdebug($debugdescr,$debugvalues=NULL){
 function vmTrace($notice,$force=FALSE){
 
 	if($force || (VMConfig::showDebug() ) ){
-		//$app = JFactory::getApplication();
-		//
 		ob_start();
 		echo '<pre>';
-		debug_print_backtrace();
+		debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS,10);
+
 		echo '</pre>';
 		$body = ob_get_contents();
 		ob_end_clean();
-		if(!VmConfig::$echoDebug){
+		if(VmConfig::$echoDebug){
+			echo $notice.' <pre>'.$body.'</pre>';
+		} else if(VmConfig::$logDebug){
+			logInfo($body,$notice);
+		} else {
 			$app = JFactory::getApplication();
 			$app ->enqueueMessage($notice.' '.$body.' ');
-		} else {
-			echo $notice.' <pre>'.$body.'</pre>';
 		}
 
 	}
@@ -279,9 +354,12 @@ function vmRamPeak($notice,$value=NULL){
 }
 
 
-function vmSetStartTime($name='current'){
-
-	VmConfig::setStartTime($name, microtime(TRUE));
+function vmSetStartTime($name='current', $time = 0){
+	if($time === 0){
+		VmConfig::$_starttime[$name] = microtime(TRUE);
+	} else {
+		VmConfig::$_starttime[$name] = $time;
+	}
 }
 
 function vmTime($descr,$name='current'){
@@ -311,6 +389,83 @@ function vmTime($descr,$name='current'){
 }
 
 /**
+ * logInfo
+ * to help debugging Payment notification for example
+ */
+function logInfo ($text, $type = 'message') {
+
+	static $file = null;
+	//vmSetStartTime('logInfo');
+	$head = false;
+
+	if($file===null){
+		if(!class_exists('JFile')) require(VMPATH_LIBS.DS.'joomla'.DS.'filesystem'.DS.'file.php');
+
+		$config = JFactory::getConfig();
+		$log_path = $config->get('log_path', VMPATH_ROOT . "/log" );
+		$file = $log_path . "/" . VmConfig::$logFileName . VmConfig::LOGFILEEXT;
+
+		if (!is_dir($log_path)) {
+			jimport('joomla.filesystem.folder');
+			if (!JFolder::create($log_path)) {
+				if (VmConfig::$echoAdmin){
+					$msg = 'Could not create path ' . $log_path . ' to store log information. Check your folder ' . $log_path . ' permissions.';
+					$app = JFactory::getApplication();
+					$app->enqueueMessage($msg, 'error');
+				}
+				return;
+			}
+		}
+		if (!is_writable($log_path)) {
+			if (VmConfig::$echoAdmin){
+				$msg = 'Path ' . $log_path . ' to store log information is not writable. Check your folder ' . $log_path . ' permissions.';
+				$app = JFactory::getApplication();
+				$app->enqueueMessage($msg, 'error');
+			}
+			return;
+		}
+
+		if (!JFile::exists($file)) {
+			// blank line to prevent information disclose: https://bugs.php.net/bug.php?id=60677
+			// from Joomla log file
+			$head = "#\n";
+			$head .= '#<?php die("Forbidden."); ?>'."\n";
+
+		}
+	}
+
+
+	// Initialise variables.
+	/*if(!class_exists('JClientHelper')) require(VMPATH_LIBS.DS.'joomla'.DS.'client'.DS.'helper.php');
+	$FTPOptions = JClientHelper::getCredentials('ftp');
+	if (!empty($FTPOptions['enabled'] == 0)){
+		//For logging we do not support FTP. For loggin without file permissions using FTP, we need to load the file,..
+		//append the text and replace the file. This cannot be fast per FTP and therefore we disable it.
+	} else {*/
+
+		$fp = fopen ($file, 'a');
+		if ($fp) {
+			if ($head) {
+				fwrite ($fp,  $head);
+			}
+
+			fwrite ($fp, "\n" . JFactory::getDate()->format ('Y-m-d H:i:s'));
+			fwrite ($fp,  " ".strtoupper($type) . ' ' . $text);
+			fclose ($fp);
+		} else {
+			if (VmConfig::$echoAdmin){
+				$msg = 'Could not write in file  ' . $file . ' to store log information. Check your file ' . $file . ' permissions.';
+				$app = JFactory::getApplication();
+				$app->enqueueMessage($msg, 'error');
+			}
+		}
+	//}
+	//vmTime('time','logInfo');
+	return;
+
+}
+
+/**
 * The time how long the config in the session is valid.
 * While configuring the store, you should lower the time to 10 seconds.
 * Later in a big store it maybe useful to rise this time up to 1 hr.
@@ -324,36 +479,51 @@ class VmConfig {
 
 	// instance of class
 	private static $_jpConfig = NULL;
-	private static $_debug = NULL;
+	public static $_debug = NULL;
+	private static $_secret = NULL;
 	public static $_starttime = array();
 	public static $loaded = FALSE;
 
 	public static $maxMessageCount = 0;
 	public static $maxMessage = 100;
 	public static $echoDebug = FALSE;
+	public static $logDebug = FALSE;
+	public static $logFileName = 'com_virtuemart';
+	public static $echoAdmin = FALSE;
+	const LOGFILEEXT = '.log.php';
 
-	var $lang = FALSE;
+	public static $vmlang = false;	//actually selected
+	public static $vmLangSelected = false;	//desired by user
+	public static $defaultLang = false;
+	public static $jDefLang = false;
+	public static $vmlangTag = '';
+	public static $vmlangSef = '';
+	public static $langs = array();
+	public static $jLangCount = 1;
+	public static $langCount = 0;
 
+	public static $mType = 'info';
 	var $_params = array();
 	var $_raw = array();
+	public static $installed = false;
 
 
 	private function __construct() {
 
 		if(function_exists('mb_ereg_replace')){
 			mb_regex_encoding('UTF-8');
+			mb_internal_encoding('UTF-8');
 		}
+		self::echoAdmin();
+		ini_set('precision', 15);	//We need at least 20 for correct precision if json is using a bigInt ids
+		//But 15 has the best precision, using higher precision adds fantasy numbers to the end, but creates also errors in rounding
+		ini_set('serialize_precision',16);
 
-
-		//todo
-		/*	if(strpos(JVERSION,'1.5') === false){
-			$jlang = JFactory::getLanguage();
-			$jlang->load('virtuemart', null, 'en-GB', true); // Load English (British)
-			$jlang->load('virtuemart', null, $jlang->getDefault(), true); // Load the site's default language
-			$jlang->load('virtuemart', null, null, true); // Load the currently selected language
-		}*/
-
-
+		if(JVM_VERSION<3){
+			self::$mType = 'info';
+		} else {
+			self::$mType = 'notice';
+		}
 	}
 
 	static function getStartTime(){
@@ -364,21 +534,36 @@ class VmConfig {
 		self::$_starttime[$name] = $value;
 	}
 
-	static function showDebug(){
+	static function getSecret(){
+		return self::$_secret;
+	}
 
-		//return self::$_debug = true;	//this is only needed, when you want to debug THIS file
-		if(self::$_debug===NULL){
+	static function echoAdmin(){
+		if(self::$echoAdmin===FALSE){
+			$user = JFactory::getUser();
+			if($user->authorise('core.admin','com_virtuemart') or $user->authorise('core.manage','com_virtuemart')){
+				self::$echoAdmin = true;
+			} else {
+				self::$echoAdmin = false;
+			}
+		}
+	}
 
-			$debug = VmConfig::get('debug_enable','none');
-			// 			$app = JFactory::getApplication();
-			// 			$app ->enqueueMessage($debug);
+	static function showDebug($override=false){
 
+		if(self::$_debug===NULL or $override!=false){
+			if($override) {
+				$debug = $override;
+				$dev = $override;
+			} else {
+				$debug = VmConfig::get('debug_enable','none');
+				$dev = VmConfig::get('vmdev',0);
+			}
+
+			//$debug = 'all';	//this is only needed, when you want to debug THIS file
 			// 1 show debug only to admins
 			if($debug === 'admin' ){
-				if (!class_exists ('Permissions')) {
-					require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'permissions.php');
-				}
-				if(Permissions::getInstance()->check('admin')){
+				if(VmConfig::$echoAdmin){
 					self::$_debug = TRUE;
 				} else {
 					self::$_debug = FALSE;
@@ -395,11 +580,108 @@ class VmConfig {
 				}
 			}
 
+			if($dev === 'admin' ){
+				if(VmConfig::$echoAdmin){
+					$dev = TRUE;
+				} else {
+					$dev = FALSE;
+				}
+			}
+			// 2 show debug to anyone
+			else {
+				if ($dev === 'all') {
+					$dev = TRUE;
+				}
+				// else dont show debug
+				else {
+					$dev = FALSE;
+				}
+			}
+
+			self::setErrorReporting($dev);
+
 		}
 
 		return self::$_debug;
 	}
 
+	static function setErrorReporting($dev,$force = false){
+
+		$ret = array();
+		if($dev){
+			$ret[0] = ini_set('display_errors', '-1');
+			if(version_compare(phpversion(),'5.4.0','<' )){
+				vmdebug('PHP 5.3');
+				$ret[1] = error_reporting( E_ALL ^ E_STRICT );
+			} else {
+				vmdebug('PHP 5.4');
+				$ret[1] = error_reporting( E_ALL );
+			}
+			vmdebug('Show All Errors');
+
+		} else {
+			$jconfig = JFactory::getConfig();
+			$errep = $jconfig->get('error_reporting');
+			if ( $errep == 'default' or $force) {
+				$ret[0] = ini_set('display_errors', 0);
+				$ret[1] = error_reporting(E_ERROR | E_WARNING | E_PARSE);
+			}
+		}
+		return $ret;
+	}
+
+/**
+	 * Ensures a certain Memory limit for php (if server supports it)
+	 * @author Max Milbers
+	 * @param int $minMemory
+	 */
+	static function ensureMemoryLimit($minMemory=0){
+
+		if($minMemory === 0) $minMemory = VmConfig::get('minMemory','128M');
+		$memory_limit = VmConfig::getMemoryLimit();
+
+		if($memory_limit<$minMemory)  @ini_set( 'memory_limit', $minMemory.'M' );
+	}
+
+	/**
+	 * Returns the PHP memory limit of the server in MB, regardless the used unit
+	 * @author Max Milbers
+	 * @return float|int PHP memory limit in MB
+	 */
+	static function getMemoryLimit(){
+
+		$iniValue = ini_get('memory_limit');
+
+		if($iniValue<=0) return 2048;	//We assume 2048MB as unlimited setting
+		$iniValue = strtoupper($iniValue);
+		if(strpos($iniValue,'M')!==FALSE){
+			$memory_limit = (int) substr($iniValue,0,-1);
+		} else if(strpos($iniValue,'K')!==FALSE){
+			$memory_limit = (int) substr($iniValue,0,-1) / 1024.0;
+		} else if(strpos($iniValue,'G')!==FALSE){
+			$memory_limit = (int) substr($iniValue,0,-1) * 1024.0;
+		} else {
+			$memory_limit = (int) $iniValue / 1048576.0;
+		}
+		return $memory_limit;
+	}
+
+	static function ensureExecutionTime($minTime=0){
+
+		if($minTime === 0) $minTime = (int) VmConfig::get('minTime',120);
+		$max_execution_time = self::getExecutionTime();
+		if((int)$max_execution_time<$minTime) {
+			@ini_set( 'max_execution_time', $minTime );
+		}
+	}
+
+	static function getExecutionTime(){
+		$max_execution_time = (int) ini_get('max_execution_time');
+		if(empty($max_execution_time)){
+			$max_execution_time = (int) VmConfig::get('minTime',120);
+		}
+		return $max_execution_time;
+	}
 
 	/**
 	 * loads a language file, the trick for us is that always the config option enableEnglish is tested
@@ -411,21 +693,76 @@ class VmConfig {
 	 * @param $name
 	 * @return bool
 	 */
-	static public function loadJLang($name,$site=false,$loadCore=false){
+	static public function loadJLang($name,$site=false,$tag=0){
 
-		$path = JPATH_ADMINISTRATOR;
-		if($site){
-			$path = JPATH_SITE;
+		$jlang = JFactory::getLanguage();
+		if(empty($tag))$tag = $jlang->getTag();
+
+		static $loaded = array();
+		if(isset($loaded[(int)$site.$tag.$name])){
+			//vmdebug('lang already cached '.$site.$tag.$name);
+			return $jlang;
 		}
-		$jlang =JFactory::getLanguage();
-		$tag = $jlang->getTag();
-		if(VmConfig::get('enableEnglish', 1) and $tag!='en-GB'){
-			$jlang->load($name, $path, 'en-GB');
+
+		$path = $basePath = VMPATH_ADMIN;
+		if($site){
+			$path = $basePath = VMPATH_SITE;
+		}
+
+		if(VmConfig::get('enableEnglish', true) and $tag!='en-GB' and !isset($loaded[(int)$site.'en-GB'.$name])){
+			$testpath = $basePath.DS.'language'.DS.'en-GB'.DS.'en-GB.'.$name.'.ini';
+			if(!file_exists($testpath)){
+				$epath = JPATH_ADMINISTRATOR;
+				if($site){
+					$epath = JPATH_SITE;
+				}
+			} else {
+				$epath = $path;
+			}
+			$jlang->load($name, $epath, 'en-GB');
+			$loaded[(int)$site.'en-GB'.$name] = true;
+		}
+
+		$testpath = $basePath.DS.'language'.DS.$tag.DS.$tag.'.'.$name.'.ini';
+		if(!file_exists($testpath)){
+			$path = JPATH_ADMINISTRATOR;
+			if($site){
+				$path = JPATH_SITE;
+			}
 		}
 
 		$jlang->load($name, $path,$tag,true);
+		$loaded[(int)$site.$tag.$name] = true;
+		return $jlang;
+	}
 
- 	}
+	/**
+	 * @static
+	 * @author Max Milbers, Valerie Isaksen
+	 * @param $name
+	 */
+	static public function loadModJLang($name){
+
+		$jlang =JFactory::getLanguage();
+		$tag = $jlang->getTag();
+
+		$path = $basePath = JPATH_VM_MODULES.DS.$name;
+		if(VmConfig::get('enableEnglish', true) and $tag!='en-GB'){
+			if(!file_exists($basePath.DS.'language'.DS.'en-GB'.DS.'en-GB.'.$name.'.ini')){
+				$path = JPATH_ADMINISTRATOR;
+			}
+			$jlang->load($name, $path, 'en-GB');
+			$path = $basePath = JPATH_VM_MODULES.DS.$name;
+		}
+
+		if(!file_exists($basePath.DS.'language'.DS.$tag.DS.$tag.'.'.$name.'.ini')){
+			$path = JPATH_ADMINISTRATOR;
+		}
+		$jlang->load($name, $path,$tag,true);
+
+		return $jlang;
+	}
+
 
 	/**
 	 * Loads the configuration and works as singleton therefore called static. The call using the program cache
@@ -456,172 +793,224 @@ class VmConfig {
 	static public function loadConfig($force = FALSE,$fresh = FALSE) {
 
 		if($fresh){
-			return self::$_jpConfig = new VmConfig();
+			self::$_jpConfig = new VmConfig();
+			self::setdbLanguageTag();
+			return self::$_jpConfig;
 		}
 		vmSetStartTime('loadConfig');
 		if(!$force){
 			if(!empty(self::$_jpConfig) && !empty(self::$_jpConfig->_params)){
-
 				return self::$_jpConfig;
 			}
 		}
 
 		self::$_jpConfig = new VmConfig();
 
-		$db = JFactory::getDBO();
-		$query = 'SHOW TABLES LIKE "%virtuemart_configs%"';
-		$db->setQuery($query);
-		$configTable = $db->loadResult();
-// 		self::$_debug = true;
-
-		if(empty($configTable)){
-			self::$_jpConfig->installVMconfig();
-		}
+		if(!class_exists('VirtueMartModelConfig')) require(VMPATH_ADMIN .'/models/config.php');
+		$configTable  = VirtueMartModelConfig::checkConfigTableExists();
 
 		$app = JFactory::getApplication();
-		$install = 'no';
-		if(empty(self::$_jpConfig->_raw)){
+		$db = JFactory::getDBO();
+
+		self::$installed = true;
+		$install = vRequest::getInt('install',false);
+		$redirected = vRequest::getInt('redirected',false);
+		$link='';
+		$msg = '';
+
+		if(empty($configTable) ){
+			self::$installed = false;
+			$jlang =JFactory::getLanguage();
+			$selectedLang = $jlang->getTag();
+
+			if(empty($selectedLang)){
+				$selectedLang = $jlang->setLanguage($selectedLang);
+			}
+
+			$q = 'SELECT `element` FROM `#__extensions` WHERE type = "language" and enabled = "1"';
+			$db->setQuery($q);
+			$knownLangs = $db->loadColumn();
+			//vmdebug('Selected language '.$selectedLang.' $knownLangs ',$knownLangs);
+
+			if($app->isAdmin() and !$redirected and !in_array($selectedLang,$knownLangs)){
+				//$option = vRequest::getVar('option');
+				//VmConfig::$_debug=true;
+				//vmdebug('my option',$option,$_REQUEST);
+				//if($option!='com_languages'){
+					$msg = 'Install your selected language <b>'.$selectedLang.'</b> first in <a href="'.$link.'">joomla language manager</a>, just select then the component VirtueMart under menu "component", to proceed with the installation ';
+					//$link = 'index.php?option=com_installer&view=languages&redirected=1';
+					//$app->redirect($link,$msg);
+				//}
+				$app->enqueueMessage($msg);
+			}
+
+			self::$installed = VirtueMartModelConfig::checkVirtuemartInstalled();
+			if(!self::$installed){
+				if(!$redirected and !$install){
+					$link = 'index.php?option=com_virtuemart&view=updatesmigration&redirected=1';
+
+					if($app->isSite()){
+						$link = JURI::root(true).'/administrator/'.$link;
+					} else {
+						if(empty($msg)) $msg = 'Install Virtuemart first, click on the menu component and select VirtueMart';
+					}
+				}
+			}
+		} else {
 			$query = ' SELECT `config` FROM `#__virtuemart_configs` WHERE `virtuemart_config_id` = "1";';
 			$db->setQuery($query);
 			self::$_jpConfig->_raw = $db->loadResult();
-			if(empty(self::$_jpConfig->_raw)){
-				if(self::installVMconfig()){
-					$install = 'yes';
-					$db->setQuery($query);
-					self::$_jpConfig->_raw = $db->loadResult();
-					self::$_jpConfig->_params = NULL;
-				} else {
-					$app ->enqueueMessage('Error loading configuration file','Error loading configuration file, please contact the storeowner');
-				}
-			}
+			//vmTime('time to load config','loadConfig');
 		}
 
-		$i = 0;
-
-		$pair = array();
-		if (!empty(self::$_jpConfig->_raw)) {
-			$config = explode('|', self::$_jpConfig->_raw);
-			foreach($config as $item){
-				$item = explode('=',$item);
-				if(!empty($item[1])){
-					// if($item[0]!=='offline_message' && $item[0]!=='dateformat' ){
-					if($item[0]!=='offline_message' ){
-						try {
-							$value = @unserialize($item[1] );
-
-							if($value===FALSE){
-								$app ->enqueueMessage('Exception in loadConfig for unserialize '.$item[0]. ' '.$item[1]);
-								$uri = JFactory::getURI();
-								$configlink = $uri->root() . 'administrator/index.php?option=com_virtuemart&view=config';
-								$app ->enqueueMessage('To avoid this message, enter your virtuemart <a href="'.$configlink.'">config</a> and just save it one time');
-							} else {
-								$pair[$item[0]] = $value;
-							}
-						}catch (Exception $e) {
-							vmdebug('Exception in loadConfig for unserialize '. $e->getMessage(),$item);
-						}
-					} else {
-						$pair[$item[0]] = unserialize(base64_decode($item[1]) );
-					}
-
-				} else {
-					$pair[$item[0]] ='';
-				}
-
+		if(empty(self::$_jpConfig->_raw)){
+			$_value = VirtueMartModelConfig::readConfigFile();
+			if (!$_value) {
+				vmError('Serious error, config file could not be read');
+				return FALSE;
 			}
+			$_value = join('|', $_value);
+			self::$_jpConfig->_raw = $_value;
+			self::$_jpConfig->setParams(self::$_jpConfig->_raw);
 
-// 			$pair['sctime'] = microtime(true);
-			self::$_jpConfig->_params = $pair;
-
-			self::$_jpConfig->set('sctime',microtime(TRUE));
-			self::$_jpConfig->set('vmlang',self::setdbLanguageTag());
-			self::$_jpConfig->setSession();
-			vmTime('loadConfig db '.$install,'loadConfig');
-			return self::$_jpConfig;
+			self::$_jpConfig->storeConfig();
+		} else {
+			self::$_jpConfig->setParams(self::$_jpConfig->_raw);
 		}
 
+		self::$_secret = JFactory::getConfig()->get('secret');
 
-		$app ->enqueueMessage('Attention config is empty');
+		self::$_jpConfig->_params['sctime'] = microtime(TRUE);
+		self::$_jpConfig->_params['vmlang'] = self::setdbLanguageTag();
+
+		vmTime('time to load config','loadConfig');
+
+		if($app->isSite()){
+			// try plugins
+			JPluginHelper::importPlugin('vmuserfield');
+			$dispatcher = JDispatcher::getInstance();
+			$dispatcher->trigger('plgVmInitialise', array());
+		}
+
+		if(!self::$installed){
+			$user = JFactory::getUser();
+			if($user->authorise('core.admin','com_virtuemart') and ($install or $redirected)){
+				VmConfig::$_jpConfig->set('dangeroustools',1);
+			}
+			if(!empty($msg)) $app->enqueueMessage($msg);
+			if(!empty($link)) $app->redirect($link);
+		}
+
 		return self::$_jpConfig;
 	}
 
+	static public function storeConfig(){
 
-	/*
-	 * Set defaut language tag for translatable table
-	 *
-	 * @author Patrick Kohl
-	 * @return string valid langtag
-	 */
-	static public function setdbLanguageTag($langTag = 0) {
+		$user = JFactory::getUser();
+		if($user->authorise('core.admin','com_virtuemart')){
+			$installed = VirtueMartModelConfig::checkVirtuemartInstalled();
+			if($installed){
 
-		if (self::$_jpConfig->lang) {
-			return self::$_jpConfig->lang;
-		}
+				VirtueMartModelConfig::installVMconfigTable();
 
-		$langs = (array)self::$_jpConfig->get('active_languages',array());
-		$isBE = !JFactory::getApplication()->isSite();
-		if($isBE){
-			$siteLang = JRequest::getVar('vmlang',FALSE );// we must have this for edit form save
-			//Why not using the userstate?
-		} else {
-			if (!$siteLang = JRequest::getVar('vmlang',FALSE )) {
-				if ( JVM_VERSION===1 ) {
-				// try to find in session lang
-				// this work with joomfish j1.5 (application.data.lang)
+				$confData = array();
+				$confData['virtuemart_config_id'] = 1;
 
-				$session  =JFactory::getSession();
-				$registry = $session->get('registry');
-				$siteLang = $registry->getValue('application.data.lang') ;
-				} else  {
-				// TODO test wiht j1.7
-				jimport('joomla.language.helper');
-				$languages = JLanguageHelper::getLanguages('lang_code');
-				$siteLang = JFactory::getLanguage()->getTag();
-				}
-				if ( ! $siteLang ) {
-					// use user default
-					$lang =JFactory::getLanguage();
-					$siteLang = $lang->getTag();
+				$confData['config'] = VmConfig::$_jpConfig->toString();
+				$confTable = VmTable::getInstance('configs', 'Table', array());
+
+				if (!$confTable->bindChecknStore($confData)) {
+					vmError('storeConfig was not able to store config');
 				}
 			}
-			/*//What is the difference of this?
-			$params = JComponentHelper::getParams('com_languages');
-			$siteLang = $params->get('site', 'en_gb');
+		}
+	}
 
-			//or this
-			$siteLang =JFactory::getLanguage()->getTag();
-			*/
+	 /*
+	 * Set defaut language tag for translatable table
+	 *
+	 * @author Max Milbers
+	 * @return string valid langtag
+	 */
+	static public function setdbLanguageTag() {
+
+		if (self::$vmlang) {
+			return self::$vmlang;
 		}
 
+		$langs = (array)self::get('active_languages',array());
+		self::$langCount = count($langs);
+
+		self::$jLangCount = 1;
+		// this code is uses logic derived from language filter plugin in j3 and should work on most 2.5 versions as well
+		if (class_exists('JLanguageHelper') && (method_exists('JLanguageHelper', 'getLanguages'))) {
+			$languages = JLanguageHelper::getLanguages('lang_code');
+			$ltag = JFactory::getLanguage()->getTag();
+			if(isset($languages[$ltag])){
+				self::$vmlangSef = $languages[$ltag]->sef;
+			}
+			self::$jLangCount = count($languages);
+		}
+
+		$siteLang = vRequest::getString('vmlang',false );
+
+		$params = JComponentHelper::getParams('com_languages');
+		$defaultLang = $params->get('site', 'en-GB');//use default joomla
+
+			self::$jDefLang = strtolower(strtr($defaultLang,'-','_'));
+
+
+		if( JFactory::getApplication()->isSite()){
+			if (!$siteLang) {
+				jimport('joomla.language.helper');
+				$siteLang = JFactory::getLanguage()->getTag();
+			}
+		} else {
+			if(!$siteLang){
+				$siteLang = $defaultLang;
+			}
+		}
+
+		self::$vmLangSelected = $siteLang;
 		if(!in_array($siteLang, $langs)) {
-			$params = JComponentHelper::getParams('com_languages');
-			$siteLang = $params->get('site', 'en-GB');//use default joomla
+			if(count($langs)===0){
+				$siteLang = $defaultLang;
+			} else {
+				$siteLang = $langs[0];
+			}
+		}
+		self::$vmlangTag = $siteLang;
+
+		if(count($langs)>1){
+			$lfbs = self::get('vm_lfbs');
+			vmdebug('my lfbs '.$lfbs);
+			if(!empty($lfbs)){
+				$pairs = explode(';',$lfbs);
+				if($pairs and count($pairs)>0){
+					$fbsAssoc = array();
+					foreach($pairs as $pair){
+						$kv = explode('~',$pair);
+						if($kv and count($kv)===2){
+							$fbsAssoc[$kv[0]] = $kv[1];
+						}
+					}
+					if(isset($fbsAssoc[$siteLang])){
+						$defaultLang = $fbsAssoc[$siteLang];
+					}
+					self::set('fbsAssoc',$fbsAssoc);
+				}
+			}
+
+
 		}
 
-		self::$_jpConfig->lang = strtolower(strtr($siteLang,'-','_'));
-		vmdebug('self::$_jpConfig->lang '.self::$_jpConfig->lang);
-		defined('VMLANG') or define('VMLANG', self::$_jpConfig->lang );
+		self::$vmlang = strtolower(strtr($siteLang,'-','_'));
+		self::$defaultLang = strtolower(strtr($defaultLang,'-','_'));
+		vmdebug('LangCount: '.self::$langCount.' $siteLang: '.$siteLang.' self::$vmlangSef: '.self::$vmlangSef.' self::$_jpConfig->lang '.self::$vmlang.' DefLang '.self::$defaultLang);
+		//@deprecated just fallback
+		defined('VMLANG') or define('VMLANG', self::$vmlang );
 
-		return self::$_jpConfig->lang;
-
- 	}
-
-	function setSession(){
-/*		$session = JFactory::getSession();
-		$session->clear('vmconfig');
-		// 		$app = JFactory::getApplication();
-		// 		$app ->enqueueMessage('setSession session cache <pre>'.print_r(self::$_jpConfig->_params,1).'</pre>');
-
-// 		$session->set('vmconfig', base64_encode(serialize(self::$_jpConfig)),'vm');
-
-		//We must use base64 for text fields
-		$params = self::$_jpConfig->_params;
-		$params['offline_message'] = base64_encode($params['offline_message']);
-		// $params['dateformat'] = base64_encode($params['dateformat']);
-
-		$params['sctime'] = microtime(true);
-		$session->set('vmconfig', serialize($params),'vm');*/
-		self::$loaded = TRUE;
+		return self::$vmlang;
 	}
 
 	/**
@@ -666,13 +1055,9 @@ class VmConfig {
 			self::loadConfig();
 		}
 
-		if (!class_exists ('Permissions')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'permissions.php');
-		}
-		if(Permissions::getInstance()->check('admin')){
+		if($admin = JFactory::getUser()->authorise('core.admin', 'com_virtuemart')){
 			if (!empty(self::$_jpConfig->_params)) {
 				self::$_jpConfig->_params[$key] = $value;
-				self::$_jpConfig->setSession();
 			}
 		}
 
@@ -684,13 +1069,58 @@ class VmConfig {
 	 */
 	function setParams($params){
 
-		if (!class_exists ('Permissions')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'permissions.php');
-		}
-		if(Permissions::getInstance()->check('admin')){
-			self::$_jpConfig->_params = array_merge($this->_params,$params);
+		$config = explode('|', $params);
+		foreach($config as $item){
+			$item = explode('=',$item);
+			if(!empty($item[1])){
+				$value = self::parseJsonUnSerialize($item[1],$item[0]);
+				if($value!==null){
+					$pair[$item[0]] = $value;
+				}
+
+			} else {
+				$pair[$item[0]] ='';
+			}
+
 		}
 
+		self::$_jpConfig->_params = $pair;
+	}
+
+
+	public static function parseJsonUnSerialize($in,$b64Str = false){
+
+		$value = json_decode($in ,$b64Str);
+		$ser = false;
+		switch(json_last_error()) {
+			case JSON_ERROR_DEPTH:
+				echo ' - Maximum stack depth exceeded';
+				return null;
+			case JSON_ERROR_CTRL_CHAR:
+				echo ' - Unexpected control character found';
+				$ser = true;
+				break;
+			case JSON_ERROR_SYNTAX:
+				//echo ' - Syntax error, malformed JSON';
+				$ser = true;
+				break;
+			case JSON_ERROR_NONE:
+				return $value;
+		}
+
+		if($ser){
+			try {
+				if($b64Str and $b64Str==='offline_message' ){
+					$value = @unserialize(base64_decode($in) );
+				} else {
+					$value = @unserialize( $in );
+				}
+				vmdebug('Error in Json_encode use unserialize ',$in,$value);
+				return $value;
+			}catch (Exception $e) {
+				vmdebug('Exception in loadConfig for unserialize '. $e->getMessage(),$in);
+			}
+		}
 	}
 
 	/**
@@ -699,19 +1129,12 @@ class VmConfig {
 	 */
 	function toString(){
 		$raw = '';
-		$db = JFactory::getDBO();
 
-		jimport( 'joomla.utilities.arrayhelper' );
 		foreach(self::$_jpConfig->_params as $paramkey => $value){
 
 			//Texts get broken, when serialized, therefore we do a simple encoding,
 			//btw we need serialize for storing arrays   note by Max Milbers
-//			if($paramkey!=='offline_message' && $paramkey!=='dateformat'){
-			if($paramkey!=='offline_message'){
-				$raw .= $paramkey.'='.serialize($value).'|';
-			} else {
-				$raw .= $paramkey.'='.base64_encode(serialize($value)).'|';
-			}
+			$raw .= $paramkey.'='.json_encode($value).'|';
 		}
 		self::$_jpConfig->_raw = substr($raw,0,-1);
 		return self::$_jpConfig->_raw;
@@ -724,10 +1147,7 @@ class VmConfig {
 	 * @param boolean $includeDevStatus True to include the development status
 	 * @return String of the currently installed version
 	 */
-	static function getInstalledVersion($includeDevStatus=FALSE)
-	{
-		// Get the installed version from the wmVersion class.
-
+	static function getInstalledVersion($includeDevStatus=FALSE) {
 		return vmVersion::$RELEASE;
 	}
 
@@ -739,604 +1159,199 @@ class VmConfig {
 		return (strpos(JVERSION,'1.5') === 0);
 	}
 
+	static public function isSuperVendor($uid = 0){
+		return vmAccess::isSuperVendor($uid);
+	}
+}
 
-	function getCreateConfigTableQuery(){
+class vmAccess {
 
-		return "CREATE TABLE IF NOT EXISTS `#__virtuemart_configs` (
-  `virtuemart_config_id` tinyint(1) unsigned NOT NULL AUTO_INCREMENT,
-  `config` text,
-  `created_on` datetime NOT NULL default '0000-00-00 00:00:00',
-  `created_by` int(11) NOT NULL DEFAULT 0,
-  `modified_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `modified_by` int(11) NOT NULL DEFAULT 0,
-  `locked_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `locked_by` int(11) NOT NULL DEFAULT 0,
-  PRIMARY KEY (`virtuemart_config_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 COMMENT='Holds configuration settings' AUTO_INCREMENT=1 ;";
+	static protected $_virtuemart_vendor_id = array();
+	static protected $_manager = array();
+	static protected $_cu = array();
+	static protected $_cuId = null;
+	static protected $_site = null;
+
+	static public function getBgManagerId(){
+
+		if(!isset(self::$_cuId)){
+			$cuId = JFactory::getSession()->get('vmAdminID',null);
+			//echo $cuId;
+			if($cuId) {
+				if(!class_exists('vmCrypt'))
+					require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcrypt.php');
+				$cuId = vmCrypt::decrypt( $cuId );
+				if(empty($cuId)){
+					$cuId = null;
+				}
+			}
+			self::$_cuId = $cuId;
+		}
+
+		return self::$_cuId;
+	}
+
+	static public function getBgManager($uid = 0){
+
+		if(!isset(self::$_cu[$uid])){
+			if($uid === 0){
+				if(self::$_site){
+					$ui = self::getBgManagerId();
+				} else{
+					$ui = null;
+				}
+			} else {
+				$ui = $uid;
+			}
+			self::$_cu[$uid] = JFactory::getUser($ui);
+		}
+
+		return self::$_cu[$uid];
 	}
 
 	/**
-	 * Read the file vm_config.dat from the install directory, compose the SQL to write
-	 * the config record and store it to the dabase.
+	 * Checks if user is admin or has vendorId=1,
+	 * if superadmin, but not a vendor it gives back vendorId=1 (single vendor, but multiuser administrated)
 	 *
-	 * @param $_section Section from the virtuemart_defaults.cfg file to be parsed. Currently, only 'config' is implemented
-	 * @return Boolean; true on success, false otherwise
-	 * @author Oscar van Eijk
-	 */
-	public function installVMconfig($_section = 'config'){
-
-		$_value = self::readConfigFile(FALSE);
-
-		if (!$_value) {
-			return FALSE;
-		}
-
-		$qry = self::$_jpConfig->getCreateConfigTableQuery();
-		$_db = JFactory::getDBO();
-		$_db->setQuery($qry);
-		$_db->query();
-
-		$query = 'SELECT `virtuemart_config_id` FROM `#__virtuemart_configs`
-						 WHERE `virtuemart_config_id` = 1';
-		$_db->setQuery( $query );
-		if ($_db->query()){
-			$qry = 'DELETE FROM `#__virtuemart_configs` WHERE `virtuemart_config_id`=1';
-			$_db->setQuery($qry);
-			$_db->query();
-		}
-
-
-		$_value = join('|', $_value);
-		$qry = "INSERT INTO `#__virtuemart_configs` (`virtuemart_config_id`, `config`) VALUES ('1', '$_value')";
-
-		self::$_jpConfig->raw = $_value;
-
-		$_db->setQuery($qry);
-		if (!$_db->query()) {
-			JError::raiseWarning(1, 'VmConfig::installVMConfig: '.JText::_('COM_VIRTUEMART_SQL_ERROR').' '.$_db->stderr(TRUE));
-			echo 'VmConfig::installVMConfig: '.JText::_('COM_VIRTUEMART_SQL_ERROR').' '.$_db->stderr(TRUE);
-			die;
-			return FALSE;
-		}else {
-			//vmdebug('Config installed file, store values '.$_value);
-			return TRUE;
-		}
-
-	}
-
-	/**
-	 *
-	 * @author Oscar van Eijk
+	 * @author Mattheo Vicini
 	 * @author Max Milbers
 	 */
-	function readConfigFile($returnDangerousTools){
+	static public function isSuperVendor($uid = 0){
 
-		$_datafile = JPATH_VM_ADMINISTRATOR.DS.'virtuemart.cfg';
-		if (!file_exists($_datafile)) {
-			if (file_exists(JPATH_VM_ADMINISTRATOR.DS.'virtuemart_defaults.cfg-dist')) {
-				if (!class_exists ('JFile')) {
-					require(JPATH_VM_LIBRARIES . DS . 'joomla' . DS . 'filesystem' . DS . 'file.php');
-				}
-				JFile::copy('virtuemart_defaults.cfg-dist','virtuemart.cfg',JPATH_VM_ADMINISTRATOR);
-			} else {
-				JError::raiseWarning(500, 'The data file with the default configuration could not be found. You must configure the shop manually.');
-				return FALSE;
-			}
-
-		} else {
-			vmInfo('Taking config from file');
+		if(self::$_site === null) {
+			$app = JFactory::getApplication();
+			self::$_site = $app->isSite();
 		}
 
-		$_section = '[CONFIG]';
-		$_data = fopen($_datafile, 'r');
-		$_configData = array();
-		$_switch = FALSE;
-		while ($_line = fgets ($_data)) {
-			$_line = trim($_line);
+		if(!isset(self::$_cu[$uid])){
+			self::$_cu[$uid] = self::getBgManager($uid);
+		}
+		$user = self::$_cu[$uid];
 
-			if (strpos($_line, '#') === 0) {
-				continue; // Commentline
-			}
-			if ($_line == '') {
-				continue; // Empty line
-			}
-			if (strpos($_line, '[') === 0) {
-				// New section, check if it's what we want
-				if (strtoupper($_line) == $_section) {
-					$_switch = TRUE; // Ok, right section
+		if(!isset(self::$_virtuemart_vendor_id[$uid])){
+
+			self::$_virtuemart_vendor_id[$uid] = 0;
+			if(!empty( $user->id)){
+				$q='SELECT `virtuemart_vendor_id` FROM `#__virtuemart_vmusers` as `au`
+				WHERE `au`.`virtuemart_user_id`="' .$user->id.'" AND `au`.`user_is_vendor` = "1" ';
+
+				$db= JFactory::getDbo();
+				$db->setQuery($q);
+				$virtuemart_vendor_id = $db->loadResult();
+
+				if ($virtuemart_vendor_id) {
+					self::$_virtuemart_vendor_id[$uid] = $virtuemart_vendor_id;
+					vmdebug('Active vendor '.$virtuemart_vendor_id );
 				} else {
-					$_switch = FALSE;
-				}
-				continue;
-			}
-			if (!$_switch) {
-				continue; // Outside a section or inside the wrong one.
-			}
-
-			if (strpos($_line, '=') !== FALSE) {
-
-				$pair = explode('=',$_line);
-				if(isset($pair[1])){
-					if(strpos($pair[1], 'array:') !== FALSE){
-						$pair[1] = substr($pair[1],6);
-						$pair[1] = explode('|',$pair[1]);
-					}
-					// if($pair[0]!=='offline_message' && $pair[0]!=='dateformat'){
-					if($pair[0]!=='offline_message'){
-						$_line = $pair[0].'='.serialize($pair[1]);
+					if(self::manager('core') or self::manager('managevendors')){
+						vmdebug('Active Mainvendor');
+						self::$_virtuemart_vendor_id[$uid] = 1;
 					} else {
-						$_line = $pair[0].'='.base64_encode(serialize($pair[1]));
+						self::$_virtuemart_vendor_id[$uid] = 0;
 					}
-
-					if($returnDangerousTools && $pair[0] == 'dangeroustools' ){
-						vmdebug('dangeroustools'.$pair[1]);
-						if ($pair[1] == "0") {
-							return FALSE;
-						}
-						else {
-							return TRUE;
-						}
-					}
-
-				} else {
-					$_line = $pair[0].'=';
 				}
-				$_configData[] = $_line;
-
 			}
-
+			if(self::$_virtuemart_vendor_id[$uid] <= 0) vmdebug('isSuperVendor Not a vendor');
 		}
-
-		fclose ($_data);
-
-		if (!$_configData) {
-			return FALSE; // Nothing to do
-		} else {
-			return $_configData;
-		}
+		return self::$_virtuemart_vendor_id[$uid];
 	}
 
+
+	static public function manager($task=0, $uid = 0, $and = false) {
+
+		if(self::$_site === null) {
+			$app = JFactory::getApplication();
+			self::$_site = $app->isSite();
+		}
+
+		if(!isset(self::$_cu[$uid])){
+			self::$_cu[$uid] = self::getBgManager($uid);
+		}
+		$user = self::$_cu[$uid];
+
+		if(!empty($task) and !is_array($task)){
+			$task = array($task);
+		}
+
+		$h = serialize($task).$uid;
+
+		if(!isset(self::$_manager[$h])) {
+
+			if($user->authorise('core.admin') or $user->authorise('core.admin', 'com_virtuemart')) {
+				self::$_manager[$h] = true;
+			} else {
+				self::$_manager[$h] = false;
+				if(self::$_site){
+					$a = $user->authorise('vm.manage', 'com_virtuemart');
+				} else {
+					$a = $user->authorise('core.manage', 'com_virtuemart');
+				}
+
+				if($a){
+					if(empty($task)){
+						self::$_manager[$h] = true;
+					} else {
+						foreach($task as $t){
+							if($user->authorise('vm.'.$t, 'com_virtuemart')){
+								self::$_manager[$h] = true;
+								if(!$and) break;
+							}
+							else if($and) {
+								self::$_manager[$h] = false;
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return self::$_manager[$h];
+	}
+
+	public static function getVendorId($task=0, $uid = 0, $name = 'virtuemart_vendor_id'){
+
+		if(self::$_site === null) {
+			$app = JFactory::getApplication();
+			self::$_site = $app->isSite();
+		}
+
+		if(self::$_site){
+			$feM = vRequest::getString('manage');
+			if(!$feM){
+				//normal shopper in FE and NOT in the FE managing mode
+				vmdebug('getVendorId normal shopper');
+				return vRequest::getInt($name,false);
+			}
+		}
+
+		if($task === 0){
+			$task = 'managevendors';
+		} else if(is_array($task)) {
+			$task[] = 'managevendors';
+		} else {
+			$task = array($task,'managevendors');
+		}
+		if(self::manager($task, $uid)){
+			vmdebug('getVendorId manager');
+			return vRequest::getInt($name,self::isSuperVendor($uid));
+		} else {
+			return self::isSuperVendor($uid);
+		}
+	}
 }
 
-class vmRequest{
+class vmURI{
 
-	static function uword($field, $default, $custom=''){
+	static function getCleanUrl ($JURIInstance = 0,$parts = array('scheme', 'user', 'pass', 'host', 'port', 'path', 'query', 'fragment')) {
 
- 		$source = JRequest::getVar($field,$default);
-
- 		if(function_exists('mb_ereg_replace')){
- 			//$source is string that will be filtered, $custom is string that contains custom characters
- 			return mb_ereg_replace('[^\w'.preg_quote($custom).']', '', $source);
- 		} else {
- 			return preg_replace('/[^\w'.preg_quote($custom).']/', '', $source);
- 		}
- 	}
-
-
-}
-
-/**
- *
- * Class to provide js API of vm
- * @author Patrick Kohl
- * @author Max Milbers
- */
-class vmJsApi{
-
-
-	private function __construct() {
-
-	}
-	/**
-	 * Write a <script></script> element
-	 * @param   string   path to file
-	 * @param   string   library name
-	 * @param   string   library version
-	 * @param   boolean  load minified version
-	 * @return  nothing
-	 */
-
-	public static function js($namespace,$path=FALSE,$version='', $minified = NULL)
-	{
-
-		static $loaded = array();
-		// Only load once
-		// using of namespace assume same library have same namespace
-		// NEVER WRITE FULL NAME AS $namespace IN CASE OF REVISION NUMBER IF YOU WANT PREVENT MULTI LOAD !!!
-		// eg. $namespace = 'jquery.1.8.6' and 'jquery.1.6.2' does not prevent load it
-		// use $namespace = 'jquery',$revision ='1.8.6' , $namespace = 'jquery',$revision ='1.6.2' ...
-		// loading 2 time a JS file with this method simply return and do not load it the second time
-
-
-		if (!empty($loaded[$namespace])) {
-			return;
-		}
-		$file = vmJsApi::setPath($namespace,$path,$version, $minified , 'js');
-		$document = JFactory::getDocument();
-		$document->addScript( $file );
-		$loaded[$namespace] = TRUE;
-	}
-
-	/**
-	 * Write a <link ></link > element
-	 * @param   string   path to file
-	 * @param   string   library name
-	 * @param   string   library version
-	 * @param   boolean   library version
-	 * @return  nothing
-	 */
-
-	public static function css($namespace,$path = FALSE ,$version='', $minified = NULL)
-	{
-
-		static $loaded = array();
-
-		// Only load once
-		// using of namespace assume same css have same namespace
-		// loading 2 time css with this method simply return and do not load it the second time
-
-		if (!empty($loaded[$namespace])) {
-			return;
-		}
-		$file = vmJsApi::setPath( $namespace,$path,  $version='', $minified , 'css');
-
-		$document = JFactory::getDocument();
-		$document->addStyleSheet($file);
-		$loaded[$namespace] = TRUE;
-
-	}
-
-	/*
-	 * Set file path(look in template if relative path)
-	 */
-	public static function setPath( $namespace ,$path = FALSE ,$version='' ,$minified = NULL , $ext = 'js')
-	{
-
-		$version = $version ? '.'.$version : '';
-		$min	 = $minified ? '.min' : '';
-		$file 	 = $namespace.$version.$min.'.'.$ext ;
-		$template = JFactory::getApplication()->getTemplate() ;
-		if ($path === FALSE) {
-			$uri = JPATH_THEMES .'/'. $template.'/'.$ext ;
-			$path= 'templates/'. $template .'/'.$ext ;
-		}
-
-		if (strpos($path, 'templates/'. $template ) !== FALSE)
-		{
-			// Search in template or fallback
-			if (!file_exists($uri.'/'. $file)) {
-				$assets_path = VmConfig::get('assets_general_path','components/com_virtuemart/assets/') ;
-				$path = str_replace('templates/'. $template.'/',$assets_path, $path);
-				// vmdebug('setPath',$assets_path,$path);
-				// vmWarn('file not found in tmpl :'.$file );
-			}
-			$path = JURI::root(TRUE) .'/'.$path;
-
-		}
-		elseif (strpos($path, '//') === FALSE)
-		{
-			$path = JURI::root(TRUE) .'/'.$path;
-		}
-		return $path.'/'.$file ;
-	}
-	/**
-	 * ADD some javascript if needed
-	 * Prevent duplicate load of script
-	 * @ Author KOHL Patrick
-	 */
-	static function jQuery() {
-
-		if (JFactory::getApplication ()->get ('jquery')) {
-			return FALSE;
-		}
-		$isSite = JFactory::getApplication()->isSite();
-		if (!VmConfig::get ('jquery', TRUE) and $isSite) {
-			return FALSE;
-		}
-		$document = JFactory::getDocument();
-		if(VmConfig::get('google_jquery',TRUE)){
-			vmJsApi::js('jquery','//ajax.googleapis.com/ajax/libs/jquery/1.6.4','',TRUE);
-			//$document->addScript('//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js');
-			if (!$isSite) {
-				vmJsApi::js ('jquery-ui', '//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16', '', TRUE);
-			}
-			// if (!$isSite) $document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js');
-		} else {
-			vmJsApi::js( 'jquery',FALSE,'',TRUE);
-			//$document->addScript(JURI::root(true).'/components/com_virtuemart/assets/js/jquery.min.js');
-			if (!$isSite) {
-				vmJsApi::js ('jquery-ui', FALSE, '', TRUE);
-			}
-			//if (!$isSite) $document->addScript(JURI::root(true).'/components/com_virtuemart/assets/js/jquery-ui.min.js');
-		}
-		if (!$isSite) {
-			vmJsApi::js ('jquery.ui.autocomplete.html');
-		}
-		vmJsApi::js( 'jquery.noConflict');
-		JFactory::getApplication()->set('jquery',TRUE);
-		return TRUE;
-	}
-	// Virtuemart product and price script
-	static function jPrice()
-	{
-
-		if (!VmConfig::get ('jprice', TRUE) and JFactory::getApplication ()->isSite ()) {
-			return FALSE;
-		}
-		static $jPrice;
-		// If exist exit
-		if ($jPrice) {
-			return;
-		}
-		vmJsApi::jQuery();
-		//JPlugin::loadLanguage('com_virtuemart');
-		$lang = JFactory::getLanguage();
-		$lang->load('com_virtuemart');
-		vmJsApi::jSite();
-
-		$closeimage = JURI::root(TRUE) .'/components/com_virtuemart/assets/images/facebox/closelabel.png';
-		$jsVars  = '
-//<![CDATA[
-		'."vmSiteurl = '". JURI::root( ) ."' ;\n" ;
-		if (VmConfig::get ('vmlang_js', 1))  {
-			$jsVars .= "vmLang = '&amp;lang=" . substr (VMLANG, 0, 2) . "' ;\n";
-		}
-		else {
-			$jsVars .= 'vmLang = "";' . "\n";
-		}
-		$jsVars .= "vmCartText = '". addslashes( JText::_('COM_VIRTUEMART_MINICART_ADDED_JS') )."' ;\n" ;
-		$jsVars .= "vmCartError = '". addslashes( JText::_('COM_VIRTUEMART_MINICART_ERROR_JS') )."' ;\n" ;
-		$jsVars .= "loadingImage = '".JURI::root(TRUE) ."/components/com_virtuemart/assets/images/facebox/loading.gif' ;\n" ;
-		$jsVars .= "closeImage = '".$closeimage."' ; \n";
-		$jsVars .= "Virtuemart.addtocart_popup = '".VmConfig::get('addtocart_popup',1)."' ; \n";
-		// $jsVars .= 'faceboxHtml = \'<div id="facebox" style="display:none;"><div class="popup"><div class="content"></div> <a href="#" class="close"><img src="'.$closeimage.'" title="close" alt="X" class="close_image" /></a></div></div>\' '."\n";
-		$jsVars .= 'faceboxHtml = \'<div id="facebox" style="display:none;"><div class="popup"><div class="content"></div> <a href="#" class="close"></a></div></div>\' '." ;\n";
-		$jsVars .= '
-//]]>
-';
-		$document = JFactory::getDocument();
-		$document->addScriptDeclaration($jsVars);
-		vmJsApi::js( 'facebox');
-		vmJsApi::js( 'vmprices');
-		vmJsApi::css('facebox');
-
-		$jPrice = TRUE;
-		return TRUE;
-	}
-
-	// Virtuemart Site Js script
-	static function jSite()
-	{
-
-		if (!VmConfig::get ('jsite', TRUE) and JFactory::getApplication ()->isSite ()) {
-			return FALSE;
-		}
-		vmJsApi::js('vmsite');
-	}
-
-	static function JcountryStateList($stateIds) {
-		static $JcountryStateList;
-		// If exist exit
-		if ($JcountryStateList) {
-			return;
-		}
-		$document = JFactory::getDocument();
-		VmJsApi::jSite();
-		$document->addScriptDeclaration(' 
-//<![CDATA[
-		jQuery( function($) {
-			$("select.virtuemart_country_id").vm2front("list",{dest : "#virtuemart_state_id",ids : "'.$stateIds.'"});
-		});
-//]]>
-		');
-		$JcountryStateList = TRUE;
-		return;
-	}
-
-
-	static function JvalideForm($name='#adminForm')
-	{
-		static $jvalideForm;
-		// If exist exit
-		if ($jvalideForm === $name) {
-			return;
-		}
-		$document = JFactory::getDocument();
-		$document->addScriptDeclaration( "
-//<![CDATA[
-			jQuery(document).ready(function() {
-				jQuery('".$name."').validationEngine();
-			});
-//]]>
-"  );
-		if ($jvalideForm) {
-			return;
-		}
-		vmJsApi::js( 'jquery.validationEngine');
-
-		$lg = JFactory::getLanguage();
-		$lang = substr($lg->getTag(), 0, 2);
-		/*$existingLang = array("cz", "da", "de", "en", "es", "fr", "it", "ja", "nl", "pl", "pt", "ro", "ru", "tr");
-		if (!in_array ($lang, $existingLang)) {
-			$lang = "en";
-		}*/
-		$vlePath = vmJsApi::setPath('languages/jquery.validationEngine-'.$lang);
-		if(file_exists($vlePath) and !is_dir($vlePath)){
-			vmJsApi::js( 'languages/jquery.validationEngine-'.$lang );
-		} else {
-			vmJsApi::js( 'languages/jquery.validationEngine-en' );
-		}
-
-		vmJsApi::css ( 'validationEngine.template' );
-		vmJsApi::css ( 'validationEngine.jquery' );
-		$jvalideForm = $name;
-	}
-
-	// Virtuemart product and price script
-	static function jCreditCard()
-	{
-
-		static $jCreditCard;
-		// If exist exit
-		if ($jCreditCard) {
-			return;
-		}
-		JFactory::getLanguage()->load('com_virtuemart');
-
-
-		$js = "
-//<![CDATA[
-		var ccErrors = new Array ()
-		ccErrors [0] =  '" . addslashes( JText::_('COM_VIRTUEMART_CREDIT_CARD_UNKNOWN_TYPE') ). "';
-		ccErrors [1] =  '" . addslashes( JText::_("COM_VIRTUEMART_CREDIT_CARD_NO_NUMBER") ). "';
-		ccErrors [2] =  '" . addslashes( JText::_('COM_VIRTUEMART_CREDIT_CARD_INVALID_FORMAT')) . "';
-		ccErrors [3] =  '" . addslashes( JText::_('COM_VIRTUEMART_CREDIT_CARD_INVALID_NUMBER')) . "';
-		ccErrors [4] =  '" . addslashes( JText::_('COM_VIRTUEMART_CREDIT_CARD_WRONG_DIGIT')) . "';
-		ccErrors [5] =  '" . addslashes( JText::_('COM_VIRTUEMART_CREDIT_CARD_INVALID_EXPIRE_DATE')) . "';
-//]]>
-		";
-
-		$doc = JFactory::getDocument();
-		$doc->addScriptDeclaration($js);
-
-		$jCreditCard = TRUE;
-		return TRUE;
-	}
-
-	/**
-	 * ADD some CSS if needed
-	 * Prevent duplicate load of CSS stylesheet
-	 * @ Author KOHL Patrick
-	 */
-
-	static function cssSite() {
-
-		if (!VmConfig::get ('css', TRUE)) {
-			return FALSE;
-		}
-		static $cssSite;
-		if ($cssSite) {
-			return;
-		}
-		// Get the Page direction for right to left support
-		$document = JFactory::getDocument ();
-		$direction = $document->getDirection ();
-		$cssFile = 'vmsite-' . $direction ;
-
-		// If exist exit
-		vmJsApi::css ( $cssFile ) ;
-		$cssSite = TRUE;
-		return TRUE;
-	}
-
-	// $yearRange format >> 1980:2010
-	// Virtuemart Datepicker script
-	static function jDate($date='',$name="date",$id=NULL,$resetBt = TRUE, $yearRange='') {
-
-		if ($yearRange) {
-			$yearRange = 'yearRange: "' . $yearRange . '",';
-		}
-		if ($date == "0000-00-00 00:00:00") {
-			$date = 0;
-		}
-		if (empty($id)) {
-			$id = $name;
-		}
-		static $jDate;
-
-		$dateFormat = JText::_('COM_VIRTUEMART_DATE_FORMAT_INPUT_J16');//="m/d/y"
-		$search  = array('m', 'd');
-		$replace = array('mm', 'dd');
-		$jsDateFormat = str_replace($search, $replace, $dateFormat);
-
-		if ($date) {
-			if ( JVM_VERSION===1) {
-				$search  = array('m', 'd', 'y');
-				$replace = array('%m', '%d', '%y');
-				$dateFormat = str_replace($search, $replace, $dateFormat);
-			}
-			$formatedDate = JHTML::_('date', $date, $dateFormat );
-		}
-		else {
-			$formatedDate = JText::_('COM_VIRTUEMART_NEVER');
-		}
-		$display  = '<input class="datepicker-db" id="'.$id.'" type="hidden" name="'.$name.'" value="'.$date.'" />';
-		$display .= '<input id="'.$id.'_text" class="datepicker" type="text" value="'.$formatedDate.'" />';
-		if ($resetBt) {
-			$display .= '<span class="vmicon vmicon-16-logout icon-nofloat js-date-reset"></span>';
-		}
-
-		// If exist exit
-		if ($jDate) {
-			return $display;
-		}
-		$front = 'components/com_virtuemart/assets/';
-
-		$document = JFactory::getDocument();
-		$document->addScriptDeclaration('
-//<![CDATA[
-			jQuery(document).ready( function($) {
-			$(".datepicker").live( "focus", function() {
-				$( this ).datepicker({
-					changeMonth: true,
-					changeYear: true,
-					'.$yearRange.'
-					dateFormat:"'.$jsDateFormat.'",
-					altField: $(this).prev(),
-					altFormat: "yy-mm-dd"
-				});
-			});
-			$(".js-date-reset").click(function() {
-				$(this).prev("input").val("'.JText::_('COM_VIRTUEMART_NEVER').'").prev("input").val("0");
-			});
-		});
-//]]>
-		');
-		vmJsApi::js ('jquery.ui.core',FALSE,'',TRUE);
-		vmJsApi::js ('jquery.ui.datepicker',FALSE,'',TRUE);
-
-		vmJsApi::css ('jquery.ui.all',$front.'css/ui' ) ;
-		$lg = JFactory::getLanguage();
-		$lang = $lg->getTag();
-
-		$existingLang = array("af","ar","ar-DZ","az","bg","bs","ca","cs","da","de","el","en-AU","en-GB","en-NZ","eo","es","et","eu","fa","fi","fo","fr","fr-CH","gl","he","hr","hu","hy","id","is","it","ja","ko","kz","lt","lv","ml","ms","nl","no","pl","pt","pt-BR","rm","ro","ru","sk","sl","sq","sr","sr-SR","sv","ta","th","tj","tr","uk","vi","zh-CN","zh-HK","zh-TW");
-		if (!in_array ($lang, $existingLang)) {
-			$lang = substr ($lang, 0, 2);
-		}
-		elseif (!in_array ($lang, $existingLang)) {
-			$lang = "en-GB";
-		}
-		vmJsApi::js ('jquery.ui.datepicker-'.$lang, $front.'js/i18n' ) ;
-		$jDate = TRUE;
-		return $display;
-	}
-
-
-	/*
-	 * Convert formated date;
-	 * @ $date the date to convert
-	 * @ $format Joomla DATE_FORMAT Key endding eg. 'LC2' for DATE_FORMAT_LC2
-	 * @ revert date format for database- TODO ?
-	 */
-
-	static function date($date , $format ='LC2', $joomla=FALSE ,$revert=FALSE ){
-
-		if (!strcmp ($date, '0000-00-00 00:00:00')) {
-			return JText::_ ('COM_VIRTUEMART_NEVER');
-		}
-		If ($joomla) {
-			$formatedDate = JHTML::_('date', $date, JText::_('DATE_FORMAT_'.$format));
-		} else {
-			if (!JVM_VERSION === 1) {
-				$J16 = "_J16";
-			}
-			else {
-				$J16 = "";
-			}
-			$formatedDate = JHTML::_('date', $date, JText::_('COM_VIRTUEMART_DATE_FORMAT_'.$format.$J16));
-		}
-		return $formatedDate;
+		if(!class_exists('JFilterInput')) require (VMPATH_LIBS.DS.'joomla'.DS.'filter'.DS.'input.php');
+		//$_filter = JFilterInput::getInstance(array('br', 'i', 'em', 'b', 'strong'), array(), 0, 0, 1);
+		if($JURIInstance===0)$JURIInstance = JURI::getInstance();
+		//return $_filter->clean($JURIInstance->toString($parts));
+		return vRequest::filterUrl($JURIInstance->toString($parts));
 	}
 }
+
 
 // pure php no closing tag

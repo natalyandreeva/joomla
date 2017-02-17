@@ -20,7 +20,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_SITE.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmView'))require(VMPATH_SITE.DS.'helpers'.DS.'vmview.php');
 
 // Set to '0' to use tabs i.s.o. sliders
 // Might be a config option later on, now just here for testing.
@@ -53,12 +53,12 @@ class VirtuemartViewVendor extends VmView {
 
 		$model = VmModel::getModel();
 
-		$virtuemart_vendor_id = JRequest::getInt('virtuemart_vendor_id');
+		$virtuemart_vendor_id = vRequest::getInt('virtuemart_vendor_id',1);
 
 // 		if ($layoutName=='default') {
 		if (empty($virtuemart_vendor_id)) {
-			$document->setTitle( JText::_('COM_VIRTUEMART_VENDOR_LIST') );
-			$pathway->addItem(JText::_('COM_VIRTUEMART_VENDOR_LIST'));
+			$document->setTitle( vmText::_('COM_VIRTUEMART_VENDOR_LIST') );
+			$pathway->addItem(vmText::_('COM_VIRTUEMART_VENDOR_LIST'));
 
 			$vendors = $model->getVendors();
 			$model->addImages($vendors);
@@ -70,65 +70,36 @@ class VirtuemartViewVendor extends VmView {
 			$vendor = $model->getVendor($virtuemart_vendor_id);
 			$model->addImages($vendor);
 			if (VmConfig::get ('enable_content_plugin', 0)) {
-				// add content plugin //
-				$dispatcher = & JDispatcher::getInstance ();
-				JPluginHelper::importPlugin ('content');
-				$vendor->text = $vendor->vendor_store_desc;
-				jimport ('joomla.html.parameter');
-				$params = new JParameter('');
-
-				if (JVM_VERSION === 2) {
-					$results = $dispatcher->trigger ('onContentPrepare', array('com_virtuemart.vendor', &$vendor, &$params, 0));
-					// More events for 3rd party content plugins
-					// This do not disturb actual plugins, because we don't modify $vendor->text
-					$res = $dispatcher->trigger ('onContentAfterTitle', array('com_virtuemart.vendor', &$vendor, &$params, 0));
-					$vendor->event->afterDisplayTitle = trim (implode ("\n", $res));
-
-					$res = $dispatcher->trigger ('onContentBeforeDisplay', array('com_virtuemart.vendor', &$vendor, &$params, 0));
-					$vendor->event->beforeDisplayContent = trim (implode ("\n", $res));
-
-					$res = $dispatcher->trigger ('onContentAfterDisplay', array('com_virtuemart.vendor', &$vendor, &$params, 0));
-					$vendor->event->afterDisplayContent = trim (implode ("\n", $res));
-				} else {
-					$results = $dispatcher->trigger ('onPrepareContent', array(& $vendor, & $params, 0));
-				}
-				$vendor->vendor_store_desc = $vendor->text;
+				if(!class_exists('shopFunctionsF'))require(VMPATH_SITE.DS.'helpers'.DS.'shopfunctionsf.php');
+				shopFunctionsF::triggerContentPlugin($vendor, 'vendor','vendor_store_desc');
+				shopFunctionsF::triggerContentPlugin($vendor, 'vendor','vendor_terms_of_service');
 			}
 			$this->assignRef('vendor', $vendor);
 
-			if(!class_exists('VirtueMartModelVendor')) require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'vendor.php');
+			if(!class_exists('VirtueMartModelVendor')) require(VMPATH_ADMIN.DS.'models'.DS.'vendor.php');
 			$userId = VirtueMartModelVendor::getUserIdByVendorId($virtuemart_vendor_id);
 
-			//$usermodel = VmModel::getModel('user');
-
-			//$virtuemart_userinfo_id = $usermodel->getBTuserinfo_id($userId);
-			//$usermodel->getVendor($virtuemart_vendor_id);
-			//$userFields = $usermodel->getUserInfoInUserFields($layoutName, 'BT', $virtuemart_userinfo_id,true,true);
-			//$this->assignRef('userFields', $userFields);
-
 			if ($layoutName=='tos') {
-				$document->setTitle( JText::_('COM_VIRTUEMART_VENDOR_TOS') );
-				$pathway->addItem(JText::_('COM_VIRTUEMART_VENDOR_TOS'));
+				$document->setTitle( vmText::_('COM_VIRTUEMART_VENDOR_TOS') );
+				$pathway->addItem(vmText::_('COM_VIRTUEMART_VENDOR_TOS'));
 			}
 			elseif ($layoutName=='contact') {
 				$user = JFactory::getUser();
-				$document->setTitle( JText::_('COM_VIRTUEMART_VENDOR_CONTACT') );
-				$pathway->addItem(JText::_('COM_VIRTUEMART_VENDOR_CONTACT'));
+				$document->setTitle( vmText::_('COM_VIRTUEMART_VENDOR_CONTACT') );
+				$pathway->addItem(vmText::_('COM_VIRTUEMART_VENDOR_CONTACT'));
 				$this->assignRef('user', $user);
 
 			} else {
-				$document->setTitle( JText::_('COM_VIRTUEMART_VENDOR_DETAILS') );
-				$pathway->addItem(JText::_('COM_VIRTUEMART_VENDOR_DETAILS'));
+				$document->setTitle( vmText::_('COM_VIRTUEMART_VENDOR_DETAILS') );
+				$pathway->addItem(vmText::_('COM_VIRTUEMART_VENDOR_DETAILS'));
 				$this->setLayout('details');
 			}
 
 			$linkdetails = '<a href="'.JRoute::_('index.php?option=com_virtuemart&view=vendor&layout=details&virtuemart_vendor_id=' .
-				$virtuemart_vendor_id).'">'.JText::_('COM_VIRTUEMART_VENDOR_DETAILS').'</a>';
-			$linkcontact = '<a href="'.JRoute::_('index.php?option=com_virtuemart&view=vendor&layout=contact&virtuemart_vendor_id=' . $virtuemart_vendor_id).'">'.JText::_('COM_VIRTUEMART_VENDOR_CONTACT').'</a>';
-			$linktos = '<a href="'.JRoute::_('index.php?option=com_virtuemart&view=vendor&layout=tos&virtuemart_vendor_id=' . $virtuemart_vendor_id).'">'.JText::_('COM_VIRTUEMART_VENDOR_TOS').'</a>';
+				$virtuemart_vendor_id, FALSE).'">'.vmText::_('COM_VIRTUEMART_VENDOR_DETAILS').'</a>';
+			$linkcontact = '<a href="'.JRoute::_('index.php?option=com_virtuemart&view=vendor&layout=contact&virtuemart_vendor_id=' . $virtuemart_vendor_id, FALSE).'">'.vmText::_('COM_VIRTUEMART_VENDOR_CONTACT').'</a>';
+			$linktos = '<a href="'.JRoute::_('index.php?option=com_virtuemart&view=vendor&layout=tos&virtuemart_vendor_id=' . $virtuemart_vendor_id, FALSE).'">'.vmText::_('COM_VIRTUEMART_VENDOR_TOS').'</a>';
 
-
-			//$this->assignRef('lineSeparator', $lineSeparator);
 			$this->assignRef('linkdetails', $linkdetails);
 			$this->assignRef('linkcontact', $linkcontact);
 			$this->assignRef('linktos', $linktos);
@@ -140,16 +111,17 @@ class VirtuemartViewVendor extends VmView {
 
 
 	function renderMailLayout($doVendor, $recipient) {
+
 		$this->setLayout('mail_html_question');
-		$this->comment = JRequest::getString('comment');
-		$virtuemart_vendor_id = JRequest::getInt('virtuemart_vendor_id');
+		$this->comment = vRequest::getString('comment');
+		$virtuemart_vendor_id = vRequest::getInt('virtuemart_vendor_id');
 		$this->doVendor=$doVendor;
 		//$this->doVendor=TRUE;
 		$vendorModel = VmModel::getModel('vendor');
 		$this->vendor = $vendorModel->getVendor($virtuemart_vendor_id);
 		// in this particular case, overwrite the value for fix the recipient name
 		$this->vendor->vendor_name= $this->user['name'];
-		$this->subject = JText::_('COM_VIRTUEMART_VENDOR_CONTACT') .' '.$this->user['name'];
+		$this->subject = vmText::_('COM_VIRTUEMART_VENDOR_CONTACT') .' '.$this->user['name'];
 		$this->vendorEmail= $this->user['email'];
 		//$this->vendorName= $this->user['email'];
 		if (VmConfig::get('order_mail_html')) {
@@ -158,6 +130,7 @@ class VirtuemartViewVendor extends VmView {
 			$tpl = 'mail_raw_question';
 		}
 		$this->setLayout($tpl);
+		$this->isMail = true;
 		parent::display( );
 	}
 

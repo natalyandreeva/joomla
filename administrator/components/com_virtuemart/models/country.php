@@ -5,6 +5,7 @@
 *
 * @package	VirtueMart
 * @subpackage Country
+* @author Max Milbers
 * @author RickG
 * @link http://www.virtuemart.net
 * @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
@@ -13,20 +14,19 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: country.php 6396 2012-09-05 17:35:36Z Milbo $
+* @version $Id: country.php 9221 2016-05-23 11:34:36Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmModel')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmmodel.php');
+if(!class_exists('VmModel')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmmodel.php');
 
 /**
  * Model class for shop countries
  *
  * @package	VirtueMart
  * @subpackage Country
- * @author RickG
  */
 class VirtueMartModelCountry extends VmModel {
 
@@ -47,31 +47,38 @@ class VirtueMartModelCountry extends VmModel {
     /**
      * Retreive a country record given a country code.
      *
-     * @author RickG
+     * @author RickG, Max Milbers
      * @param string $code Country code to lookup
      * @return object Country object from database
      */
-    function getCountryByCode($code) {
-	$db = JFactory::getDBO();
+    static function getCountryByCode($code) {
 
-	$countryCodeLength = strlen($code);
-	switch ($countryCodeLength) {
-	    case 2:
-		$countryCodeFieldname = 'country_2_code';
-		break;
-	    case 3:
-		$countryCodeFieldname = 'country_3_code';
-		break;
-	    default:
-		return false;
-	}
+		if(empty($code)) return false;
+		$db = JFactory::getDBO();
 
-	$query = 'SELECT *';
-	$query .= ' FROM `#__virtuemart_countries`';
-	$query .= ' WHERE `' . $countryCodeFieldname . '` = ' . (int)$code;
-	$db->setQuery($query);
+		$countryCodeLength = strlen($code);
+		switch ($countryCodeLength) {
+			case 2:
+				$fieldname = 'country_2_code';
+			break;
+			case 3:
+				$fieldname = 'country_3_code';
+			break;
+			default:
+				$fieldname = 'country_name';
+		}
 
-	return $db->loadObject();
+		static $countries = array();
+
+		if(!isset($countries[$code])){
+			$query = 'SELECT *';
+			$query .= ' FROM `#__virtuemart_countries`';
+			$query .= ' WHERE `' . $fieldname . '` = "' . $db->escape ($code) . '"';
+			$db->setQuery($query);
+			$countries[$code] = $db->loadObject();
+		}
+
+		return $countries[$code];
     }
 
     /**
@@ -85,28 +92,44 @@ class VirtueMartModelCountry extends VmModel {
      */
     function getCountries($onlyPublished=true, $noLimit=false, $filterCountry = false) {
 
+		static $countries = array();
 		$where = array();
 		$this->_noLimit = $noLimit;
-// 		$query = 'SELECT * FROM `#__virtuemart_countries` ';
-		/* add filters */
+
 		if ($onlyPublished) $where[] = '`published` = 1';
 
 		if($filterCountry){
-			$filterCountry = '"%' . $this->_db->getEscaped( $filterCountry, true ) . '%"' ;
-			//$keyword = $this->_db->Quote($filterCountry, false);
-			$where[] = '`country_name` LIKE '.$filterCountry.' OR `country_2_code` LIKE '.$filterCountry.' OR `country_3_code` LIKE '.$filterCountry;
+			$db = JFactory::getDBO();
+			$filterCountryS = '"%' . $db->escape( $filterCountry, true ) . '%"' ;
+			$where[] = '`country_name` LIKE '.$filterCountryS.' OR `country_2_code` LIKE '.$filterCountryS.' OR `country_3_code` LIKE '.$filterCountryS;
 		}
 
 		$whereString = '';
 		if (count($where) > 0) $whereString = ' WHERE '.implode(' AND ', $where) ;
 
 		$ordering = $this->_getOrdering();
-
-		return $this->_data = $this->exeSortSearchListQuery(0,'*',' FROM `#__virtuemart_countries`',$whereString,'',$ordering);
-
-
+		$hash = $filterCountry.$this->_selectedOrderingDir.(int)$onlyPublished.$this->_selectedOrdering.(int)$noLimit;
+		if(!isset($countries[$hash])){
+			$countries[$hash] = $this->_data = $this->exeSortSearchListQuery(0,'*',' FROM `#__virtuemart_countries`',$whereString,'',$ordering);
+		}
+		return $countries[$hash];
     }
 
+	function store(&$data){
+		if(!vmAccess::manager('country')){
+			vmWarn('Insufficient permissions to store country');
+			return false;
+		}
+		return parent::store($data);
+	}
+
+	function remove($ids){
+		if(!vmAccess::manager('country')){
+			vmWarn('Insufficient permissions to remove country');
+			return false;
+		}
+		return parent::remove($ids);
+	}
 
 }
 

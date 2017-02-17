@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: currencies.php 6347 2012-08-14 15:49:02Z Milbo $
+* @version $Id: currencies.php 8310 2014-09-21 17:51:47Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTableData'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtabledata.php');
+if(!class_exists('VmTableData'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtabledata.php');
 
 /**
  * Currency table class
@@ -52,7 +52,7 @@ class TableCurrencies extends VmTableData {
 
 	/**
 	 * @author Max Milbers
-	 * @param $db A database connector object
+	 * @param JDataBase $db
 	 */
 	function __construct(&$db)
 	{

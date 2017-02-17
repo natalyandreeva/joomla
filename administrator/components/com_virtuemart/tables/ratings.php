@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: ratings.php 6244 2012-07-09 13:18:04Z alatak $
+* @version $Id: ratings.php 8310 2014-09-21 17:51:47Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Product review table class
@@ -45,7 +45,7 @@ class TableRatings extends VmTable {
 
 	/**
 	* @author Max Milbers
-	* @param $db A database connector object
+	* @param JDataBase $db
 	*/
 	function __construct(&$db) {
 		parent::__construct('#__virtuemart_ratings', 'virtuemart_rating_id', $db);

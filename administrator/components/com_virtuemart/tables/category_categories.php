@@ -18,7 +18,7 @@
 
 defined('_JEXEC') or die();
 
-if(!class_exists('VmTableData'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtabledata.php');
+if(!class_exists('VmTableData'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtabledata.php');
 
 class TableCategory_categories extends VmTableData {
 
@@ -26,9 +26,9 @@ class TableCategory_categories extends VmTableData {
 
 	/**
 	 * @author Max Milbers
-	 * @param $db A database connector object
+	 * @param JDatabase $db connector object
 	 */
-	function __construct(&$db){
+	function __construct( &$db){
 		parent::__construct('#__virtuemart_category_categories', 'id', $db);
 
 		$this->setPrimaryKey('category_child_id');

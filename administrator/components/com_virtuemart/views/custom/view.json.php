@@ -28,14 +28,15 @@ jimport( 'joomla.application.component.view');
  * @package		VirtueMart
  * @author  Patrick Kohl
  */
-class VirtuemartViewCustom extends JView {
+class VirtuemartViewCustom extends JViewLegacy {
 
 	/* json object */
 	private $json = null;
 
 	function display($tpl = null) {
-			$db = JFactory::getDBO();
-		if ( $virtuemart_media_id = JRequest::getInt('virtuemart_media_id') ) {
+
+		$db = JFactory::getDBO();
+		if ( $virtuemart_media_id = vRequest::getInt('virtuemart_media_id') ) {
 			//$db = JFactory::getDBO();
 			$query='SELECT `file_url`,`file_title` FROM `#__virtuemart_medias` where `virtuemart_media_id`='.$virtuemart_media_id;
 			$db->setQuery( $query );
@@ -43,31 +44,51 @@ class VirtuemartViewCustom extends JView {
 			if (isset($json->file_url)) {
 				$json->file_url = JURI::root().$json->file_url;
 				$json->msg =  'OK';
-				echo json_encode($json);
+				echo vmJsApi::safe_json_encode($json);
 			} else {
-				$json->msg =  '<b>'.JText::_('COM_VIRTUEMART_NO_IMAGE_SET').'</b>';
+				$json->msg =  '<b>'.vmText::_('COM_VIRTUEMART_NO_IMAGE_SET').'</b>';
 				echo json_encode($json);
 			}
 		}
-		elseif ( $custom_jplugin_id = JRequest::getInt('custom_jplugin_id') ) {
-			if (JVM_VERSION===1) {
-				$table = '#__plugins';
-				$ext_id = 'id';
-			} else {
-				$table = '#__extensions';
-				$ext_id = 'extension_id';
-			}
+		elseif ( $custom_jplugin_id = vRequest::getInt('custom_jplugin_id') ) {
+
+			$table = '#__extensions';
+			$ext_id = 'extension_id';
+
 			$q = 'SELECT `params`,`element` FROM `' . $table . '` WHERE `' . $ext_id . '` = "'.$custom_jplugin_id.'"';
 			$db ->setQuery($q);
-			$this->plugin = $db ->loadObject();
-			$this->loadHelper('parameterparser');
-			$parameters = new vmParameters($this->plugin->params,  $this->plugin->element , 'plugin' ,'vmcustom');
-			$lang = JFactory::getLanguage();
-			$filename = 'plg_vmcustom_' .  $this->plugin->element;
-			$lang->load($filename, JPATH_ADMINISTRATOR);
-			echo $parameters->render();
-			echo '<input type="hidden" value="'.$this->plugin->element.'" name="custom_value">';
-			jExit();
+			$this->jCustom = $db ->loadObject();
+
+			$customModel = VmModel::getModel('custom');
+			$this->custom = $customModel -> getCustom();
+
+			// Get the payment XML.
+			$formFile	= vRequest::filterPath( VMPATH_ROOT .DS. 'plugins' .DS. 'vmcustom' .DS . $this->jCustom->element . DS . $this->jCustom->element . '.xml');
+			if (file_exists($formFile)){
+				VmConfig::loadJLang('plg_vmpsplugin', false);
+				if (!class_exists('vmPlugin')) require(VMPATH_PLUGINLIBS . DS . 'vmplugin.php');
+				$filename = 'plg_vmcustom_' .  $this->jCustom->element;
+				vmPlugin::loadJLang($filename,'vmcustom',$this->jCustom->element);
+
+				$this->custom = VmModel::getModel('custom')->getCustom();
+				$varsToPush = vmPlugin::getVarsToPushByXML($formFile,'customForm');
+				$this->custom->form = JForm::getInstance($this->jCustom->element, $formFile, array(),false, '//vmconfig | //config[not(//vmconfig)]');
+				$this->custom->params = new stdClass();
+
+				foreach($varsToPush as $k => $field){
+					if(strpos($k,'_')!=0){
+						$this->custom->params->$k = $field[0];
+					}
+				}
+				$this->custom->form->bind($this->custom->getProperties());
+				$form = $this->custom->form;
+				include(VMPATH_ADMIN.DS.'fields'.DS.'formrenderer.php');
+				echo '<input type="hidden" value="'.$this->jCustom->element.'" name="custom_value">';
+			} else {
+				$this->custom->form = null;
+				//VmConfig::$echoDebug = 1;
+				vmdebug ('File does not exist '.$formFile);
+			}
 		}
 		jExit();
 	}

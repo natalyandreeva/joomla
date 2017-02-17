@@ -1,6 +1,6 @@
 <?php  defined ('_JEXEC') or die();
 /**
- * @version $Id: displaypayment.php 6369 2012-08-22 14:33:46Z alatak $
+ * @version $Id: displaypayment.php 6630 2012-11-07 09:26:56Z alatak $
  *
  * @author Valérie Isaksen
  * @package VirtueMart

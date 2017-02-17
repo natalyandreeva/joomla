@@ -13,13 +13,13 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: shipmentmethod.php 6350 2012-08-14 17:18:08Z Milbo $
+ * @version $Id: shipmentmethod.php 9274 2016-08-31 19:45:52Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmModel'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmmodel.php');
+if(!class_exists('VmModel'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmmodel.php');
 
 /**
  * Model class for shop shipment
@@ -46,6 +46,7 @@ class VirtueMartModelShipmentmethod extends VmModel {
 		parent::__construct();
 		$this->setMainTable('shipmentmethods');
 		$this->_selectedOrdering = 'ordering';
+		$this->setToggleName('shared');
 	}
 
 	/**
@@ -53,37 +54,60 @@ class VirtueMartModelShipmentmethod extends VmModel {
 	 *
 	 * @author RickG
 	 */
-	function getShipment() {
+	function getShipment($id = 0) {
 
-		if (empty($this->_data)) {
-			$this->_data = $this->getTable('shipmentmethods');
-			$this->_data->load((int)$this->_id);
+		if(!empty($id)) $this->_id = (int)$id;
 
-			if($this->_data->shipment_jplugin_id){
-				JPluginHelper::importPlugin('vmshipment');
-				$dispatcher = JDispatcher::getInstance();
-				$retValue = $dispatcher->trigger('plgVmDeclarePluginParamsShipment',array( $this->_data->shipment_element,$this->_data->shipment_jplugin_id,&$this->_data));
+		if (empty($this->_cache[$this->_id])) {
+			$this->_cache[$this->_id] = $this->getTable('shipmentmethods');
+			$this->_cache[$this->_id]->load((int)$this->_id);
 
+
+			if(empty($this->_cache[$this->_id]->virtuemart_vendor_id)){
+				//if(!class_exists('VirtueMartModelVendor')) require(VMPATH_ADMIN.DS.'models'.DS.'vendor.php');
+				$this->_cache[$this->_id]->virtuemart_vendor_id = vmAccess::getVendorId('vm.shipmentmethod.edit');;
 			}
-// 			vmdebug('$$this->_data getShipment',$this->_data);
 
-			if(empty($this->_data->virtuemart_vendor_id)){
-				if(!class_exists('VirtueMartModelVendor')) require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'vendor.php');
-				$this->_data->virtuemart_vendor_id = VirtueMartModelVendor::getLoggedVendor();;
+			if ($this->_cache[$this->_id]->shipment_jplugin_id) {
+				JPluginHelper::importPlugin ('vmshipment');
+				$dispatcher = JDispatcher::getInstance ();
+				$blind = 0;
+				$retValue = $dispatcher->trigger ('plgVmDeclarePluginParamsShipmentVM3', array(&$this->_cache[$this->_id]));
 			}
- 		//if(!empty($this->_id)){
-				/* Add the shipmentcarreir shoppergroups */
-				$q = 'SELECT `virtuemart_shoppergroup_id` FROM #__virtuemart_shipmentmethod_shoppergroups WHERE `virtuemart_shipmentmethod_id` = "'.$this->_id.'"';
-				$this->_db->setQuery($q);
-				$this->_data->virtuemart_shoppergroup_ids = $this->_db->loadResultArray();#
-				if(empty($this->_data->virtuemart_shoppergroup_ids)) $this->_data->virtuemart_shoppergroup_ids = 0;
 
+			if(!empty($this->_cache[$this->_id]->_varsToPushParam)){
+				VmTable::bindParameterable($this->_cache[$this->_id],'shipment_params',$this->_cache[$this->_id]->_varsToPushParam);
+			}
 
-		//}
+			//We still need this, because the table is already loaded, but the keys are set later
+			if($this->_cache[$this->_id]->getCryptedFields()){
+				if(!class_exists('vmCrypt')){
+					require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcrypt.php');
+				}
+
+				if(isset($this->_cache[$this->_id]->modified_on)){
+					$date = JFactory::getDate($this->_cache[$this->_id]->modified_on);
+					$date = $date->toUnix();
+				} else {
+					$date = 0;
+				}
+
+				foreach($this->_cache[$this->_id]->getCryptedFields() as $field){
+					if(isset($this->_cache[$this->_id]->$field)){
+						$this->_cache[$this->_id]->$field = vmCrypt::decrypt($this->_cache[$this->_id]->$field,$date);
+					}
+				}
+			}
+
+			/* Add the shipmentcarreir shoppergroups */
+			$q = 'SELECT `virtuemart_shoppergroup_id` FROM #__virtuemart_shipmentmethod_shoppergroups WHERE `virtuemart_shipmentmethod_id` = "'.$this->_id.'"';
+			$this->_db->setQuery($q);
+			$this->_cache[$this->_id]->virtuemart_shoppergroup_ids = $this->_db->loadColumn();
+			if(empty($this->_cache[$this->_id]->virtuemart_shoppergroup_ids)) $this->_cache[$this->_id]->virtuemart_shoppergroup_ids = 0;
 
 		}
 
-		return $this->_data;
+		return $this->_cache[$this->_id];
 	}
 
 	/**
@@ -93,42 +117,49 @@ class VirtueMartModelShipmentmethod extends VmModel {
 	 * @return object List of shipment  objects
 	 */
 	public function getShipments() {
-		if (JVM_VERSION===1) {
-			$table = '#__plugins';
-			$enable = 'published';
-			$ext_id = 'id';
-		}
-		else {
-			$table = '#__extensions';
-			$enable = 'enabled';
-			$ext_id = 'extension_id';
-		}
-		$query = ' `#__virtuemart_shipmentmethods`.* ,  `'.$table.'`.`name` as shipmentmethod_name FROM `#__virtuemart_shipmentmethods` ';
-		$query .= 'JOIN `'.$table.'`   ON  `'.$table.'`.`'.$ext_id.'` = `#__virtuemart_shipmentmethods`.`shipment_jplugin_id` ';
 
 		$whereString = '';
-		$select = ' * FROM `#__virtuemart_shipmentmethods_'.VMLANG.'` as l ';
-		$joinedTables = ' JOIN `#__virtuemart_shipmentmethods`   USING (`virtuemart_shipmentmethod_id`) ';
-		$this->_data =$this->exeSortSearchListQuery(0,$select,$joinedTables,$whereString,' ',$this->_getOrdering() );
-		//$this->_data = $this->exeSortSearchListQuery(0,'',$query,$whereString,'',$this->_getOrdering('ordering'));
 
-		if(isset($this->_data)){
+		$joins = ' FROM `#__virtuemart_shipmentmethods` as i ';
 
-			if(!class_exists('shopfunctions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'shopfunctions.php');
-			foreach ($this->_data as $data){
-				/* Add the shipment shoppergroups */
-				$q = 'SELECT `virtuemart_shoppergroup_id` FROM #__virtuemart_shipmentmethod_shoppergroups WHERE `virtuemart_shipmentmethod_id` = "'.$data->virtuemart_shipmentmethod_id.'"';
-				$this->_db->setQuery($q);
-				$data->virtuemart_shoppergroup_ids = $this->_db->loadResultArray();
+		if(VmConfig::$defaultLang!=VmConfig::$vmlang and Vmconfig::$langCount>1){
+			$langFields = array('shipment_name','shipment_desc');
 
-				/* Write the first 5 shoppergroups in the list */
-				$data->shipmentShoppersList = shopfunctions::renderGuiList('virtuemart_shoppergroup_id','#__virtuemart_shipmentmethod_shoppergroups','virtuemart_shipmentmethod_id',$data->virtuemart_shipmentmethod_id,'shopper_group_name','#__virtuemart_shoppergroups','virtuemart_shoppergroup_id','shoppergroup',4,0);
-
-
+			$useJLback = false;
+			if(VmConfig::$defaultLang!=VmConfig::$jDefLang){
+				$joins .= ' LEFT JOIN `#__virtuemart_shipmentmethods_'.VmConfig::$jDefLang.'` as ljd';
+				$useJLback = true;
 			}
 
+			$select = ' i.*';
+			foreach($langFields as $langField){
+				$expr2 = 'ld.'.$langField;
+				if($useJLback){
+					$expr2 = 'IFNULL(ld.'.$langField.',ljd.'.$langField.')';
+				}
+				$select .= ', IFNULL(l.'.$langField.','.$expr2.') as '.$langField.'';
+			}
+			$joins .= ' LEFT JOIN `#__virtuemart_shipmentmethods_'.VmConfig::$defaultLang.'` as ld using (`virtuemart_shipmentmethod_id`)';
+			$joins .= ' LEFT JOIN `#__virtuemart_shipmentmethods_'.VmConfig::$vmlang.'` as l using (`virtuemart_shipmentmethod_id`)';
+		} else {
+			$select = ' * ';
+			$joins .= ' LEFT JOIN `#__virtuemart_shipmentmethods_'.VmConfig::$vmlang.'` as l USING (`virtuemart_shipmentmethod_id`) ';
 		}
-		return $this->_data;
+
+
+		$datas =$this->exeSortSearchListQuery(0,$select,$joins,$whereString,' ',$this->_getOrdering() );
+
+		if(isset($datas)){
+			if(!class_exists('shopfunctions')) require(VMPATH_ADMIN.DS.'helpers'.DS.'shopfunctions.php');
+			foreach ($datas as &$data){
+				// Add the shipment shoppergroups
+				$q = 'SELECT `virtuemart_shoppergroup_id` FROM #__virtuemart_shipmentmethod_shoppergroups WHERE `virtuemart_shipmentmethod_id` = "'.$data->virtuemart_shipmentmethod_id.'"';
+				$db = JFactory::getDBO();
+				$db->setQuery($q);
+				$data->virtuemart_shoppergroup_ids = $db->loadColumn();
+			}
+		}
+		return $datas;
 	}
 
 
@@ -139,43 +170,50 @@ class VirtueMartModelShipmentmethod extends VmModel {
 	 * @author Max Milbers
 	 * @return boolean True is the save was successful, false otherwise.
 	 */
-	public function store(&$data)
-	{
-		//$data = JRequest::get('post');
-
+	public function store(&$data) {
 
 		if ($data) {
 			$data = (array)$data;
 		}
-// 		vmdebug('store',$data);
-			if(!empty($data['params'])){
-				foreach($data['params'] as $k=>$v){
-					$data[$k] = $v;
-				}
+
+		if(!vmAccess::manager('shipmentmethod.edit')){
+			vmWarn('Insufficient permissions to store shipmentmethod');
+			return false;
+		} else if( empty($data['virtuemart_shipment_id']) and !vmAccess::manager('shipmentmethod.create')){
+			vmWarn('Insufficient permission to create shipmentmethod');
+			return false;
+		}
+
+		if(!empty($data['params'])){
+			foreach($data['params'] as $k=>$v){
+				$data[$k] = $v;
 			}
+		}
 
 		if(empty($data['virtuemart_vendor_id'])){
-			if(!class_exists('VirtueMartModelVendor')) require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'vendor.php');
+			if(!class_exists('VirtueMartModelVendor')) require(VMPATH_ADMIN.DS.'models'.DS.'vendor.php');
 			$data['virtuemart_vendor_id'] = VirtueMartModelVendor::getLoggedVendor();
 		} else {
 			$data['virtuemart_vendor_id'] = (int) $data['virtuemart_vendor_id'];
 		}
 
-		// missing string FIX, Bad way ?
-		if (JVM_VERSION===1) {
-			$tb = '#__plugins';
-			$ext_id = 'id';
-		} else {
-			$tb = '#__extensions';
-			$ext_id = 'extension_id';
-		}
+		$tb = '#__extensions';
+		$ext_id = 'extension_id';
+
 		$q = 'SELECT `element` FROM `' . $tb . '` WHERE `' . $ext_id . '` = "'.$data['shipment_jplugin_id'].'"';
-		$this->_db->setQuery($q);
-		$data['shipment_element'] = $this->_db->loadResult();
+		$db = JFactory::getDBO();
+		$db->setQuery($q);
+		$data['shipment_element'] = $db->loadResult();
 
 		$table = $this->getTable('shipmentmethods');
 
 		if(isset($data['shipment_jplugin_id'])){
+
+			$q = 'UPDATE `#__extensions` SET `enabled`= 1 WHERE `extension_id` = "'.$data['shipment_jplugin_id'].'"';
+			$db->setQuery($q);
+			$db->execute();
+
+
 
 			JPluginHelper::importPlugin('vmshipment');
 			$dispatcher = JDispatcher::getInstance();
@@ -184,22 +222,15 @@ class VirtueMartModelShipmentmethod extends VmModel {
 			$retValue = $dispatcher->trigger('plgVmSetOnTablePluginParamsShipment',array( $data['shipment_element'],$data['shipment_jplugin_id'],&$table));
 
 			$retValue = $dispatcher->trigger('plgVmSetOnTablePluginShipment',array( &$data,&$table));
-			vmdebug('my data after store ',$data);
+
 		}
 
 		$table->bindChecknStore($data);
-		$errors = $table->getErrors();
-		foreach($errors as $error){
-			vmError($error);
-		}
+
 		$xrefTable = $this->getTable('shipmentmethod_shoppergroups');
 		$xrefTable->bindChecknStore($data);
-		$errors = $xrefTable->getErrors();
-		foreach($errors as $error){
-			vmError($error);
-		}
 
-		if (!class_exists('vmPSPlugin')) require(JPATH_VM_PLUGINS . DS . 'vmpsplugin.php');
+		if (!class_exists('vmPSPlugin')) require(VMPATH_PLUGINLIBS . DS . 'vmpsplugin.php');
 		JPluginHelper::importPlugin('vmshipment');
 		//Add a hook here for other shipment methods, checking the data of the choosed plugin
 		$dispatcher = JDispatcher::getInstance();
@@ -216,15 +247,25 @@ class VirtueMartModelShipmentmethod extends VmModel {
 
 	public function createClone ($id) {
 
-		//	if (is_array($cids)) $cids = array($cids);
+		if(!vmAccess::manager('shipmentmethod.create')){
+			vmWarn('Insufficient permissions to store shipmentmethod');
+			return false;
+		}
+
 		$this->setId ($id);
-		$shipment = $this->getShipment ();
+		$shipment = $this->getShipment();
 		$shipment->virtuemart_shipmentmethod_id = 0;
 		$shipment->shipment_name = $shipment->shipment_name.' Copy';
-		if (!$clone = $this->store($shipment)) {
-			JError::raiseError(500, 'createClone '. $shipment->getError() );
-		}
+		$clone = $this->store($shipment);
 		return $clone;
+	}
+
+	function remove($ids){
+		if(!vmAccess::manager('shipmentmethod.delete')){
+			vmWarn('Insufficient permissions to remove shipmentmethod');
+			return false;
+		}
+		return parent::remove($ids);
 	}
 }
 

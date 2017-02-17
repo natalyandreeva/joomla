@@ -113,12 +113,15 @@
     position: static;
     text-align: center !important;
 }
+
 #klarna_PPBox_pullDown {
     position: relative !important;
 }
+
 #klarna_PPBox_pullDown img {
     position: static;
 }
+
 .nlBanner {
     z-index: 400;
 }

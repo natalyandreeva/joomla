@@ -17,9 +17,9 @@
 */
 
 if($this->task=='massxref_cats' or $this->task=='massxref_cats_exe'){
-	include(JPATH_VM_ADMINISTRATOR.DS.'views'.DS.'category'.DS.'tmpl'.DS.'default.php');
+	include(VMPATH_ADMIN.DS.'views'.DS.'category'.DS.'tmpl'.DS.'default.php');
 }
 
 if($this->task=='massxref_sgrps' or $this->task=='massxref_sgrps_exe'){
-	include(JPATH_VM_ADMINISTRATOR.DS.'views'.DS.'shoppergroup'.DS.'tmpl'.DS.'default.php');
+	include(VMPATH_ADMIN.DS.'views'.DS.'shoppergroup'.DS.'tmpl'.DS.'default.php');
 }

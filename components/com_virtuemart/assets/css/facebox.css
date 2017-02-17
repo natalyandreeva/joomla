@@ -1,6 +1,8 @@
 #facebox {
   position: absolute;
-  z-index: 65560;
+  top: 0;
+  left: 0;
+  z-index: 100;
   text-align: left;
 }
 
@@ -18,8 +20,7 @@
 
 #facebox .content {
   display:table;
-/*  width: 370px; */
-  width: auto;
+  width: 370px;
   padding: 10px;
   background: #fff;
   -webkit-border-radius:4px;
@@ -39,13 +40,7 @@
   top:5px;
   right:5px;
   padding:2px;
-  width:8px;
-  height:8px;
-  background:url(../images/facebox/closelabel.png) no-repeat #FFF;
-  opacity:0.3;
-}
-#facebox .close:hover{
-  opacity:1.0;
+  background:#fff;
 }
 #facebox .close img{
   opacity:0.3;
@@ -68,7 +63,6 @@
 }
 
 #facebox_overlay {
-  z-index: 65558;
   position: fixed;
   top: 0px;
   left: 0px;

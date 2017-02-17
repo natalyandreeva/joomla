@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: configs.php 3247 2011-05-14 23:11:32Z Milbo $
+* @version $Id: configs.php 8310 2014-09-21 17:51:47Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTableData'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtabledata.php');
 
 /**
  * Coupon table class
@@ -29,7 +29,7 @@ if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmta
  * @subpackage Config
  * @author RickG
  */
-class TableConfigs extends VmTable {
+class TableConfigs extends VmTableData {
 
 	/** @var int Primary key */
 	var $virtuemart_config_id			= 0;
@@ -38,7 +38,7 @@ class TableConfigs extends VmTable {
 
 	/**
 	 * @author RickG
-	 * @param $db A database connector object
+	 * @param JDataBase $db
 	 */
 	function __construct(&$db)
 	{

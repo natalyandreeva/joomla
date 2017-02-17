@@ -1,29 +1,4 @@
-/* $(function(){ // jQuery DOM ready function.
 
-    var myForm = $("#my_form");
-
-    myForm.validation();
-
-    // We can check if the form is valid on
-    // demand, using our validate function.
-    $("#test").click(function() {
-
-        if(!myForm.validate()) {
-
-            alert("oh noes.. error!");
-        }
-    });
-}); */
-// exemple to add new rules 
-// $.Validation.addRule("test",{
-    // check: function(value) {
-        // if(value != "test") {
-            // return false;
-        // }
-        // return true;
-    // },
-    // msg : "Must equal to the word test."
-// });
 (function($) {
     /*
     Validation Singleton

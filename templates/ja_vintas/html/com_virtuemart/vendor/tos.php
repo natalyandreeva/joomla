@@ -21,18 +21,19 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 
 <div class="vendor-details-view">
-	<h1 class="vm-pageheading"><?php echo JText::_('COM_VIRTUEMART_VENDOR_TOS').$this->vendor->vendor_store_name; ?>
-</h1></div>
+	<h1><?php echo JText::_('COM_VIRTUEMART_VENDOR_TOS').$this->vendor->vendor_store_name;
+	if (!empty($this->vendor->images[0])) { ?>
+		<div class="vendor-image">
+		<?php echo $this->vendor->images[0]->displayMediaThumb('',false); ?>
+		</div>
+	<?php
+	}
+?>	</h1></div>
 
 
 	<?php // vendor Description
 	if(!empty($this->vendor->vendor_terms_of_service  )) { ?>
 		<div class="vendor-description">
-			<?php if (!empty($this->vendor->images[0])) { ?>
-				<div class="vendor-image">
-				<?php echo $this->vendor->images[0]->displayMediaThumb('',false); ?>
-				</div>
-			<?php } ?>
 			<?php echo $this->vendor->vendor_terms_of_service   ?>
 		</div>
 	<?php } ?>
@@ -41,6 +42,10 @@ defined('_JEXEC') or die('Restricted access');
 
 
 	<br class="clear" />
-	<?php echo $this->linkdetails ?>&nbsp;&nbsp;|&nbsp;&nbsp;<?php echo $this->linkcontact ?>
+	<?php echo $this->linkdetails ?>
+
+	<br class="clear" />
+
+	<?php echo $this->linkcontact ?>
 
 	<br class="clear" />

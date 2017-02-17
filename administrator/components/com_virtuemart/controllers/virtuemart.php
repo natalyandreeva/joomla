@@ -18,14 +18,15 @@ defined('_JEXEC') or die('Restricted access');
 * @version $Id$
 */
 
-jimport('joomla.application.component.controller');
+if (!class_exists( 'VmController' )) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 /**
  * VirtueMart default administrator controller
  *
  * @package		VirtueMart
  */
-class VirtuemartControllerVirtuemart extends JController {
+
+class VirtuemartControllerVirtuemart extends VmController {
 
 
 	public function __construct() {
@@ -38,10 +39,17 @@ class VirtuemartControllerVirtuemart extends JController {
 	 * @author Max Milbers
 	 */
 	public function disableDangerousTools(){
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		$config = JModel::getInstance('config', 'VirtueMartModel');
+
+		$data = vRequest::getRequest();
+		$config = VmModel::getInstance('config', 'VirtueMartModel');
 		$config->setDangerousToolsOff();
 		$this->display();
 	}
+
+
+	public function keepalive(){
+		//echo 'alive';
+		jExit();
+	}
+
 }

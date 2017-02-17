@@ -19,7 +19,7 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * WaitingUsers table class
@@ -40,7 +40,7 @@ class TableWaitingUsers extends VmTable {
 
 	/**
 	 * @author Max Milbers
-	 * @param $db A database connector object
+	 * @param JDataBase $db
 	 */
 	function __construct(&$db) {
 		parent::__construct('#__virtuemart_waitingusers', 'virtuemart_waitinguser_id', $db);
@@ -50,7 +50,7 @@ class TableWaitingUsers extends VmTable {
 
 	function check() {
 		if(empty($this->notify_email) || !filter_var($this->notify_email, FILTER_VALIDATE_EMAIL)) {
-			vmError(JText::_('COM_VIRTUEMART_ENTER_A_VALID_EMAIL_ADDRESS'),JText::_('COM_VIRTUEMART_ENTER_A_VALID_EMAIL_ADDRESS'));
+			vmError(vmText::_('COM_VIRTUEMART_ENTER_A_VALID_EMAIL_ADDRESS'),vmText::_('COM_VIRTUEMART_ENTER_A_VALID_EMAIL_ADDRESS'));
 			return false;
 		}
 		return parent::check();

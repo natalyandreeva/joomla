@@ -13,16 +13,16 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: edit.php 6285 2012-07-16 16:11:17Z alatak $
+* @version $Id: edit.php 8768 2015-03-02 12:22:14Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 // Implement Joomla's form validation
-JHTML::_('behavior.formvalidation')
+JHtml::_('behavior.formvalidation')
 ?>
 <style type="text/css">
 .invalid {
@@ -43,11 +43,13 @@ label.invalid {
 $tabarray = array();
 if($this->userDetails->user_is_vendor){
 	$tabarray['vendor'] = 'COM_VIRTUEMART_VENDOR';
+	$tabarray['vendorletter'] = 'COM_VIRTUEMART_VENDORLETTER';
 }
 $tabarray['shopper'] = 'COM_VIRTUEMART_SHOPPER_FORM_LBL';
 //$tabarray['user'] = 'COM_VIRTUEMART_USER_FORM_TAB_GENERALINFO';
-if ($this->shipToId != 0 || $this->new) {
+if (!empty($this->shipToFields) || $this->new) {
 	$tabarray['shipto'] = 'COM_VIRTUEMART_USER_FORM_SHIPTO_LBL';
+	vmdebug('Edit user',$tabarray['shipto']);
 }
 if (($_ordcnt = count($this->orderlist)) > 0) {
 	$tabarray['orderlist'] = 'COM_VIRTUEMART_ORDER_LIST_LBL';
@@ -60,21 +62,6 @@ AdminUIHelper::buildTabs ( $this, $tabarray,'vm-user');
 
 <?php echo $this->addStandardHiddenToForm(); ?>
 </form>
-<script language="javascript">
-function myValidator(f) {
-	if (f.task.value=='cancel') {
-		return true;
-	}
-	if (document.formvalidator.isValid(f)) {
-		f.submit();
-		return true;
-	} else {
-		var msg = '<div><dl id="system-message" style="display: block;"><dt class="message">Message</dt><dd class="message message"><ul><li>';
-		 msg += "<?php echo JText::sprintf("COM_VIRTUEMART_USER_FORM_MISSING_REQUIRED_OTHER_TAB",JText::_("COM_VIRTUEMART_SHOPPER_FORM_LBL") ) ?>";
-		 msg += '</li></ul></dd></dl><div>';
-		jQuery('#element-box').before(msg);
-	}
-	event.preventDefault();
-}
-</script>
+
+<?php vmJsApi::vmValidator($this->userDetails->JUser->guest); ?>
 <?php AdminUIHelper::endAdminArea(); ?>

@@ -13,78 +13,76 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: product_edit_status.php 6058 2012-06-06 08:19:35Z alatak $
+* @version $Id: product_edit_status.php 8508 2014-10-22 18:57:14Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access'); ?>
 <fieldset>
-				<legend><?php echo JText::_('COM_VIRTUEMART_PRODUCT_FORM_PRODUCT_STATUS_LBL'); ?></legend>
+				<legend><?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_PRODUCT_STATUS_LBL'); ?></legend>
 <table class="adminform" width="100%">
 	<tr class="row0">
-		<td width="25%" >
-			<div style="text-align:right;font-weight:bold;">
-			<?php echo JText::_('COM_VIRTUEMART_PRODUCT_FORM_IN_STOCK') ?></div>
-		</td>
+		<th style="text-align:right;" width="25%">
+		<?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_IN_STOCK') ?>
+		</th>
 		<td width="20%">
 			<input  type="text" class="inputbox js-change-stock"  name="product_in_stock" value="<?php echo $this->product->product_in_stock; ?>" size="10" />
 
 			<?php 
 			/*if (isset($this->waitinglist) && count($this->waitinglist) > 0) { 
-				$link=JROUTE::_('index.php?option=com_virtuemart&view=product&task=sentproductemailtoshoppers&virtuemart_product_id='.$this->product->virtuemart_product_id.'&token='.JUtility::getToken() ); 
+				$link=JROUTE::_('index.php?option=com_virtuemart&view=product&task=sentproductemailtoshoppers&virtuemart_product_id='.$this->product->virtuemart_product_id.'&'.JSession::getFormToken().'=1' );
 
 
 					<a href="<?php echo $link ?>">
-					<span class="icon-nofloat vmicon icon-16-messages"></span><?php echo Jtext::_('COM_VIRTUEMART_PRODUCT_NOTIFY_USER'); ?>
+					<span class="icon-nofloat vmicon icon-16-messages"></span><?php echo vmText::_('COM_VIRTUEMART_PRODUCT_NOTIFY_USER'); ?>
 					</a>
 
 
 			}*/ ?>
 		</td>
-		<td width="20%" >
-			<div style="text-align:right;font-weight:bold;">
-			<?php echo JText::_('COM_VIRTUEMART_PRODUCT_FORM_ORDERED_STOCK') ?></div>
-		</td>
+ 			<th style="text-align:right;" width="20%">
+			<?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_ORDERED_STOCK') ?>
+		</th>
 		<td colspan="2">
 			<input type="text" class="inputbox js-change-stock"  name="product_ordered" value="<?php echo $this->product->product_ordered; ?>" size="10" />
 		</td>
 	</tr>
-	<!-- low stock notification -->
 	<tr class="row1">
+	<!-- low stock notification -->
+		<th style="text-align:right;">
+		<?php echo vmText::_('COM_VIRTUEMART_LOW_STOCK_NOTIFICATION'); ?>
+			</th>
 		<td>
-			<div style="text-align:right;font-weight:bold;">
-				<?php echo JText::_('COM_VIRTUEMART_LOW_STOCK_NOTIFICATION'); ?>
-			</div>
-		</td>
-		<td colspan="3">
 			<input type="text" class="inputbox" name="low_stock_notification" value="<?php echo $this->product->low_stock_notification; ?>" size="3" />
 		</td>
-	</tr>
-	<!-- end low stock notification -->
-	<tr class="row0">
+		<th style="text-align:right;">
+		<?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_STEP_ORDER') ?>
+		</th>
 		<td>
-			<div style="text-align:right;font-weight:bold;">
-				<?php echo JText::_('COM_VIRTUEMART_PRODUCT_FORM_MIN_ORDER') ?>
-			</div>
+			<input type="text" class="inputbox"  name="step_order_level" value="<?php echo $this->product->step_order_level; ?>" size="10" />
 		</td>
+	<!-- end low stock notification -->
+	</tr>
+	<tr class="row0">
+		<th style="text-align:right;">
+				<?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_MIN_ORDER') ?>
+</th>
 		<td>
 			<input type="text" class="inputbox"  name="min_order_level" value="<?php echo $this->product->min_order_level; ?>" size="10" />
 		</td>
-		<td>
-			<div style="text-align:right;font-weight:bold;">
-				<?php echo JText::_('COM_VIRTUEMART_PRODUCT_FORM_MAX_ORDER') ?>
-			</div>
-		</td>
+		<th style="text-align:right;">
+
+				<?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_MAX_ORDER') ?>
+		</th>
 		<td>
 			<input type="text" class="inputbox"  name="max_order_level" value="<?php echo $this->product->max_order_level; ?>" size="10" />
 		</td>
 	</tr>
 	<tr class="row1">
-		<td >
-			<div style="text-align:right;font-weight:bold;">
-				<?php echo JText::_('COM_VIRTUEMART_PRODUCT_FORM_AVAILABLE_DATE') ?>
-			</div>
-		</td>
+		<th style="text-align:right;">
+
+				<?php echo vmText::_('COM_VIRTUEMART_PRODUCT_FORM_AVAILABLE_DATE') ?>
+		</th>
 		<td colspan="3">
 			<?php
 
@@ -92,26 +90,25 @@ defined('_JEXEC') or die('Restricted access'); ?>
 		</td>
 	</tr>
 	<tr class="row0">
-		<td valign="top" >
-			<div style="text-align:right;font-weight:bold;">
-				<?php echo JText::_('COM_VIRTUEMART_AVAILABILITY') ?>
-			</div>
-		</td>
+		<th style="text-align:right;">
+
+				<?php echo vmText::_('COM_VIRTUEMART_AVAILABILITY') ?>
+		</th>
 		<td colspan="2">
 			<input type="text" class="inputbox" id="product_availability" name="product_availability" value="<?php echo $this->product->product_availability; ?>" />
-			<span class="icon-nofloat vmicon vmicon-16-info tooltip" title="<?php echo '<b>'.JText::_('COM_VIRTUEMART_AVAILABILITY').'</b><br/ >'.JText::_('COM_VIRTUEMART_PRODUCT_FORM_AVAILABILITY_TOOLTIP1') ?>"></span>
+			<span class="icon-nofloat vmicon vmicon-16-info tooltip" title="<?php echo '<b>'.vmText::_('COM_VIRTUEMART_AVAILABILITY').'</b><br/ >'.vmText::_('COM_VIRTUEMART_PRODUCT_FORM_AVAILABILITY_TOOLTIP1') ?>"></span>
 
-			<?php echo JHTML::_('list.images', 'image', $this->product->product_availability, " ", $this->imagePath); ?>
-			<span class="icon-nofloat vmicon vmicon-16-info tooltip" title="<?php echo '<b>'.JText::_('COM_VIRTUEMART_AVAILABILITY').'</b><br/ >'.JText::sprintf('COM_VIRTUEMART_PRODUCT_FORM_AVAILABILITY_TOOLTIP2',  $this->imagePath ) ?>"></span>
+			<?php echo JHtml::_('list.images', 'image', $this->product->product_availability, " ", $this->imagePath); ?>
+			<span class="icon-nofloat vmicon vmicon-16-info tooltip" title="<?php echo '<b>'.vmText::_('COM_VIRTUEMART_AVAILABILITY').'</b><br/ >'.vmText::sprintf('COM_VIRTUEMART_PRODUCT_FORM_AVAILABILITY_TOOLTIP2',  $this->imagePath ) ?>"></span>
 		</td>
-		<td><img border="0" id="imagelib" alt="<?php echo JText::_('COM_VIRTUEMART_PREVIEW'); ?>" name="imagelib" src="<?php if ($this->product->product_availability) echo JURI::root(true).$this->imagePath.$this->product->product_availability;?>"/></td>
+		<td><img border="0" id="imagelib" alt="<?php echo vmText::_('COM_VIRTUEMART_PREVIEW'); ?>" name="imagelib" src="<?php if ($this->product->product_availability) echo JURI::root(true).$this->imagePath.$this->product->product_availability;?>"/></td>
 
 	</tr>
 </table>
 </fieldset>
 
 <fieldset>
-	<legend><?php echo JText::_('COM_VIRTUEMART_PRODUCT_SHOPPERS'); ?></legend>
+	<legend><?php echo vmText::_('COM_VIRTUEMART_PRODUCT_SHOPPERS'); ?></legend>
 		<?php echo $this->loadTemplate('customer'); ?>
 </fieldset>
 

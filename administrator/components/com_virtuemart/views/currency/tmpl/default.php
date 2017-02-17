@@ -13,30 +13,30 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 6475 2012-09-21 11:54:21Z Milbo $
+* @version $Id: default.php 9257 2016-07-04 14:40:20Z kkmediaproduction $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
-<form action="index.php" method="post" name="adminForm" id="adminForm">
+<form action="index.php?option=com_virtuemart&view=currency" method="post" name="adminForm" id="adminForm">
     <table>
 	<tr>
 	    <td width="100%">
-			<?php echo ShopFunctions::displayDefaultViewSearch ('COM_VIRTUEMART_CURRENCY',$this->lists['search']) ; ?>
+			<?php echo $this->displayDefaultViewSearch ('COM_VIRTUEMART_CURRENCY','search') ; ?>
 	    </td>
 	</tr>
     </table>
     <div id="editcell">
-	<table class="adminlist" cellspacing="0" cellpadding="0">
+	    <table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 	    <thead>
 		<tr>
-		    <th width="10">
-			<input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count($this->currencies); ?>);" />
+		    <th class="admin-checkbox">
+			<input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" />
 		    </th>
 		    <th >
 				<?php  echo $this->sort('currency_name','COM_VIRTUEMART_CURRENCY') ; ?>
@@ -45,28 +45,28 @@ AdminUIHelper::startAdminArea();
 			<?php echo $this->sort('currency_exchange_rate') ?>
 		    </th>
 		    <th width="20">
-			<?php echo JText::_('COM_VIRTUEMART_CURRENCY_SYMBOL'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_CURRENCY_SYMBOL'); ?>
 		    </th>
 <?php /*		    <th width="10">
-			<?php echo JText::_('COM_VIRTUEMART_CURRENCY_LIST_CODE_2'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_CURRENCY_LIST_CODE_2'); ?>
 		    </th> */?>
 		    <th width="20">
 			<?php  echo $this->sort('currency_code_3') ?>
 		    </th>
              <th width="20">
-			<?php echo JText::_('COM_VIRTUEMART_CURRENCY_NUMERIC_CODE'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_CURRENCY_NUMERIC_CODE'); ?>
 		    </th>
 <?php /*		    <th >
-				<?php echo JText::_('COM_VIRTUEMART_CURRENCY_START_DATE'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_CURRENCY_START_DATE'); ?>
 			</th>
 			<th >
-				<?php echo JText::_('COM_VIRTUEMART_CURRENCY_END_DATE'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_CURRENCY_END_DATE'); ?>
 			</th> */?>
 			<th width="10">
-				<?php echo JText::_('COM_VIRTUEMART_PUBLISHED'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_PUBLISHED'); ?>
 			</th>
 		<?php /*	<th width="10">
-				<?php echo JText::_('COM_VIRTUEMART_SHARED'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_SHARED'); ?>
 			</th> */ ?>
 		</tr>
 	    </thead>
@@ -75,12 +75,13 @@ AdminUIHelper::startAdminArea();
 	    for ($i=0, $n=count( $this->currencies ); $i < $n; $i++) {
 		$row = $this->currencies[$i];
 
-		$checked = JHTML::_('grid.id', $i, $row->virtuemart_currency_id);
-		$published = JHTML::_('grid.published', $row, $i);
-		$editlink = JROUTE::_('index.php?option=com_virtuemart&view=currency&task=edit&cid[]=' . $row->virtuemart_currency_id);
+		$checked = JHtml::_('grid.id', $i, $row->virtuemart_currency_id);
+			$published = $this->gridPublished( $row, $i );
+
+			$editlink = JROUTE::_('index.php?option=com_virtuemart&view=currency&task=edit&cid[]=' . $row->virtuemart_currency_id);
 		?>
 	    <tr class="row<?php echo $k ; ?>">
-		<td align="center">
+		<td class="admin-checkbox">
 			<?php echo $checked; ?>
 		</td>
 		<td align="left">
@@ -130,7 +131,7 @@ AdminUIHelper::startAdminArea();
 	<input type="hidden" name="boxchecked" value="0" />
 	<input type="hidden" name="filter_order" value="<?php echo $this->lists['filter_order']; ?>" />
 	<input type="hidden" name="filter_order_Dir" value="<?php echo $this->lists['filter_order_Dir']; ?>" />
-    <?php echo JHTML::_( 'form.token' ); ?>
+    <?php echo JHtml::_( 'form.token' ); ?>
 </form>
 
 

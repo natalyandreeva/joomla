@@ -18,7 +18,7 @@
 
 defined('_JEXEC') or die();
 
-if(!class_exists('VmTableXarray'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtablexarray.php');
+if(!class_exists('VmTableXarray'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtablexarray.php');
 
 /**
  * Calculator table class
@@ -31,7 +31,7 @@ class TableCategory_medias extends VmTableXarray {
 
 	/**
 	 * @author Max Milbers
-	 * @param $db A database connector object
+	 * @param JDataBase $db connector object
 	 */
 	function __construct(&$db){
 		parent::__construct('#__virtuemart_category_medias', 'id', $db);

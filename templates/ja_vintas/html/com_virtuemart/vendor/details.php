@@ -22,10 +22,14 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 
 <div class="vendor-details-view">
-	<div class="page-heading">
-		<h1 class="vm-page-title"><?php echo $this->vendor->vendor_store_name; ?></h1>
-	</div>
-</div>
+	<h1><?php echo $this->vendor->vendor_store_name;
+	if (!empty($this->vendor->images[0])) { ?>
+		<div class="vendor-image">
+		<?php echo $this->vendor->images[0]->displayMediaThumb('',false); ?>
+		</div>
+	<?php
+	}
+?>	</h1></div>
 
 <div class="vendor-description">
 <?php echo $this->vendor->vendor_store_desc.'<br>';
@@ -37,7 +41,10 @@ defined('_JEXEC') or die('Restricted access');
 <?php	echo $this->vendor->vendor_legal_info; ?>
 
 	<br class="clear" />
-	<?php echo $this->linktos ?>&nbsp;|&nbsp;
+	<?php echo $this->linktos ?>
+
+	<br class="clear" />
+
 	<?php echo $this->linkcontact ?>
 
 	<br class="clear" />

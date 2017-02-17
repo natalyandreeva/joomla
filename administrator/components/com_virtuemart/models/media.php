@@ -13,13 +13,13 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: media.php 6549 2012-10-16 13:20:50Z Milbo $
+ * @version $Id: media.php 9058 2015-11-10 18:30:54Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmModel'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmmodel.php');
+if(!class_exists('VmModel'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmmodel.php');
 
 /**
  * Model for VirtueMart Product Files
@@ -43,7 +43,7 @@ class VirtueMartModelMedia extends VmModel {
 
 	/**
 	 * Gets a single media by virtuemart_media_id
-	 * .
+	 * @Todo must be adjusted to new pattern, using first param as id to get
 	 * @param string $type
 	 * @param string $mime mime type of file, use for exampel image
 	 * @return mediaobject
@@ -55,7 +55,7 @@ class VirtueMartModelMedia extends VmModel {
 			$data = $this->getTable('medias');
 			$data->load((int)$this->_id);
 
-			if (!class_exists('VmMediaHandler')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'mediahandler.php');
+			if (!class_exists('VmMediaHandler')) require(VMPATH_ADMIN.DS.'helpers'.DS.'mediahandler.php');
 
 			$this->_data = VmMediaHandler::createMedia($data,$type,$mime);
 		}
@@ -68,15 +68,16 @@ class VirtueMartModelMedia extends VmModel {
 	 * Kind of getFiles, it creates a bunch of image objects by an array of virtuemart_media_id
 	 *
 	 * @author Max Milbers
-	 * @param unknown_type $virtuemart_media_id
-	 * @param unknown_type $type
-	 * @param unknown_type $mime
+	 * @param int $virtuemart_media_id
+	 * @param string $type
+	 * @param string $mime
 	 */
 	function createMediaByIds($virtuemart_media_ids,$type='',$mime='',$limit =0){
 
-		if (!class_exists('VmMediaHandler')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'mediahandler.php');
+		if (!class_exists('VmMediaHandler')) require(VMPATH_ADMIN.DS.'helpers'.DS.'mediahandler.php');
 
 		$app = JFactory::getApplication();
+
 		$medias = array();
 
 		static $_medias = array();
@@ -84,37 +85,55 @@ class VirtueMartModelMedia extends VmModel {
 		if(!empty($virtuemart_media_ids)){
 			if(!is_array($virtuemart_media_ids)) $virtuemart_media_ids = explode(',',$virtuemart_media_ids);
 
-			//Lets delete empty ids
-			//$virtuemart_media_ids = array_diff($virtuemart_media_ids,array('0',''));
-
 			$data = $this->getTable('medias');
 			foreach($virtuemart_media_ids as $k => $virtuemart_media_id){
-				if($limit!==0 and $k==$limit) break; // never break if $limit = 0
+				if($limit!==0 and $k==$limit and !empty($medias)) break; // never break if $limit = 0
 				if(is_object($virtuemart_media_id)){
 					$id = $virtuemart_media_id->virtuemart_media_id;
 				} else {
 					$id = $virtuemart_media_id;
 				}
 				if(!empty($id)){
-					if (!array_key_exists ($id, $_medias)) {
+					if (!isset($_medias[$id])) {
 						$data->load((int)$id);
 						if($app->isSite()){
 							if($data->published==0){
+								$_medias[$id] = $this->createVoidMedia($type,$mime);
 								continue;
 							}
 						}
 						$file_type 	= empty($data->file_type)? $type:$data->file_type;
 						$mime		= empty($data->file_mimetype)? $mime:$data->file_mimetype;
-						$_medias[$id] = VmMediaHandler::createMedia($data,$file_type,$mime);
-						if(is_object($virtuemart_media_id) && !empty($virtuemart_media_id->product_name)) $_medias[$id]->product_name = $virtuemart_media_id->product_name;
+						if($app->isSite()){
+							$selectedLangue = explode(",", $data->file_lang);
+							$lang =  JFactory::getLanguage();
+							if(in_array($lang->getTag(), $selectedLangue) || $data->file_lang == '') {
+								$_medias[$id] = VmMediaHandler::createMedia($data,$file_type,$mime);
+								if(is_object($virtuemart_media_id) && !empty($virtuemart_media_id->product_name)) $_medias[$id]->product_name = $virtuemart_media_id->product_name;
+							}
+						} else {
+							$_medias[$id] = VmMediaHandler::createMedia($data,$file_type,$mime);
+							if(is_object($virtuemart_media_id) && !empty($virtuemart_media_id->product_name)) $_medias[$id]->product_name = $virtuemart_media_id->product_name;
+						}
 					}
-
-					$medias[] = $_medias[$id];
+					if (!empty($_medias[$id])) {
+						$medias[] = $_medias[$id];
+					}
 				}
 			}
 		}
 
 		if(empty($medias)){
+			$medias[] = $this->createVoidMedia($type,$mime);
+		}
+
+		return $medias;
+	}
+
+	function createVoidMedia($type,$mime){
+
+		static $voidMedia = null;
+		if(empty($voidMedia)){
 			$data = $this->getTable('medias');
 
 			//Create empty data
@@ -123,6 +142,7 @@ class VirtueMartModelMedia extends VmModel {
 			$data->file_title = '';
 			$data->file_description = '';
 			$data->file_meta = '';
+			$data->file_class = '';
 			$data->file_mimetype = '';
 			$data->file_type = '';
 			$data->file_url = '';
@@ -133,11 +153,11 @@ class VirtueMartModelMedia extends VmModel {
 			$data->file_is_product_image = 0;
 			$data->shared = 0;
 			$data->file_params = 0;
+			$data->file_lang = '';
 
-			$medias[] = VmMediaHandler::createMedia($data,$type,$mime);
+			$voidMedia = VmMediaHandler::createMedia($data,$type,$mime);
 		}
-
-		return $medias;
+		return $voidMedia;
 	}
 
 	/**
@@ -153,8 +173,8 @@ class VirtueMartModelMedia extends VmModel {
 
 		$this->_noLimit = $noLimit;
 
-		if(empty($this->_db)) $this->_db = JFactory::getDBO();
-		$vendorId = 1; //TODO set to logged user or requested vendorId, not easy later
+		if(empty($db)) $db = JFactory::getDBO();
+
 		$query = '';
 
 		$selectFields = array();
@@ -176,8 +196,6 @@ class VirtueMartModelMedia extends VmModel {
 			} else{
 				$orderByTable = '`#__virtuemart_medias`.';
 			}
-
-
 		}
 
 		else if(!empty($cat_id)){
@@ -196,9 +214,10 @@ class VirtueMartModelMedia extends VmModel {
 			$mainTable = '`#__virtuemart_medias`';
 			$selectFields[] = ' `virtuemart_media_id` ';
 
-			if(!class_exists('Permissions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'permissions.php');
-			if(!Permissions::getInstance()->check('admin') ){
-				$whereItems[] = '(`virtuemart_vendor_id` = "'.(int)$vendorId.'" OR `shared`="1")';
+
+			if(!vmAccess::manager('managevendors')){
+				$vendorId = vmAccess::isSuperVendor();
+				$whereItems[] = '(`virtuemart_vendor_id` = "'.$vendorId.'" OR `shared`="1")';
 			}
 
 		}
@@ -207,8 +226,8 @@ class VirtueMartModelMedia extends VmModel {
 			$whereItems[] = '`#__virtuemart_medias`.`published` = 1';
 		}
 
-		if ($search = JRequest::getString('searchMedia', false)){
-			$search = '"%' . $this->_db->getEscaped( $search, true ) . '%"' ;
+		if ($search = vRequest::getString('searchMedia', false)){
+			$search = '"%' . $db->escape( $search, true ) . '%"' ;
 			$where[] = ' (`file_title` LIKE '.$search.'
 								OR `file_description` LIKE '.$search.'
 								OR `file_meta` LIKE '.$search.'
@@ -216,10 +235,23 @@ class VirtueMartModelMedia extends VmModel {
 								OR `file_url_thumb` LIKE '.$search.'
 							) ';
 		}
-		if ($type = JRequest::getWord('search_type')) {
+		if ($type = vRequest::getCmd('search_type')) {
 			$where[] = 'file_type = "'.$type.'" ' ;
 		}
 
+		if ($role = vRequest::getCmd('search_role')) {
+			if ($role == "file_is_downloadable") {
+				$where[] = '`file_is_downloadable` = 1';
+				$where[] = '`file_is_forSale` = 0';
+			} elseif ($role == "file_is_forSale") {
+				$where[] = '`file_is_downloadable` = 0';
+				$where[] = '`file_is_forSale` = 1';
+			} else {
+				$where[] = '`file_is_downloadable` = 0';
+				$where[] = '`file_is_forSale` = 0';
+			}
+		}
+		
 		if (!empty($where)) $whereItems = array_merge($whereItems,$where);
 
 
@@ -269,41 +301,45 @@ class VirtueMartModelMedia extends VmModel {
 	 * @param array $data Data from a from
 	 * @param string $type type of the media  category,product,manufacturer,shop, ...
 	 */
-	function storeMedia($data,$type){
+	function storeMedia($dataI,$type){
 
-// 		vmdebug('my data in media to store start',$data['virtuemart_media_id']);
-		JRequest::checkToken() or jexit( 'Invalid Token, while trying to save media' );
+		vRequest::vmCheckToken('Invalid Token, while trying to save media '.$type);
+
+		$data = $dataI;
+		if(isset($dataI['media'])){
+			$data = array_merge($data,$dataI['media']);
+		}
 
 		if(empty($data['media_action'])){
 			$data['media_action'] = 'none';
 		}
 
 		//the active media id is not empty, so there should be something done with it
-		if( (!empty($data['active_media_id']) && !empty($data['virtuemart_media_id']) ) || $data['media_action']=='upload'){
+		if( (!empty($data['active_media_id']) and isset($data['virtuemart_media_id']) ) || $data['media_action']=='upload'){
 
 			$oldIds = $data['virtuemart_media_id'];
+
 			$data['file_type'] = $type;
-			$data['virtuemart_media_id'] = (int)$data['active_media_id'];
 
-			$this -> setId($data['virtuemart_media_id']);
+			$this -> setId($data['active_media_id']);
 
-			$virtuemart_media_id = $this->store($data,$type);
+			$virtuemart_media_id = $this->store($data);
 
-			//added by Mike,   Mike why did you add this? This function storeMedia is extremely nasty
-			$this->setId($virtuemart_media_id);
+			if($virtuemart_media_id){
+				//added by Mike
+				$this->setId($virtuemart_media_id);
 
-			if(!empty($oldIds)){
-				if(!is_array($oldIds)) $oldIds = array($oldIds);
+				if(!empty($oldIds)){
+					if(!is_array($oldIds)) $oldIds = array($oldIds);
 
-				if(!empty($data['mediaordering']) && $data['media_action']=='upload'){
-// 					array_push($data['mediaordering'],count($data['mediaordering'])+1);
-					$data['mediaordering'][$virtuemart_media_id] = count($data['mediaordering']);
+					if(!empty($data['mediaordering']) && $data['media_action']=='upload'){
+						$data['mediaordering'][$virtuemart_media_id] = count($data['mediaordering']);
+					}
+					$virtuemart_media_ids = array_merge( (array)$virtuemart_media_id,$oldIds);
+					$data['virtuemart_media_id'] = array_unique($virtuemart_media_ids);
+				} else {
+					$data['virtuemart_media_id'] = $virtuemart_media_id;
 				}
-				$virtuemart_media_ids = array_merge( (array)$virtuemart_media_id,$oldIds);
-// 				vmdebug('merged old and new',$virtuemart_media_ids);
-				$data['virtuemart_media_id'] = array_unique($virtuemart_media_ids);
-			} else {
-				$data['virtuemart_media_id'] = $virtuemart_media_id;
 			}
 
 		}
@@ -314,20 +350,14 @@ class VirtueMartModelMedia extends VmModel {
 			foreach($data['mediaordering'] as $k=>$v){
 				$sortedMediaIds[] = $k;
 			}
-// 			vmdebug('merging old and new',$oldIds,$virtuemart_media_id);
 			$data['virtuemart_media_id'] = $sortedMediaIds;
 		}
 
-// 		vmdebug('my data in media to store',$data['virtuemart_media_id'],$data['mediaordering']);
-
 		//set the relations
 		$table = $this->getTable($type.'_medias');
+		//vmdebug('my data before storing media',$data);
 		// Bind the form fields to the country table
 		$table->bindChecknStore($data);
-		$errors = $table->getErrors();
-		foreach($errors as $error){
-			vmError($error);
-		}
 
 		return $table->virtuemart_media_id;
 
@@ -339,29 +369,37 @@ class VirtueMartModelMedia extends VmModel {
 	 *
 	 * @author Max Milbers
 	 */
-	public function store(&$data,$type) {
+	public function store(&$data) {
 
-		//if(empty($data['media_action'])) return $table->virtuemart_media_id;
-		if (!class_exists('VmMediaHandler')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'mediahandler.php');
+		$data['virtuemart_media_id'] = $this->getId();
+		if(!vmAccess::manager('media.edit')){
+			vmWarn('Insufficient permission to store media');
+			return false;
+		} else if( empty($data['virtuemart_media_id']) and !vmAccess::manager('media.create')){
+			vmWarn('Insufficient permission to create media');
+			return false;
+		}
+
+		VmConfig::loadJLang('com_virtuemart_media');
+		if (!class_exists('VmMediaHandler')) require(VMPATH_ADMIN.DS.'helpers'.DS.'mediahandler.php');
 
 		$table = $this->getTable('medias');
 
 		$table->bind($data);
-		$data = VmMediaHandler::prepareStoreMedia($table,$data,$type); //this does not store the media, it process the actions and prepares data
-
+		$data = VmMediaHandler::prepareStoreMedia($table,$data,$data['file_type']); //this does not store the media, it process the actions and prepares data
+		if($data===false) return $table->virtuemart_media_id;
 		// workarround for media published and product published two fields in one form.
-
+		$tmpPublished = false;
 		if (isset($data['media_published'])){
+			$tmpPublished = $data['published'];
 			$data['published'] = $data['media_published'];
-			//vmdebug('$data["published"]',$data['published']);
 		}
 
 		$table->bindChecknStore($data);
-		$errors = $table->getErrors();
-		foreach($errors as $error){
-			vmError('store medias '.$error);
+
+		if($tmpPublished){
+			$data['published'] = $tmpPublished;
 		}
-// 		vmdebug('store media $table->virtuemart_media_id '.$table->virtuemart_media_id);
 		return $table->virtuemart_media_id;
 	}
 
@@ -369,12 +407,29 @@ class VirtueMartModelMedia extends VmModel {
 		if(!empty($objects)){
 			if(!is_array($objects)) $objects = array($objects);
 			foreach($objects as $k => $object){
+				if(!is_object($object)){
+					$object = $this->createVoidMedia($type,$mime);
+				}
 
 				if(empty($object->virtuemart_media_id)) $virtuemart_media_id = null; else $virtuemart_media_id = $object->virtuemart_media_id;
 				$object->images = $this->createMediaByIds($virtuemart_media_id,$type,$mime,$limit);
-// 				vmdebug('$object->images',$object->images);
+
+				//This should not be used in fact. It is for legacy reasons there.
+				if(isset($object->images[0]->file_url_thumb)){
+					$object->file_url_thumb = $object->images[0]->file_url_thumb;
+					$object->file_url = $object->images[0]->file_url;
+				}
 			}
 		}
+	}
+
+	function remove($ids){
+
+		if(!vmAccess::manager('media.delete')){
+			vmWarn('Insufficient permissions to delete media');
+			return false;
+		}
+		return parent::remove($ids);
 	}
 
 }

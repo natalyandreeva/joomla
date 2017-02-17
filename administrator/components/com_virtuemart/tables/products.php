@@ -5,30 +5,22 @@
 *
 * @package	VirtueMart
 * @subpackage Product
-* @author RolandD
+* @author Max Milbers
 * @link http://www.virtuemart.net
-* @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
+* @copyright Copyright (c) 2009 - 2014 VirtueMart Team. All rights reserved.
 * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
 * VirtueMart is free software. This version may have been modified pursuant
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: products.php 6306 2012-08-06 14:19:51Z Milbo $
+* @version $Id: products.php 9075 2015-12-02 13:56:15Z Milbo $
 */
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
-
-// Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-/**
- * Product table class
- * The class is is used to manage the products in the shop.
- *
- * @package	VirtueMart
- * @author RolandD
- * @author Max Milbers
- */
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
+
+
 class TableProducts extends VmTable {
 
 	/** @var int Primary key */
@@ -38,26 +30,29 @@ class TableProducts extends VmTable {
 	/** @var string File name */
 	var $product_parent_id		= 0;
 	/** @var string File title */
-	var $product_sku= '';
+	var $product_sku= null;
+	var $product_gtin = null;
+	var $product_mpn = null;
+
     /** @var string Name of the product */
 	var $product_name	= '';
 	var $slug			= '';
     /** @var string File description */
-	var $product_s_desc		= '';
+	var $product_s_desc		= null;
     /** @var string File extension */
-	var $product_desc			= '';
+	var $product_desc			= null;
 	/** @var int File is an image or other */
-	var $product_weight			= 0;
+	var $product_weight			= null;
 	/** @var int File image height */
-	var $product_weight_uom		= '';
+	var $product_weight_uom		= null;
 	/** @var int File image width */
-	var $product_length		= 0;
+	var $product_length		= null;
 	/** @var int File thumbnail image height */
-	var $product_width = 0;
+	var $product_width = null;
 	/** @var int File thumbnail image width */
-	var $product_height	= 0;
+	var $product_height	= null;
 	/** @var int File thumbnail image width */
-	var $product_lwh_uom	= '';
+	var $product_lwh_uom	= null;
 	/** @var int File thumbnail image width */
 	var $product_url	= '';
 	/** @var int File thumbnail image width */
@@ -72,7 +67,8 @@ class TableProducts extends VmTable {
 	/** @var int File thumbnail image width */
 	var $product_special	= null;
 
-
+	/** @var int product internal ordering, it is for the ordering for child products under a parent null */
+	var $pordering = null;
 	/** @var int File thumbnail image width */
 	var $product_sales	= 0;
 
@@ -97,14 +93,9 @@ class TableProducts extends VmTable {
 	/** @var string Name of the details page to use for showing product details in the front end */
 	var $layout = '';
        /** @var int published or unpublished */
-	var $published 		        = 1;
+	var $published = 1;
 
 
-
-	/**
-	 * @author Max Milbers
-	 * @param $db A database connector object
-	 */
 	function __construct($db) {
 		parent::__construct('#__virtuemart_products', 'virtuemart_product_id', $db);
 
@@ -120,12 +111,14 @@ class TableProducts extends VmTable {
 		$varsToPushParam = array(
 				    				'min_order_level'=>array(null,'float'),
 				    				'max_order_level'=>array(null,'float'),
+				    				'step_order_level'=>array(null,'float'),
 									//'product_packaging'=>array(null,'float'),
 									'product_box'=>array(null,'float')
 									);
 
 		$this->setParameterable('product_params',$varsToPushParam);
-
+		$this->_updateNulls = true;
+		$this->published = VmConfig::get('product.published',1);
 	}
 
 }

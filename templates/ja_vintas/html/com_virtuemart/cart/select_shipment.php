@@ -29,7 +29,7 @@ if (VmConfig::get('oncheckout_show_steps', 1)) {
 <form method="post" id="userForm" name="chooseShipmentRate" action="<?php echo JRoute::_('index.php'); ?>" class="form-validate">
 <?php
 
-	echo "<h1 class=\"msg-info\">".JText::_('COM_VIRTUEMART_CART_SELECT_SHIPMENT')."</h1>";
+	echo "<h1>".JText::_('COM_VIRTUEMART_CART_SELECT_SHIPMENT')."</h1>";
 	if($this->cart->getInCheckOut()){
 		$buttonclass = 'button vm-button-correct';
 	} else {
@@ -38,7 +38,7 @@ if (VmConfig::get('oncheckout_show_steps', 1)) {
 	?>
 	<div class="buttonBar-right">
 
-	        <button class="<?php echo $buttonclass ?> btn-hilite" type="submit" ><?php echo JText::_('COM_VIRTUEMART_SAVE'); ?></button>  &nbsp;
+	        <button class="<?php echo $buttonclass ?>" type="submit" ><?php echo JText::_('COM_VIRTUEMART_SAVE'); ?></button>  &nbsp;
 	<button class="<?php echo $buttonclass ?>" type="reset" onClick="window.location.href='<?php echo JRoute::_('index.php?option=com_virtuemart&view=cart'); ?>'" ><?php echo JText::_('COM_VIRTUEMART_CANCEL'); ?></button>
 	</div>
 <?php
@@ -56,7 +56,7 @@ if (VmConfig::get('oncheckout_show_steps', 1)) {
 	    }
 	    echo "</fieldset>\n";
     } else {
-	 echo "<h1 class=\"msg-info\">".$this->shipment_not_found_text."</h1>";
+	 echo "<h1>".$this->shipment_not_found_text."</h1>";
     }
 
     ?>

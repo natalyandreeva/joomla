@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: currency.php 6071 2012-06-06 15:33:04Z Milbo $
+* @version $Id: currency.php 9287 2016-09-12 15:14:42Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -53,10 +50,13 @@ class VirtuemartControllerCurrency extends VmController {
 	 */
 	function save($data = 0){
 
-		$data = JRequest::get('post');
+		$data = vRequest::getRequest();
 
-		$data['currency_positive_style'] = JRequest::getVar('currency_positive_style','','post','STRING',JREQUEST_ALLOWHTML);
-		$data['currency_negative_style'] = JRequest::getVar('currency_negative_style','','post','STRING',JREQUEST_ALLOWHTML);
+		$data['currency_name'] = vRequest::getHtml('currency_name','');
+		$data['currency_positive_style'] = vRequest::getHtml('currency_positive_style','');
+		$data['currency_negative_style'] = vRequest::getHtml('currency_negative_style','');
+		$data['currency_thousands'] = vRequest::getHtml('currency_thousands','');
+		$data['currency_decimal_symbol'] = vRequest::getHtml('currency_decimal_symbol','');
 
 		parent::save($data);
 	}

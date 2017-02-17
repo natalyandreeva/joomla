@@ -14,15 +14,14 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: view.html.php 6475 2012-09-21 11:54:21Z Milbo $
+ * @version $Id: view.html.php 9221 2016-05-23 11:34:36Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
-jimport('joomla.html.pane');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * HTML View class for maintaining the list of categories
@@ -31,45 +30,53 @@ jimport('joomla.html.pane');
  * @subpackage Category
  * @author RickG, jseros
  */
-class VirtuemartViewCategory extends VmView {
+class VirtuemartViewCategory extends VmViewAdmin {
 
 	function display($tpl = null) {
 
-		$this->loadHelper('html');
+		if(!class_exists('VirtueMartModelConfig'))require(VMPATH_ADMIN .'models/config.php');
+
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
 		$model = VmModel::getModel();
 		$layoutName = $this->getLayout();
 
-		$task = JRequest::getWord('task',$layoutName);
+		$task = vRequest::getCmd('task',$layoutName);
 		$this->assignRef('task', $task);
 
-		if(!class_exists('Permissions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'permissions.php');
-		$perms = Permissions::getInstance();
-		$this->assignRef('perms', $perms);
-
+		$this->user = $user = JFactory::getUser();
 		if ($layoutName == 'edit') {
 
-			$category = $model->getCategory('',false);
+			$category = $model->getCategory('', false, false);
 
+			// Toolbar
+			$text='';
 			if (isset($category->category_name)) $name = $category->category_name; else $name ='';
-			$this->SetViewTitle('CATEGORY',$name);
+			if(!empty($category->virtuemart_category_id)){
+				$text = '<a href="'.juri::root().'index.php?option=com_virtuemart&view=category&virtuemart_category_id='.$category->virtuemart_category_id.'" target="_blank" >'. $name.'<span class="vm2-modallink"></span></a>';
+			}
+
+			$this->SetViewTitle('CATEGORY',$text);
 
 			$model->addImages($category);
 
 			if ( $category->virtuemart_category_id > 1 ) {
 				$relationInfo = $model->getRelationInfo( $category->virtuemart_category_id );
 				$this->assignRef('relationInfo', $relationInfo);
+			} else {
+				$category->virtuemart_vendor_id = vmAccess::getVendorId();
 			}
 
 			$parent = $model->getParentCategory( $category->virtuemart_category_id );
 			$this->assignRef('parent', $parent);
 
-			if(!class_exists('ShopFunctions'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'shopfunctions.php');
-			$templateList = ShopFunctions::renderTemplateList(JText::_('COM_VIRTUEMART_CATEGORY_TEMPLATE_DEFAULT'));
+			if(!class_exists('ShopFunctions'))require(VMPATH_ADMIN.DS.'helpers'.DS.'shopfunctions.php');
+			$templateList = ShopFunctions::renderTemplateList(vmText::_('COM_VIRTUEMART_CATEGORY_TEMPLATE_DEFAULT'));
 
 			$this->assignRef('jTemplateList', $templateList);
 
-			if(!class_exists('VirtueMartModelConfig'))require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'config.php');
+
 			$categoryLayoutList = VirtueMartModelConfig::getLayoutList('category');
 			$this->assignRef('categoryLayouts', $categoryLayoutList);
 
@@ -79,12 +86,8 @@ class VirtuemartViewCategory extends VmView {
 			//Nice fix by Joe, the 4. param prevents setting an category itself as child
 			$categorylist = ShopFunctions::categoryListTree(array($parent->virtuemart_category_id), 0, 0, (array) $category->virtuemart_category_id);
 
-			$this->loadHelper('permissions');
-			$perms = Permissions::getInstance();
-			$this->assignRef('perms', $perms );
-
-			if(Vmconfig::get('multix','none')!=='none'){
-				$vendorList= ShopFunctions::renderVendorList($category->virtuemart_vendor_id,false);
+			if($this->showVendors()){
+				$vendorList= ShopFunctions::renderVendorList($category->virtuemart_vendor_id);
 				$this->assignRef('vendorList', $vendorList);
 			}
 
@@ -102,15 +105,19 @@ class VirtuemartViewCategory extends VmView {
 			$this->addStandardDefaultViewCommands();
 			$this->addStandardDefaultViewLists($model,'category_name');
 
-			$categories = $model->getCategoryTree(0,0,false,$this->lists['search']);
+			$topCategory=vRequest::getInt('top_category_id',0);
+			$category_tree = ShopFunctions::categoryListTree(array($topCategory));
+			$this->assignRef('category_tree', $category_tree);
+
+
+			$categories = $model->getCategoryTree($topCategory,0,false,$this->lists['search']);
 			$this->assignRef('categories', $categories);
 
 			$pagination = $model->getPagination();
 			$this->assignRef('catpagination', $pagination);
 
 			//we need a function of the FE shopfunctions helper to cut the category descriptions
-
-			jimport('joomla.filter.output');
+			if (!class_exists ('shopFunctionsF')) require(VMPATH_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
 		}
 
 		parent::display($tpl);

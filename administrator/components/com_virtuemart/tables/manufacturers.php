@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: manufacturers.php 4731 2011-11-17 01:35:45Z Milbo $
+* @version $Id: manufacturers.php 9200 2016-04-04 17:22:51Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Manufacturer table class
@@ -44,12 +44,18 @@ class TableManufacturers extends VmTable {
     /** @var string manufacturer URL */
 	var $mf_url = '';
 
+	var $customtitle = '';
+	var $metakey = '';
+	var $metadesc = '';
+	var $metarobot = '';
+	var $metaauthor = '';
+
 	/** @var int published or unpublished */
 	var $published = 1;
 
 	/**
 	 * @author Max Milbers
-	 * @param $db A database connector object
+	 * @param JDataBase $db
 	 */
 	function __construct(&$db)
 	{
@@ -57,7 +63,7 @@ class TableManufacturers extends VmTable {
 
 		$this->setUniqueName('mf_name');
 		$this->setLoggable();
-		$this->setTranslatable(array('mf_name','mf_email','mf_desc','mf_url'));
+		$this->setTranslatable(array('mf_name','mf_email','mf_desc','mf_url','metadesc','metakey','customtitle'));
 		$this->setSlug('mf_name');
 		$this->setTableShortCut('m');
 	}

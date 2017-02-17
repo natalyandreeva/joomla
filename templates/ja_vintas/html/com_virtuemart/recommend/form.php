@@ -42,13 +42,7 @@ if (empty ( $this->product )) {
 	<h1><?php echo JText::_('COM_VIRTUEMART_PRODUCT_RECOMMEND')  ?></h1>
 
 	<div class="product-summary">
-
-		<div class="product-image floatleft center">
-			<?php // Product Image
-			echo $this->product->images[0]->displayMediaThumb('class="modal product-image"',false); ?>
-		</div>	
-	
-		<div class="floatleft">
+		<div class="width70 floatleft">
 			<h2><?php echo $this->product->product_name ?></h2>
 
 			<?php // Product Short Description
@@ -58,6 +52,11 @@ if (empty ( $this->product )) {
 				</div>
 			<?php } // Product Short Description END ?>
 
+		</div>
+
+		<div class="width30 floatleft center">
+			<?php // Product Image
+			echo $this->product->images[0]->displayMediaThumb('class="modal product-image"',false); ?>
 		</div>
 
 	<div class="clear"></div>
@@ -82,7 +81,7 @@ if (empty ( $this->product )) {
 
 					<div class="width50 floatright right paddingtop">
 						<?php echo JText::_('COM_VIRTUEMART_ASK_COUNT')  ?>
-						<input type="text" value="0" size="4" class="counter" ID="counter" name="counter" maxlength="4" readonly="readonly" />
+						<input type="text" value="0" size="4" class="counter" id="counter" name="counter" maxlength="4" readonly="readonly" />
 					</div>
 				</div>
 

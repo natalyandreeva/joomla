@@ -3,7 +3,7 @@ if( !defined( '_JEXEC' ) ) die('Restricted access');
 
 /**
 *
-* @version $Id: view.html.php 6489 2012-10-01 23:17:36Z Milbo $
+* @version $Id: view.html.php 8724 2015-02-18 14:03:29Z Milbo $
 * @package VirtueMart
 * @subpackage Report
 * @copyright Copyright (C) VirtueMart Team - All rights reserved.
@@ -17,7 +17,7 @@ if( !defined( '_JEXEC' ) ) die('Restricted access');
 * http://virtuemart.org
 */
 
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * Report View class
@@ -26,28 +26,36 @@ if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmvie
  * @subpackage Report
  * @author Wicksj
  */
-class VirtuemartViewReport extends VmView {
+class VirtuemartViewReport extends VmViewAdmin {
 
 	/**
 	 * Render the view
 	 */
 	function display($tpl = null){
 
-		// Load the helper(s)
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
+		if (!class_exists('CurrencyDisplay'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
 
-		$this->loadHelper('html');
-
-		$this->loadHelper('html');
-		$this->loadHelper('currencydisplay');
-		$this->loadHelper('reportFunctions');
 
 		$model		= VmModel::getModel();
 
-		JRequest::setvar('task','');
+		vRequest::setvar('task','');
 
 		$this->SetViewTitle('REPORT');
 
 		$myCurrencyDisplay = CurrencyDisplay::getInstance();
+
+		//update order items button
+		/*$q = 'SELECT * FROM #__virtuemart_order_items WHERE `product_discountedPriceWithoutTax` IS NULL ';
+		$db = JFactory::getDBO();
+		$db->setQuery($q);
+		$res = $db->loadRow();
+		if($res) {
+			JToolBarHelper::custom('updateOrderItems', 'new', 'new', vmText::_('COM_VIRTUEMART_REPORT_UPDATEORDERITEMS'),false);
+			vmError('COM_VIRTUEMART_REPORT_UPDATEORDERITEMS_WARN');
+		}*/
 
 		$this->addStandardDefaultViewLists($model);
 		$revenueBasic = $model->getRevenue();
@@ -66,7 +74,7 @@ class VirtuemartViewReport extends VmView {
 			}
 			$totalReport['revenueTotal_netto'] = $myCurrencyDisplay->priceDisplay($totalReport['revenueTotal_netto']);
 			$totalReport['revenueTotal_brutto'] = $myCurrencyDisplay->priceDisplay($totalReport['revenueTotal_brutto']);
-			// if ( 'product_quantity'==JRequest::getWord('filter_order')) {
+			// if ( 'product_quantity'==vRequest::getCmd('filter_order')) {
 				// foreach ($revenueBasic as $key => $row) {
 					// $created_on[] =$row['created_on'];
 					// $intervals[] =$row['intervals'];
@@ -75,29 +83,23 @@ class VirtuemartViewReport extends VmView {
 					// $revenue[] =$row['revenue'];
 
 				// }
-				// if (JRequest::getWord('filter_order_Dir') == 'desc') array_multisort($itemsSold, SORT_DESC,$revenueBasic);
+				// if (vRequest::getCmd('filter_order_Dir') == 'desc') array_multisort($itemsSold, SORT_DESC,$revenueBasic);
 				// else array_multisort($itemsSold, SORT_ASC,$revenueBasic);
 			// }
 		}
 		$this->assignRef('report', $revenueBasic);
 		$this->assignRef('totalReport', $totalReport);
 
-		//$itemsSold = $model->getItemsSold($revenueBasic);
-		//$this->assignRef('itemsSold', $itemsSold);
-		// I tihnk is to use in a different layout such as product solds
-		// PATRICK K.
-		// $productList = $model->getOrderItems();
-		// $this->assignRef('productList', $productList);
 
-
+		$orderstatusM =VmModel::getModel('orderstatus');
 		$this->lists['select_date'] = $model->renderDateSelectList();
-		$this->lists['state_list'] = $model->renderOrderstatesList();
+		$orderstates = vRequest::getVar ('order_status_code', array('C','S'));
+		$this->lists['state_list'] = $orderstatusM->renderOSList($orderstates,'order_status_code',TRUE);
 		$this->lists['intervals'] = $model->renderIntervalsList();
 		$this->assignRef('from_period', $model->from_period);
 		$this->assignRef('until_period', $model->until_period);
 
-		$pagination = $model->getPagination();
-		$this->assignRef('pagination', $pagination);
+		$this->pagination = $model->getPagination();
 
 		parent::display($tpl);
 	}

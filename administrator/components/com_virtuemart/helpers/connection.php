@@ -41,9 +41,9 @@ class VmConnector {
 	$http_status = intval( $http_status );
 	@header("HTTP/1.0 $http_status");
 	if( $mime_type ) {
-	    @header( "Content-type: $mime_type; charset=".vmGetCharset() );
+	    @header( "Content-type: $mime_type; charset=UTF-8" );
 	} elseif( $mime_type != '' ) {
-	    @header( "Content-type: text/html; charset=".vmGetCharset() );
+	    @header( "Content-type: text/html; charset=UTF-8" );
 	}
 	if( $content ) {
 	    echo $content;
@@ -123,7 +123,7 @@ class VmConnector {
 		// No PEER certificate validation...as we don't have
 		// a certificate file for it to authenticate the host www.ups.com against!
 		curl_setopt($CR, CURLOPT_SSL_VERIFYPEER, 0);
-		//curl_setopt($CR, CURLOPT_SSLCERT , "/usr/locale/xxxx/clientcertificate.pem");
+
 	    }
 	    $result = curl_exec( $CR );
 	    $error = curl_error( $CR );
@@ -175,15 +175,13 @@ class VmConnector {
 	    }
 	    if(!$fp) {
 			//error tell us
-			JError::raiseWarning(1, 'Possible server error! - '.$errstr .'('.$errno.')\n' );
+			vmWarn( 'Possible server error! - '.$errstr .'('.$errno.')\n' );
 			return false;
 	    }
 	    else {
-	    	//Would be interesting to set this only for debug
-//			JError::raiseNotice(1, 'Connection opened to '.$urlParts['host']);
+	    	vmdebug( 'Connection opened to '.$urlParts['host']);
 	    }
 	    if( $postData ) {
-//		$vmLogger->debug('Now posting the variables.' );
 			//send the server request
 			if( !empty( $proxyURL )) {
 			    fputs($fp, "POST ".$urlParts['host'].':'.$urlParts['port'].$urlParts['path']." HTTP/1.0\r\n");
@@ -225,9 +223,9 @@ class VmConnector {
 	    }
 	    fclose( $fp );
 
-	    // If didnt get content-lenght, something is wrong, return false.
+	    // If didnt get content-length, something is wrong, return false.
 	    if ( trim($data) == '' ) {
-			JError::raiseWarning(E_WARNING,'An error occured while communicating with the server '.$urlParts['host'].'. It didn\'t reply (correctly). Please try again later, thank you.' );
+			vmWarn('An error occured while communicating with the server '.$urlParts['host'].'. It didn\'t reply (correctly). Please try again later, thank you.' );
 			return false;
 	    }
 	    $result = trim( $data );

@@ -13,14 +13,14 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: view.html.php 6068 2012-06-06 14:59:42Z Milbo $
+* @version $Id: view.html.php 8724 2015-02-18 14:03:29Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * HTML View class for maintaining the list of states
@@ -29,50 +29,36 @@ if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmvie
  * @subpackage State
  * @author Max Milbers
  */
-class VirtuemartViewState extends VmView {
+class VirtuemartViewState extends VmViewAdmin {
 
 	function display($tpl = null) {
 
-		// Load the helper(s)
-
-
-		$this->loadHelper('html');
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
 		$this->SetViewTitle();
-
-
 		$model = VmModel::getModel();
 
-//		$stateId = JRequest::getVar('virtuemart_state_id');
-//		$model->setId($stateId);
-		$state = $model->getSingleState();
+		$this->state = $model->getSingleState();
 
-		$countryId = JRequest::getInt('virtuemart_country_id', 0);
-		if(empty($countryId)) $countryId = $state->virtuemart_country_id;
-		$this->assignRef('virtuemart_country_id',	$countryId);
+		$this->virtuemart_country_id = vRequest::getInt('virtuemart_country_id', $this->state->virtuemart_country_id);
 
-        $isNew = (count($state) < 1);
+        $isNew = (count($this->state) < 1);
 
 		if(empty($countryId) && $isNew){
-			JError::raiseWarning(412,'Country id is 0');
+			vmWarn('Country id is 0');
 			return false;
 		}
 
 		$country = VmModel::getModel('country');
-		$country->setId($countryId);
-		$this->assignRef('country_name', $country->getData()->country_name);
+		$country->setId($this->virtuemart_country_id);
+		$this->country_name = $country->getData()->country_name;
 
-
-		$layoutName = JRequest::getWord('layout', 'default');
+		$layoutName = vRequest::getCmd('layout', 'default');
 		if ($layoutName == 'edit') {
 
-
-			$this->assignRef('state', $state);
-
 			$zoneModel = VmModel::getModel('Worldzones');
-			$wzsList = $zoneModel->getWorldZonesSelectList();
-			$this->assignRef('worldZones', $wzsList);
-
+			$this->worldZones = $zoneModel->getWorldZonesSelectList();
 			$this->addStandardEditViewCommands();
 
 		} else {
@@ -80,11 +66,8 @@ class VirtuemartViewState extends VmView {
 			$this->addStandardDefaultViewCommands();
 			$this->addStandardDefaultViewLists($model);
 
-			$states = $model->getStates($countryId);
-			$this->assignRef('states',	$states);
-
-			$pagination = $model->getPagination();
-			$this->assignRef('pagination', $pagination);
+			$this->states = $model->getStates($this->virtuemart_country_id);
+			$this->pagination = $model->getPagination();
 
 		}
 

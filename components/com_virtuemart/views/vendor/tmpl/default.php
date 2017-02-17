@@ -38,7 +38,7 @@ $horizontalSeparator = '<div class="horizontal-separator"></div>';
 // Lets output the categories, if there are some
 if (!empty($this->vendors)) { ?>
 
-<div class="vendor-view-default">
+<div class="vendor-details-view vendor-view-default">
 
 	<?php // Start the Output
 	foreach ( $this->vendors as $vendor ) {
@@ -61,8 +61,8 @@ if (!empty($this->vendors)) { ?>
 		}
 
 		// vendor Elements
-		$vendorsLink = JRoute::_('index.php?option=com_virtuemart&view=vendor&virtuemart_vendor_id=' . $vendor->virtuemart_vendor_id);
-		$vendorIncludedProductsURL = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_vendor_id=' . $vendor->virtuemart_vendor_id);
+		$vendorsLink = JRoute::_('index.php?option=com_virtuemart&view=vendor&virtuemart_vendor_id=' . $vendor->virtuemart_vendor_id, FALSE);
+		$vendorIncludedProductsURL = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_vendor_id=' . $vendor->virtuemart_vendor_id, FALSE);
 		//$vendorImage = $vendor->images[0]->displayMediaThumb("",false);
 
 		// Show Category ?>

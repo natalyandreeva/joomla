@@ -13,12 +13,12 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: edit.php 6053 2012-06-05 12:36:21Z Milbo $
+ * @version $Id: edit.php 8508 2014-10-22 18:57:14Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 ?>
 <form action="index.php" method="post" name="adminForm" id="adminForm">
 

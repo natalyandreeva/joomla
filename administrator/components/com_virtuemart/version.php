@@ -2,7 +2,7 @@
 if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not allowed.' );
 /**
 *
-* @version $Id: version.php 6059 2012-06-06 10:35:14Z alatak $
+* @version $Id: version.php 9200 2016-04-04 17:22:51Z Milbo $
 * @package VirtueMart
 * @subpackage core
 * @copyright Copyright (C) 2005-2011 VirtueMart Team - All rights reserved.
@@ -15,46 +15,46 @@ if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not 
 *
 * http://virtuemart.org
 */
-if( class_exists( 'vmVersion' ) ) {
 
-	$shortversion = vmVersion::$PRODUCT . " " . vmVersion::$RELEASE . " " . vmVersion::$DEV_STATUS. " ";
 
-	$myVersion = $shortversion . " [".vmVersion::$CODENAME ."] <br />" . vmVersion::$RELDATE . " "
-	. vmVersion::$RELTIME . " " . vmVersion::$RELTZ;
 
-	return;
-}
+	/** Version information */
+	class vmVersion {
+		/** @var string Product */
+		static $PRODUCT = 'VirtueMart';
+		/** @var int Release Number */
+		static $RELEASE = '3.0.18';
+		/** @var string Development Status */
+		static $DEV_STATUS = 'MINOR';
+		/** @var string Codename */
+		static $CODENAME = 'Blue Corvus';
+		/** @var string Date */
+		static $RELDATE = 'September 20 2016';
+		/** @var string Time */
+		static $RELTIME = '1754';
+		/** @var string Timezone */
+		static $RELTZ = 'GMT';
+		/** @var string Revision */
+		static $REVISION = '9293';
+		/** @var string Copyright Text */
+		static $COPYRIGHT = 'Copyright (C) 2004 - 2016 Virtuemart Team. All rights reserved.';
+		/** @var string URL */
+		static $URL = '<a href="http://virtuemart.net">VirtueMart</a> is a Free ecommerce framework released under the GNU/GPL2 License.';
 
-if( !class_exists( 'vmVersion' ) ) {
-/** Version information */
-class vmVersion {
-	/** @var string Product */
-	static $PRODUCT = 'VirtueMart';
-	/** @var int Release Number */
-	static $RELEASE = '2.0.18a';
-	/** @var string Development Status */
-	static $DEV_STATUS = 'MINOR';
-	/** @var string Codename */
-	static $CODENAME = 'KeepProtected';
-	/** @var string Date */
-	static $RELDATE = 'January 09 2013';
-	/** @var string Time */
-	static $RELTIME = '1320';
-	/** @var string Timezone */
-	static $RELTZ = 'GMT';
-	/** @var string Revision */
-	static $REVISION = 'Revision: 6814';
-	/** @var string Copyright Text */
-	static $COPYRIGHT = 'Copyright (C) 2005-2012 VirtueMart Development Team  - All rights reserved.';
-	/** @var string URL */
-	static $URL = '<a href="http://virtuemart.net">VirtueMart</a> is a Free Component for Joomla! released under the GNU/GPL2 License.';
-}
+		static $shortversion = '';
+		static $myVersion = '';
 
-$shortversion = vmVersion::$PRODUCT . " " . vmVersion::$RELEASE . " " . vmVersion::$DEV_STATUS. " ";
+		public function __construct() {
 
-$myVersion = $shortversion .' '.vmVersion::$REVISION. " [".vmVersion::$CODENAME ."] <br />" . vmVersion::$RELDATE . " "
-	. vmVersion::$RELTIME . " " . vmVersion::$RELTZ;
+			self::$shortversion = vmVersion::$PRODUCT . " " . vmVersion::$RELEASE . " " . vmVersion::$DEV_STATUS. " ";
 
-}
+			self::$myVersion = self::$shortversion .' Revision: '.vmVersion::$REVISION. " [".vmVersion::$CODENAME ."] <br />" . vmVersion::$RELDATE . " "
+				. vmVersion::$RELTIME . " " . vmVersion::$RELTZ;
+		}
+	}
+
+
+
+
 
 // pure php no closing tag

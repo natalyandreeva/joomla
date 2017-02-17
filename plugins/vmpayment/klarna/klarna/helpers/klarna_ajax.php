@@ -64,19 +64,19 @@ class KlarnaAjax {
 	 * @throws KlarnaApiException
 	 */
 	public function languagepack() {
-		$sSubAction = JRequest::getWord('subAction');
+		$sSubAction = vRequest::getWord('subAction');
 		if (!isset($this->template['name']) || $this->template['name'] == '') {
 			$this->template['name'] = "default";
 		}
 		if ($sSubAction == "klarna_box") {
-			$sNewISO     = JRequest::getWord('newIso');
-			$sCountry    = JRequest::getWord('country');
-			$iSum        = JRequest::getFloat('sum', 0);
-			$iInvoiceFee = JRequest::getFloat('fee', 0);
-			$iFlag       = JRequest::getInt('flag');
-			$sType       = JRequest::getWord('type');
-			$aParams     = JRequest::getVar('params');
-			$aValues     = JRequest::getVar('values');
+			$sNewISO     = vRequest::getWord('newIso');
+			$sCountry    = vRequest::getWord('country');
+			$iSum        = vRequest::getFloat('sum', 0);
+			$iInvoiceFee = vRequest::getFloat('fee', 0);
+			$iFlag       = vRequest::getInt('flag');
+			$sType       = vRequest::getWord('type');
+			$aParams     = vRequest::getVar('params');
+			$aValues     = vRequest::getVar('values');
 
 			// foreach($aValues as $key => $value) {
 			// $aValues[$key] = utf8_encode($value);
@@ -119,7 +119,7 @@ class KlarnaAjax {
 		}
 		else {
 			if ($sSubAction == 'jsLanguagePack') {
-				$sNewISO = JRequest::getWord('newIso');
+				$sNewISO = vRequest::getWord('newIso');
 				$sFetch  = "";
 			}
 			else {
@@ -138,8 +138,8 @@ class KlarnaAjax {
 			$aSessionCalls = unserialize($sSessionCalls);
 		}
 
-		$sPNO     = JRequest::getWord('socialNumber'); //JRequest::getWord('pno');
-		$sCountry = strtolower(JRequest::getWord('country'));
+		$sPNO     = vRequest::getWord('socialNumber'); //vRequest::getWord('pno');
+		$sCountry = strtolower(vRequest::getWord('country'));
 
 		if (array_key_exists($sPNO, $aSessionCalls)) {
 			$addrs = $aSessionCalls[$sPNO];

@@ -20,7 +20,7 @@
  */
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
-if (!class_exists('vmPlugin')) require(JPATH_VM_PLUGINS . DS . 'vmplugin.php');
+if (!class_exists('vmPlugin')) require(VMPATH_PLUGINLIBS . DS . 'vmplugin.php');
 
 abstract class vmCurrencyPlugin extends vmPlugin {
 

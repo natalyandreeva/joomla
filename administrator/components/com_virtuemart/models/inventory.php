@@ -2,10 +2,9 @@
 /**
 *
 * Description
-*
+* @author Max Milbers
 * @package	VirtueMart
 * @subpackage
-* @author RolandD
 * @link http://www.virtuemart.net
 * @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
 * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
@@ -13,26 +12,23 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: inventory.php 6350 2012-08-14 17:18:08Z Milbo $
+* @version $Id: inventory.php 8953 2015-08-19 10:30:52Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmModel'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmmodel.php');
+if(!class_exists('VmModel'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmmodel.php');
 
 /**
  * Model for VirtueMart Products
- *
  * @package VirtueMart
- * @author RolandD
  */
 class VirtueMartModelInventory extends VmModel {
 
 	/**
 	 * constructs a VmModel
 	 * setMainTable defines the maintable of the model
-	 * @author Max Milbers
 	 */
 	function __construct() {
 		parent::__construct('virtuemart_product_id');
@@ -45,6 +41,11 @@ class VirtueMartModelInventory extends VmModel {
      * @author Max Milbers
      */
     public function getInventory() {
+
+		if(!vmAccess::manager('inventory')){
+			vmWarn('Insufficient permissions to remove shipmentmethod');
+			return false;
+		}
 
 		$select = ' `#__virtuemart_products`.`virtuemart_product_id`,
      				`#__virtuemart_products`.`product_parent_id`,
@@ -69,21 +70,20 @@ class VirtueMartModelInventory extends VmModel {
 
     /**
     * Collect the filters for the query
-    * @author RolandD
 	* @author Max Milbers
     */
     private function getInventoryFilter() {
-    	/* Check some filters */
+    	// Check some filters
      	$filters = array();
-     	if ($search = JRequest::getVar('filter_inventory', false)){
-     		$search = '"%' . $this->_db->getEscaped( $search, true ) . '%"' ;
-			//$search = $this->_db->Quote($search, false);
+     	if ($search = vRequest::getVar('filter_inventory', false)){
+			$db = JFactory::getDBO();
+     		$search = '"%' . $db->escape( $search, true ) . '%"' ;
      		$filters[] = '`#__virtuemart_products`.`product_name` LIKE '.$search;
      	}
-     	if (JRequest::getInt('stockfilter', 0) == 1){
+     	if (vRequest::getInt('stockfilter', 0) == 1){
      		$filters[] = '`#__virtuemart_products`.`product_in_stock` > 0';
      	}
-     	if ($catId = JRequest::getInt('virtuemart_category_id', 0) > 0){
+     	if ($catId = vRequest::getInt('virtuemart_category_id', 0) > 0){
      		$filters[] = '`#__virtuemart_categories`.`virtuemart_category_id` = '.$catId;
      	}
      	$filters[] = '(`#__virtuemart_shoppergroups`.`default` = 1 OR `#__virtuemart_shoppergroups`.`default` is NULL)';

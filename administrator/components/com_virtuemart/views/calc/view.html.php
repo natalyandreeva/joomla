@@ -13,14 +13,14 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: view.html.php 6475 2012-09-21 11:54:21Z Milbo $
+* @version $Id: view.html.php 9221 2016-05-23 11:34:36Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * Description
@@ -29,41 +29,32 @@ if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmvie
  * @author
  */
 
-class VirtuemartViewCalc extends VmView {
+class VirtuemartViewCalc extends VmViewAdmin {
 
 	function display($tpl = null) {
 
-		// Load the helper(s)
-
-
-		$this->loadHelper('html');
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
 		$model = VmModel::getModel('calc');
-		if(!class_exists('Permissions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'permissions.php');
-		$perms = Permissions::getInstance();
-		$this->assignRef('perms', $perms);
 
-		//@todo should be depended by loggedVendor
-		$vendorId=1;
-		$this->assignRef('vendorId', $vendorId);
-
-		$db = JFactory::getDBO();
+		$this->vendorId = vmAccess::getVendorId();
 
 		$this->SetViewTitle();
 
-
-		$layoutName = JRequest::getWord('layout', 'default');
+		$layoutName = vRequest::getCmd('layout', 'default');
 		if ($layoutName == 'edit') {
 
 			$calc = $model->getCalc();
+			
 			$this->assignRef('calc',	$calc);
 
 			$isNew = ($calc->virtuemart_calc_id < 1);
 			if ($isNew) {
-
+				$calc->virtuemart_vendor_id = $this->vendorId;
 				$db = JFactory::getDBO();
 				//get default currency of the vendor, if not set get default of the shop
-				$q = 'SELECT `vendor_currency` FROM `#__virtuemart_vendors` WHERE `virtuemart_vendor_id` = "'.$vendorId.'"';
+				$q = 'SELECT `vendor_currency` FROM `#__virtuemart_vendors` WHERE `virtuemart_vendor_id` = "'.$this->vendorId.'"';
 				$db->setQuery($q);
 				$currency= $db->loadResult();
 				if(empty($currency)){
@@ -76,60 +67,61 @@ class VirtuemartViewCalc extends VmView {
 				}
 
 			}
-			$entryPointsList = self::renderEntryPointsList($calc->calc_kind);
-			$this->assignRef('entryPointsList',$entryPointsList);
+			$this->entryPointsList = self::renderEntryPointsList($calc->calc_kind);
+			$this->mathOpList = self::renderMathOpList($calc->calc_value_mathop);
 
-			$mathOpList = self::renderMathOpList($calc->calc_value_mathop);
-			$this->assignRef('mathOpList',$mathOpList);
-
-
-			/* Get the category tree */
-			$categoryTree= null;
-			if (isset($calc->calc_categories)){
-				$calc_categories = $calc->calc_categories;
-				$categoryTree = ShopFunctions::categoryListTree($calc_categories);
-			}else{
-				 $categoryTree = ShopFunctions::categoryListTree();
+			if(empty($calc->calc_categories)){
+				$calc->calc_categories = array();
+			} else if(!is_array($calc->calc_categories)){
+				$calc->calc_categories = array($calc->calc_categories);
 			}
-			$this->assignRef('categoryTree', $categoryTree);
-
+			$calc_categories = $calc->calc_categories;
+			$this->categoryTree = ShopFunctions::categoryListTree($calc_categories);
 
 			$currencyModel = VmModel::getModel('currency');
-			$_currencies = $currencyModel->getCurrencies();
-			$this->assignRef('currencies', $_currencies);
+			$this->currencies = $currencyModel->getCurrencies();
 
-			/* Get the shoppergroup tree */
-			$shopperGroupList= ShopFunctions::renderShopperGroupList($calc->virtuemart_shoppergroup_ids,True);
-			$this->assignRef('shopperGroupList', $shopperGroupList);
+			$this->shopperGroupList= ShopFunctions::renderShopperGroupList($calc->virtuemart_shoppergroup_ids,True);
 
-			$countriesList = ShopFunctions::renderCountryList($calc->calc_countries,True);
-			$this->assignRef('countriesList', $countriesList);
+			if (!class_exists ('ShopFunctionsF')) {
+				require(VMPATH_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
+			}
 
-			$statesList = ShopFunctions::renderStateList($calc->virtuemart_state_ids,'', True);
-			$this->assignRef('statesList', $statesList);
+			$this->countriesList = ShopFunctionsF::renderCountryList($calc->calc_countries,True);
+			$this->statesList = ShopFunctionsF::renderStateList($calc->virtuemart_state_ids,'', True, 0, array(), 'virtuemart_state_id', '');
+			$this->manufacturerList= ShopFunctions::renderManufacturerList($calc->virtuemart_manufacturers,true);
 
-			if(Vmconfig::get('multix','none')!=='none'){
-				$vendorList= ShopFunctions::renderVendorList($calc->virtuemart_vendor_id,false);
-				$this->assignRef('vendorList', $vendorList);
+			if($this->showVendors()){
+				$this->vendorList= ShopFunctions::renderVendorList($calc->virtuemart_vendor_id);
 			}
 
 			$this->addStandardEditViewCommands();
 
         } else {
-			JToolBarHelper::custom('toggle.calc_shopper_published.0', 'unpublish', 'no', JText::_('COM_VIRTUEMART_CALC_SHOPPER_PUBLISH_TOGGLE_OFF'), true);
-			JToolBarHelper::custom('toggle.calc_shopper_published.1', 'publish', 'yes', JText::_('COM_VIRTUEMART_CALC_SHOPPER_PUBLISH_TOGGLE_ON'), true);
-			JToolBarHelper::custom('toggle.calc_vendor_published.0', 'unpublish', 'no', JText::_('COM_VIRTUEMART_CALC_VENDOR_PUBLISH_TOGGLE_OFF'), true);
-			JToolBarHelper::custom('toggle.calc_vendor_published.1', 'publish', 'yes', JText::_('COM_VIRTUEMART_CALC_VENDOR_PUBLISH_TOGGLE_ON'), true);
+			if($this->showVendors()){
+				JToolBarHelper::custom('toggle.shared.1', 'publish', 'yes', vmText::_('COM_VIRTUEMART_SHARED_TOGGLE_ON'), true);
+				JToolBarHelper::custom('toggle.shared.0', 'unpublish', 'no', vmText::_('COM_VIRTUEMART_SHARED_TOGGLE_OFF'), true);
+			}
 
 			$this->addStandardDefaultViewCommands();
 			$this->addStandardDefaultViewLists($model);
 
-			$search = JRequest::getWord('search', false);
-			$calcs = $model->getCalcs(false, false, $search);
-			$this->assignRef('calcs',	$calcs);
+			$search = vRequest::getCmd('search', false);
+			$this->calcs = $model->getCalcs(false, false, $search);
+			VmConfig::loadJLang('com_virtuemart_shoppers',true);
+			foreach ($this->calcs as &$data){
+				$data->calcCategoriesList = shopfunctions::renderGuiList($data->virtuemart_calc_id,'categories','category_name','category','calc_categories','virtuemart_calc_id');
 
-			$pagination = $model->getPagination();
-			$this->assignRef('pagination', $pagination);
+				$data->calcShoppersList = shopfunctions::renderGuiList($data->virtuemart_calc_id,'shoppergroups','shopper_group_name','shoppergroup','calc_shoppergroups','virtuemart_calc_id');
+
+				$data->calcCountriesList = shopfunctions::renderGuiList($data->virtuemart_calc_id,'countries','country_name','country','calc_countries','virtuemart_calc_id');
+
+				$data->calcStatesList = shopfunctions::renderGuiList($data->virtuemart_calc_id,'states','state_name','states','calc_states','virtuemart_calc_id');
+
+				$data->calcManufacturersList = shopfunctions::renderGuiList($data->virtuemart_calc_id,'manufacturers','mf_name','manufacturer','calc_manufacturers','virtuemart_calc_id');
+			}
+
+			$this->pagination = $model->getPagination();
 
 		}
 
@@ -152,17 +144,17 @@ class VirtuemartViewCalc extends VmView {
 
 		//MathOp array
 		$entryPoints = array(
-		'0' => array('calc_kind' => 'Marge', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_PMARGIN')),
-		'1' => array('calc_kind' => 'DBTax', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_DBTAX')),
-		'2' => array('calc_kind' => 'Tax', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_TAX')),
-		'3' => array('calc_kind' => 'VatTax', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_VATTAX')),
-		'4' => array('calc_kind' => 'DATax', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_DATAX')),
-		'5' => array('calc_kind' => 'DBTaxBill', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_DBTAXBILL')),
-		'6' => array('calc_kind' => 'TaxBill', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_TAXBILL')),
-		'7' => array('calc_kind' => 'DATaxBill', 'calc_kind_name' => JText::_('COM_VIRTUEMART_CALC_EPOINT_DATAXBILL')),
+		'0' => array('calc_kind' => 'Marge', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_PMARGIN')),
+		'1' => array('calc_kind' => 'DBTax', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_DBTAX')),
+		'2' => array('calc_kind' => 'Tax', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_TAX')),
+		'3' => array('calc_kind' => 'VatTax', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_VATTAX')),
+		'4' => array('calc_kind' => 'DATax', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_DATAX')),
+		'5' => array('calc_kind' => 'DBTaxBill', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_DBTAXBILL')),
+		'6' => array('calc_kind' => 'TaxBill', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_TAXBILL')),
+		'7' => array('calc_kind' => 'DATaxBill', 'calc_kind_name' => vmText::_('COM_VIRTUEMART_CALC_EPOINT_DATAXBILL')),
 		);
 
-		$listHTML = JHTML::_('Select.genericlist', $entryPoints, 'calc_kind', '', 'calc_kind', 'calc_kind_name', $selected );
+		$listHTML = JHtml::_('Select.genericlist', $entryPoints, 'calc_kind', '', 'calc_kind', 'calc_kind_name', $selected );
 		return $listHTML;
 
 	}
@@ -187,13 +179,13 @@ class VirtuemartViewCalc extends VmView {
 		'3' => array('calc_value_mathop' => '-%', 'calc_value_mathop_name' => '-%')
 		);
 
-		if (!class_exists('vmCalculationPlugin')) require(JPATH_VM_PLUGINS . DS . 'vmcalculationplugin.php');
+		if (!class_exists('vmCalculationPlugin')) require(VMPATH_PLUGINLIBS . DS . 'vmcalculationplugin.php');
 		JPluginHelper::importPlugin('vmcalculation');
 		$dispatcher = JDispatcher::getInstance();
 
 		$answer = $dispatcher->trigger('plgVmAddMathOp', array(&$mathOps));
 
-		$listHTML = JHTML::_('Select.genericlist', $mathOps, 'calc_value_mathop', '', 'calc_value_mathop', 'calc_value_mathop_name', $selected );
+		$listHTML = JHtml::_('Select.genericlist', $mathOps, 'calc_value_mathop', 'style="width:70px;"', 'calc_value_mathop', 'calc_value_mathop_name', $selected );
 		return $listHTML;
 	}
 

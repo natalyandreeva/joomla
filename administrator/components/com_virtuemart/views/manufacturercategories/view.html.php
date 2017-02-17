@@ -13,14 +13,14 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: view.html.php 6006 2012-05-07 09:28:42Z electrocity $
+* @version $Id: view.html.php 8724 2015-02-18 14:03:29Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * HTML View class for maintaining the list of manufacturer categories
@@ -29,19 +29,20 @@ if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmvie
  * @subpackage Manufacturer Categories
  * @author Patrick Kohl
  */
-class VirtuemartViewManufacturercategories extends VmView {
+class VirtuemartViewManufacturercategories extends VmViewAdmin {
 
 	function display($tpl = null) {
 
 		// Load the helper(s)
-		$this->loadHelper('html');
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
 		// get necessary model
 		$model = VmModel::getModel();
 
 		$this->SetViewTitle('MANUFACTURER_CATEGORY');
 
-     	$layoutName = JRequest::getWord('layout', 'default');
+     	$layoutName = vRequest::getCmd('layout', 'default');
 		if ($layoutName == 'edit') {
 
 			$manufacturerCategory = $model->getData();
@@ -57,8 +58,7 @@ class VirtuemartViewManufacturercategories extends VmView {
 			$manufacturerCategories = $model->getManufacturerCategories();
 			$this->assignRef('manufacturerCategories',	$manufacturerCategories);
 
-			$pagination = $model->getPagination();
-			$this->assignRef('pagination', $pagination);
+			$this->pagination = $model->getPagination();
 
 		}
 		parent::display($tpl);

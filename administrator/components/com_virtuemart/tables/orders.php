@@ -13,23 +13,22 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: orders.php 6210 2012-07-04 00:15:41Z Milbo $
+* @version $Id: orders.php 9227 2016-05-27 10:55:25Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTableData'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtabledata.php');
 
 /**
  * Orders table class
  * The class is is used to manage the orders in the shop.
  *
  * @package	VirtueMart
- * @author RolandD
  * @author Max Milbers
  */
-class TableOrders extends VmTable {
+class TableOrders extends VmTableData {
 
 	/** @var int Primary key */
 	var $virtuemart_order_id = 0;
@@ -40,13 +39,16 @@ class TableOrders extends VmTable {
 	/** @var int Order number */
 	var $order_number = NULL;
 	var $order_pass = NULL;
-
+	var $order_create_invoice_pass = 0;
+	var $customer_number = NULL;
 	/** @var decimal Order total */
 	var $order_total = 0.00000;
 	/** @var decimal Products sales prices */
 	var $order_salesPrice = 0.00000;
 	/** @var decimal Order Bill Tax amount */
 	var $order_billTaxAmount = 0.00000;
+	/** @var string Order Bill Tax */
+	var $order_billTax = 0;
 	/** @var decimal Order Bill Tax amount */
 	var $order_billDiscountAmount = 0.00000;
 	/** @var decimal Order  Products Discount amount */
@@ -78,14 +80,20 @@ class TableOrders extends VmTable {
 	var $user_currency_id = NULL;
 	/** @var char User currency rate */
 	var $user_currency_rate = NULL;
+	/** @var char User currency id */
+	var $payment_currency_id = NULL;
+	/** @var char User currency rate */
+	var $payment_currency_rate = NULL;
+
 	/** @var int Payment method ID */
 	var $virtuemart_paymentmethod_id = NULL;
 	/** @var int Shipment method ID */
 	var $virtuemart_shipmentmethod_id = NULL;
-	/** @var text Customer note */
-	var $customer_note = 0;
 	/** @var string Users IP Address */
 	var $ip_address = 0;
+	/** @var char Order language */
+	var $order_language = NULL;
+	var $delivery_date = NULL;
 
 
 	/**
@@ -106,12 +114,17 @@ class TableOrders extends VmTable {
 	function check(){
 
 		if(empty($this->order_number)){
-			if(!class_exists('VirtueMartModelOrders')) require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'orders.php');
-			$this->order_number = VirtueMartModelOrders::generateOrderNumber((string)time());
+			if(!class_exists('VirtueMartModelOrders')) VmModel::getModel('orders');
+			$this->order_number = VirtueMartModelOrders::genStdOrderNumber($this->virtuemart_vendor_id);
 		}
 
 		if(empty($this->order_pass)){
-			$this->order_pass = 'p_'.substr( md5((string)time().$this->order_number ), 0, 5);
+			if(!class_exists('VirtueMartModelOrders')) VmModel::getModel('orders');
+			$this->order_pass = VirtueMartModelOrders::genStdOrderPass();
+		}
+
+		if($adminID = vmAccess::getBgManagerId()){
+			$this->created_by = $adminID;
 		}
 
 		return parent::check();
@@ -124,42 +137,45 @@ class TableOrders extends VmTable {
 	 *
 	 * @var integer Order id
 	 * @return boolean True on success
-	 * @author Oscar van Eijk
+	 * @auhtor Max Milbers
 	 * @author Kohl Patrick
 	 */
 	function delete( $id=null , $where = 0 ){
 
-		$this->_db->setQuery('DELETE from `#__virtuemart_order_userinfos` WHERE `virtuemart_order_id` = ' . $id);
-		if ($this->_db->query() === false) {
+		$k = $this->_tbl_key;
+		if ($id===null) {
+			$id = $this->$k;
+		}
+
+		$this->_db->setQuery('DELETE from `#__virtuemart_order_userinfos` WHERE `virtuemart_order_id` = ' . (int)$id);
+		if ($this->_db->execute() === false) {
 			vmError($this->_db->getError());
 			return false;
 		}
 		/*vm_order_payment NOT EXIST  have to find the table name*/
 		$this->_db->setQuery( 'SELECT `payment_element` FROM `#__virtuemart_paymentmethods` , `#__virtuemart_orders`
 			WHERE `#__virtuemart_paymentmethods`.`virtuemart_paymentmethod_id` = `#__virtuemart_orders`.`virtuemart_paymentmethod_id` AND `virtuemart_order_id` = ' . $id );
-		$paymentTable = '#__virtuemart_payment_plg_'. $this->_db->loadResult();
-
-		$this->_db->setQuery('DELETE from `'.$paymentTable.'` WHERE `virtuemart_order_id` = ' . $id);
-		if ($this->_db->query() === false) {
-			vmError($this->_db->getError());
-			return false;
-		}		/*vm_order_shipment NOT EXIST  have to find the table name*/
+		$payment_element = $this->_db->loadResult();
+		if(!empty($payment_element)){
+			$paymentTable = '#__virtuemart_payment_plg_'.$payment_element ;
+			$this->_db->setQuery('DELETE from `'.$paymentTable.'` WHERE `virtuemart_order_id` = ' . $id);
+			if ($this->_db->execute() === false) {
+				vmError($this->_db->getError());
+				return false;
+			}
+		}
+				/*vm_order_shipment NOT EXIST  have to find the table name*/
 		$this->_db->setQuery( 'SELECT `shipment_element` FROM `#__virtuemart_shipmentmethods` , `#__virtuemart_orders`
 			WHERE `#__virtuemart_shipmentmethods`.`virtuemart_shipmentmethod_id` = `#__virtuemart_orders`.`virtuemart_shipmentmethod_id` AND `virtuemart_order_id` = ' . $id );
 		$shipmentName = $this->_db->loadResult();
 
-		if(empty($shipmentName)){
-			vmError('Seems the used shipmentmethod got deleted');
-			//Can we securely prevent this just using
-		//	'SELECT `shipment_element` FROM `#__virtuemart_shipmentmethods` , `#__virtuemart_orders`
-		//	WHERE `#__virtuemart_shipmentmethods`.`virtuemart_shipmentmethod_id` = `#__virtuemart_orders`.`virtuemart_shipmentmethod_id` AND `virtuemart_order_id` = ' . $id );
-		}
-		$shipmentTable = '#__virtuemart_shipment_plg_'. $shipmentName;
-
-		$this->_db->setQuery('DELETE from `'.$shipmentTable.'` WHERE `virtuemart_order_id` = ' . $id);
-		if ($this->_db->query() === false) {
-			vmError('TableOrders delete Order shipmentTable = '.$shipmentTable.' `virtuemart_order_id` = '.$id.' dbErrorMsg '.$this->_db->getError());
-			return false;
+		if(!empty($shipmentName)){
+			$shipmentTable = '#__virtuemart_shipment_plg_'. $shipmentName;
+			$this->_db->setQuery('DELETE from `'.$shipmentTable.'` WHERE `virtuemart_order_id` = ' . $id);
+			if ($this->_db->execute() === false) {
+				vmError('TableOrders delete Order shipmentTable = '.$shipmentTable.' `virtuemart_order_id` = '.$id.' dbErrorMsg '.$this->_db->getError());
+				return false;
+			}
 		}
 
 		$_q = 'INSERT INTO `#__virtuemart_order_histories` ('
@@ -179,7 +195,7 @@ class TableOrders extends VmTable {
 			.')';
 
 		$this->_db->setQuery($_q);
-		$this->_db->query(); // Ignore error here
+		$this->_db->execute(); // Ignore error here
 		return parent::delete($id);
 
 	}

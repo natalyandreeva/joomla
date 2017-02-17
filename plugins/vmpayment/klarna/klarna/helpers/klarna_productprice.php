@@ -3,7 +3,7 @@
 defined ('_JEXEC') or die('Restricted access');
 
 /**
- * @version $Id: klarna_productprice.php 6536 2012-10-15 06:57:35Z alatak $
+ * @version $Id: klarna_productprice.php 8388 2014-10-07 21:06:30Z alatak $
  *
  * @author Valérie Isaksen
  * @package VirtueMart
@@ -27,7 +27,7 @@ class klarna_productPrice {
 
 		$this->path = JPATH_VMKLARNAPLUGIN . '/klarna/';
 		if (!class_exists ('ShopFunctions')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'shopfunctions.php');
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'shopfunctions.php');
 		}
 
 		$this->cData = $cData;
@@ -97,7 +97,7 @@ class klarna_productPrice {
 			require (JPATH_VMKLARNAPLUGIN . DS . 'klarna' . DS . 'helpers' . DS . 'klarnaapi.php');
 		}
 		if (!class_exists ('VirtueMartModelCurrency')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'currency.php');
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'currency.php');
 		}
 
 		$price = $product->prices['salesPrice'];
@@ -129,7 +129,7 @@ class klarna_productPrice {
 			$fromCurrency = $currency->getCurrencyForDisplay ();
 
 			//$paymentCurrency = CurrencyDisplay::getInstance($this->cart->paymentCurrency);
-			//$totalInPaymentCurrency = $paymentCurrency->priceDisplay( $this->cart->pricesUnformatted['billTotal'],$this->cart->paymentCurrency) ;
+			//$totalInPaymentCurrency = $paymentCurrency->priceDisplay( $this->cart->cartPrices['billTotal'],$this->cart->paymentCurrency) ;
 			//$currencyDisplay = CurrencyDisplay::getInstance($this->cart->pricesCurrency);
 			$i = 0;
 			foreach ($kCheckout->aPClasses as $pclass) {
@@ -138,10 +138,10 @@ class klarna_productPrice {
 				}
 
 				if ($pclass['pclass']->getType () == KlarnaPClass::ACCOUNT) {
-					$pp_title = JText::_ ('VMPAYMENT_KLARNA_PPBOX_ACCOUNT');
+					$pp_title = vmText::_ ('VMPAYMENT_KLARNA_PPBOX_ACCOUNT');
 				}
 				else {
-					$pp_title = $pclass['pclass']->getMonths () . " " . JText::_ ('VMPAYMENT_KLARNA_PPBOX_TH_MONTH');
+					$pp_title = $pclass['pclass']->getMonths () . " " . vmText::_ ('VMPAYMENT_KLARNA_PPBOX_TH_MONTH');
 				}
 
 				$pp_price = $currency->priceDisplay ($pclass['monthlyCost'], $countryCurrencyId);

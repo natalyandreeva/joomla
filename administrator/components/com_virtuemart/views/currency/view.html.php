@@ -13,14 +13,14 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: view.html.php 6043 2012-05-21 21:40:56Z Milbo $
+* @version $Id: view.html.php 8724 2015-02-18 14:03:29Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * HTML View class for maintaining the list of currencies
@@ -29,25 +29,26 @@ if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmvie
  * @subpackage Currency
  * @author RickG, Max Milbers
  */
-class VirtuemartViewCurrency extends VmView {
+class VirtuemartViewCurrency extends VmViewAdmin {
 
 	function display($tpl = null) {
 
 		// Load the helper(s)
 
 
-		$this->loadHelper('html');
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
 		$model = VmModel::getModel();
 
 
 		$config = JFactory::getConfig();
-		$layoutName = JRequest::getWord('layout', 'default');
+		$layoutName = vRequest::getCmd('layout', 'default');
 		if ($layoutName == 'edit') {
-			$cid	= JRequest::getVar( 'cid' );
+			$cid	= vRequest::getInt( 'cid' );
 
-			$task = JRequest::getWord('task', 'add');
-			//JArrayHelper::toInteger($cid);
+			$task = vRequest::getCmd('task', 'add');
+
 			if($task!='add' && !empty($cid) && !empty($cid[0])){
 				$cid = (int)$cid[0];
 			} else {
@@ -55,25 +56,18 @@ class VirtuemartViewCurrency extends VmView {
 			}
 
 			$model->setId($cid);
-			$currency = $model->getCurrency();
-			$this->SetViewTitle('',$currency->currency_name);
-			$this->assignRef('currency',	$currency);
-
+			$this->currency = $model->getCurrency();
+			$this->SetViewTitle('',$this->currency->currency_name);
 			$this->addStandardEditViewCommands();
 
 		} else {
 
 			$this->SetViewTitle();
 			$this->addStandardDefaultViewCommands();
-
 			$this->addStandardDefaultViewLists($model,0,'ASC');
 
-			$currencies = $model->getCurrenciesList(JRequest::getWord('search', false));
-			$this->assignRef('currencies',	$currencies);
-
-			$pagination = $model->getPagination();
-			$this->assignRef('pagination', $pagination);
-
+			$this->currencies = $model->getCurrenciesList(vRequest::getCmd('search', false));
+			$this->pagination = $model->getPagination();
 
 		}
 

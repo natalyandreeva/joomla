@@ -5,8 +5,8 @@ defined ('_JEXEC') or die();
 /**
  * Heidelpay credit card plugin
  *
- * @author Heidelberger Paymenrt GmbH <Jens Richter>
- * @version 12.05
+ * @author Heidelberger Payment GmbH <Jens Richter>
+ * @version 16.02.15
  * @package VirtueMart
  * @subpackage payment
  * @copyright Copyright (C) Heidelberger Payment GmbH
@@ -19,12 +19,10 @@ if (!class_exists ('vmPSPlugin')) {
 class plgVmPaymentHeidelpay extends vmPSPlugin {
 
 	public static $_this = FALSE;
-	protected $version = '12.09 Standard';
+	protected $version = '16.02.15';
 
 	function __construct (& $subject, $config) {
 
-		//if (self::$_this)
-		//   return self::$_this;
 		parent::__construct ($subject, $config);
 
 		$this->_loggable = TRUE;
@@ -35,44 +33,39 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 
 		$varsToPush = $this->getVarsToPush ();
 		$this->setConfigParameterable ($this->_configTableFieldName, $varsToPush);
-		//self::$_this = $this;
+
 	}
 
 	public function getVmPluginCreateTableSQL () {
-
 		return $this->createTableSQL ('Payment Heidelpay');
 	}
 
 	function getTableSQLFields () {
-
 		$SQLfields = array(
-			'id'                          => 'int(11) UNSIGNED NOT NULL AUTO_INCREMENT',
-			'virtuemart_order_id'         => 'int(1) UNSIGNED',
-			'order_number'                => 'char(64)',
-			'virtuemart_paymentmethod_id' => 'mediumint(1) UNSIGNED',
-			'unique_id'                   => 'varchar(48)',
-			'short_id'                    => 'varchar(14)',
-			'payment_code'                => 'varchar(32)',
-			'comment'                     => 'text NOT NULL',
-			'date'                        => 'timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP',
-			'payment_methode'             => 'char(2)',
-			'payment_type'                => 'char(2)',
-			'transaction_mode'            => 'char(18)',
-			'payment_name'                => 'char(50)',
-			'processing_result'           => 'char(3)',
-			'secret_hash'                 => 'char(50)',
-			'response_ip'                 => 'char(20)'
+			'id'							=> 'int(11) UNSIGNED NOT NULL AUTO_INCREMENT',
+			'virtuemart_order_id'	=> 'int(1) UNSIGNED',
+			'order_number'			=> 'char(64)',
+			'virtuemart_paymentmethod_id'	=> 'mediumint(1) UNSIGNED',
+			'unique_id'					=> 'varchar(48)',
+			'short_id'					=> 'varchar(14)',
+			'payment_code'			=> 'varchar(32)',
+			'comment'					=> 'text NOT NULL',
+			'date'							=> 'timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP',
+			'payment_methode'	=> 'char(2)',
+			'payment_type'			=> 'char(2)',
+			'transaction_mode'		=> 'char(18)',
+			'payment_name'			=> 'char(50)',
+			'processing_result'		=> 'char(3)',
+			'secret_hash'				=> 'char(50)',
+			'response_ip'				=> 'char(20)'
 		);
 		return $SQLfields;
 	}
 
-
 	function plgVmOnShowOrderBEPayment ($virtuemart_order_id, $payment_id) {
-
 		if (!$this->selectedThisByMethodId ($payment_id)) {
 			return NULL; // Another method was selected, do nothing
 		}
-
 
 		$db = JFactory::getDBO ();
 		$_q = 'SELECT * FROM `' . $this->_tablename . '` '
@@ -82,14 +75,14 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 			// JError::raiseWarning(500, $db->getErrorMsg());
 		}
 
-		$_html = '<table class="adminlist">' . "\n";
+		$_html = '<table class="adminlist table">' . "\n";
 		$_html .= '	<thead>' . "\n";
 		$_html .= '		<tr>' . "\n";
-		$_html .= '			<th colspan="2" width="100%">' . JText::_ ('COM_VIRTUEMART_ORDER_PRINT_PAYMENT_LBL') . '</th>' . "\n";
+		$_html .= '			<th colspan="2" width="100%">' . vmText::_ ('COM_VIRTUEMART_ORDER_PRINT_PAYMENT_LBL') . '</th>' . "\n";
 		$_html .= '		</tr>' . "\n";
 		$_html .= '	</thead>' . "\n";
 		$_html .= '	<tr>' . "\n";
-		$_html .= '		<td>' . JText::_ ('VMPAYMENT_HEIDELPAY_PAYMENT_RESULT') . '</td>' . "\n";
+		$_html .= '		<td>' . vmText::_ ('VMPAYMENT_HEIDELPAY_PAYMENT_RESULT') . '</td>' . "\n";
 		if ($paymentData->processing_result == "ACK" AND $paymentData->payment_code == 80) {
 			$_html .= '<td style="color: #FC0 ; font-weight:bold ">WAITING</td>';
 		} elseif ($paymentData->processing_result == "ACK") {
@@ -100,7 +93,7 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		}
 		$_html .= '	</tr>' . "\n";
 		$_html .= '	<tr>' . "\n";
-		$_html .= '		<td>' . JText::_ ('VMPAYMENT_HEIDELPAY_PAYMENT_METHOD') . '</td>' . "\n";
+		$_html .= '		<td>' . vmText::_ ('VMPAYMENT_HEIDELPAY_PAYMENT_METHOD') . '</td>' . "\n";
 		$_html .= '		<td>' . $paymentData->payment_methode . '.' . $paymentData->payment_type . ' (' . $paymentData->payment_name . ')</td>' . "\n";
 		$_html .= '	</tr>' . "\n";
 		$_html .= '	<tr>' . "\n";
@@ -112,7 +105,7 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		$_html .= '		<td>' . $paymentData->short_id . '</td>' . "\n";
 		$_html .= '	</tr>' . "\n";
 		$_html .= '	<tr>' . "\n";
-		$_html .= '		<td>' . JText::_ ('VMPAYMENT_HEIDELPAY_COMMENT') . '</td>' . "\n";
+		$_html .= '		<td>' . vmText::_ ('VMPAYMENT_HEIDELPAY_COMMENT') . '</td>' . "\n";
 		$_html .= '		<td>' . $paymentData->comment . '</td>' . "\n";
 		$_html .= '	</tr>' . "\n";
 		$_html .= '</table>' . "\n";
@@ -120,17 +113,7 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 	}
 
 
-	function plgVmOnConfirmedOrderStorePaymentData ($virtuemart_order_id, $orderData, $priceData) {
-
-		if (!$this->selectedThisPayment ($this->_pelement, $orderData->virtuemart_paymentmethod_id)) {
-			return NULL; // Another method was selected, do nothing
-		}
-		return FALSE;
-	}
-
-
-	function plgVmConfirmedOrder ($cart, $order) {
-
+	function plgVmConfirmedOrder($cart, $order) {
 		if (!($method = $this->getVmPluginMethod ($order['details']['BT']->virtuemart_paymentmethod_id))) {
 			return NULL; // Another method was selected, do nothing
 		}
@@ -142,16 +125,16 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		$this->_debug = $method->HEIDELPAY_DEBUG;
 
 		if (!class_exists ('VirtueMartModelOrders')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php');
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'orders.php');
 		}
 		if (!class_exists ('VirtueMartModelCurrency')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'currency.php');
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'currency.php');
 		}
 
-		$address = ((isset($order['details']['ST'])) ? $order['details']['ST'] : $order['details']['BT']);
+		$address = ((isset($order['details']['BT'])) ? $order['details']['BT'] : $order['details']['ST']);
 
 		if (!class_exists ('TableVendors')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'table' . DS . 'vendors.php');
+			require(VMPATH_ADMIN . DS . 'table' . DS . 'vendors.php');
 		}
 		$vendorModel = VmModel::getModel ('Vendor');
 		$vendorModel->setId (1);
@@ -167,12 +150,21 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		// prepare the post var values:
 		$languageTag = $this->getLang ();
 		$params = array();
+		/*
+		* Default configuration for hco
+		*/
+		$params['FRONTEND.MODE'] = "DEFAULT";
+		$params['FRONTEND.ENABLED'] = "true";
+		$params['FRONTEND.POPUP'] = "false";
+		$params['FRONTEND.REDIRECT_TIME'] = "0";
+		$params['REQUEST.VERSION'] = "1.0";
+		$params['FRONTEND.NEXTTARGET'] = "top.location.href";
+
 		$params['PRESENTATION.AMOUNT'] = $totalInPaymentCurrency;
 		$params['PRESENTATION.CURRENCY'] = $currency_code_3;
 		$params['FRONTEND.LANGUAGE'] = $languageTag;
 		$params['CRITERION.LANG'] = $params['FRONTEND.LANGUAGE'];
 		$params['IDENTIFICATION.TRANSACTIONID'] = $order['details']['BT']->order_number;
-
 		/*
 		* Set payment methode to PA for online transfer, invoice and prepayment
 		*/
@@ -187,24 +179,72 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		$params['TRANSACTION.CHANNEL'] = $method->HEIDELPAY_CHANNEL_ID;
 
 		/*
-		 * Spacial case for paypal without hco iframe
-		 */
-
+		* Special case for paypal without hco iframe
+		*/
 		if ($method->HEIDELPAY_PAYMENT_TYPE == "VAPAYPAL") {
-			$params['PAYMENT.CODE'] = "VA.DB";
-			$params['ACCOUNT.BRAND'] = "PAYPAL";
+			$params['PAYMENT.CODE'] 						= "VA.DB";
+			$params['ACCOUNT.BRAND']						= "PAYPAL";
 			$params['FRONTEND.PM.DEFAULT_DISABLE_ALL'] = "true";
-			$params['FRONTEND.PM.0.ENABLED'] = "true";
-			$params['FRONTEND.PM.0.METHOD'] = "VA";
-			$params['FRONTEND.PM.0.SUBTYPES'] = "PAYPAL";
+			$params['FRONTEND.PM.0.ENABLED']		= "true";
+			$params['FRONTEND.PM.0.METHOD'] 		= "VA";
+			$params['FRONTEND.PM.0.SUBTYPES']	= "PAYPAL";
 		}
-
 		/*
-				 *  User account information
-				 */
+		  * Special case for MangirKart without hco iframe
+		  */
+		if ($method->HEIDELPAY_PAYMENT_TYPE == "PCMANGIR") {
+			$params['PAYMENT.CODE']  = "PC.PA";
+			$params['ACCOUNT.BRAND'] = "MANGIRKART";
+		}
+		/*
+		   * case for GiroPay
+		  */
+		if ($method->HEIDELPAY_PAYMENT_TYPE == "OTGIR") {
+			$params['FRONTEND.SEPA']     = 'YES';
+			$params['FRONTEND.SEPASWITCH'] = 'NO';
+		}
+		/*
+		   * Special case for BarPay without hco iframe
+		  */
+		if ($method->HEIDELPAY_PAYMENT_TYPE == "PPBARPAY") {
+			$params['PAYMENT.CODE']  = "PP.PA";
+			$params['ACCOUNT.BRAND'] = "BARPAY";
+		}
+		/*
+		 * Special case for BillSAFE
+		*/
+		if ($method->HEIDELPAY_PAYMENT_TYPE == "IVBILLSAFE") {
+			$toCheck = array('last_name', 'first_name', 'middle_name', 'phone_1', 'phone_2', 'fax', 'address_1', 'address_2', 'city', 'virtuemart_state_id', 'virtuemart_country_id', 'zip');
+
+			$bsError = false;
+			
+			foreach($toCheck as $val){
+				if(isset($order['details']['ST']->$val)){
+					if($order['details']['ST']->$val != $order['details']['BT']->$val){
+						$bsError = true;
+						$errorVal = $val;
+						break;
+					}
+				}
+			}
+
+			if($bsError){			
+				$msg = vmText::_('VMPAYMENT_HEIDELPAY_TECHNICAL_ERROR')."<br />".
+					vmText::_('VMPAYMENT_HEIDELPAY_BILLSAFE_ERROR')."<br />";
+				$app = JFactory::getApplication();				
+				$app->redirect('index.php?option=com_virtuemart&view=cart', $msg);
+			}
+			$params['PAYMENT.CODE']	= "IV.PA";
+			$params['ACCOUNT.BRAND']	= "BILLSAFE";
+			$params = array_merge($params, $this->getBasketDetails());
+		}
+		/*
+		 *  User account information
+		 */
 		$params['ACCOUNT.HOLDER'] = $address->first_name . " " . $address->last_name;
 		$params['NAME.GIVEN'] = $address->first_name;
 		$params['NAME.FAMILY'] = $address->last_name;
+		if(!empty($address->company)) $params['NAME.COMPANY'] = $address->company ;
 		$params['ADDRESS.STREET'] = $address->address_1;
 		isset($address->address_2) ? $params['ADDRESS.STREET'] .= " " . $address->address_2 : '';
 		$params['ADDRESS.ZIP'] = $address->zip;
@@ -212,27 +252,36 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		$params['ADDRESS.COUNTRY'] = ShopFunctions::getCountryByID ($address->virtuemart_country_id, 'country_2_code');
 		$params['CONTACT.EMAIL'] = $order['details']['BT']->email;
 		$params['CONTACT.IP'] = $_SERVER['REMOTE_ADDR'];
-
+		
+		if ($method->HEIDELPAY_PAYMENT_TYPE == "VAPAYPAL") {
+			if (!empty($order['details']['ST'])) {
+				$params['NAME.GIVEN'] 		= $order['details']['ST']->first_name;
+				$params['NAME.FAMILY']		= $order['details']['ST']->last_name;
+				if(!empty($order['details']['ST']->company)) $params['NAME.COMPANY'] = $order['details']['ST']->company ;
+				$params['ADDRESS.STREET'] 	= $order['details']['ST']->address_1;
+				isset($order['details']['ST']->address_2) ? $params['ADDRESS.STREET'] .= " " . $order['details']['ST']->address_2 : '';
+				$params['ADDRESS.ZIP'] 		= $order['details']['ST']->zip;
+				$params['ADDRESS.CITY'] 	= $order['details']['ST']->city;
+				$params['ADDRESS.COUNTRY']	= ShopFunctions::getCountryByID ($order['details']['ST']->virtuemart_country_id, 'country_2_code');
+			} 
+			
+		}
+		
 		/*
-			* Add debug informations for merchiant support
-				 */
-
-		$params['SHOP.TYPE'] = 'VirtueMart2.0.12f';
-		$params['SHOPMODUL.VERSION'] = $this->version;
-
-		$params['CRITERION.PAYMENT_NAME'] = JText::_ ('VMPAYMENT_HEIDELPAY_' . $method->HEIDELPAY_PAYMENT_TYPE);
-		$params['CRITERION.PAYMENT_NAME'] = strip_tags($params['CRITERION.PAYMENT_NAME']);
-
-		/*
-		 * Create hash to secure the response
+		* Add debug informations for merchiant support
 		*/
+		$params['SHOP.TYPE'] = 'VirtueMart '.VmConfig::getInstalledVersion();
+		$params['SHOPMODULE.VERSION'] = $this->version;
 
-		$params['CRITERION.SECRET'] = $this->createSecretHash ($order['details']['BT']->order_number, $method->HEIDELPAY_SECRET);
-
+		$params['CRITERION.PAYMENT_NAME'] = vmText::_ ('VMPAYMENT_HEIDELPAY_' . $method->HEIDELPAY_PAYMENT_TYPE);
+		$params['CRITERION.PAYMENT_NAME'] = strip_tags($params['CRITERION.PAYMENT_NAME']);
+		/*
+		* Create hash to secure the response
+		*/
+		$params['CRITERION.SECRET'] = $this->createSecretHash ($order['details']['BT']->order_number,$method->HEIDELPAY_SECRET);
 		/*
 		* Set transaction mode
 		*/
-
 		if ($method->HEIDELPAY_TRANSACTION_MODE == 2) {
 			$params['TRANSACTION.MODE'] = "LIVE";
 		} elseif ($method->HEIDELPAY_TRANSACTION_MODE == 0) {
@@ -240,44 +289,34 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		} else {
 			$params['TRANSACTION.MODE'] = "CONNECTOR_TEST";
 		}
-
-		/*
-		* Default configuration for hco
-		*/
-		$params['FRONTEND.MODE'] = "DEFAULT";
-
-		$params['FRONTEND.ENABLED'] = "true";
-		$params['FRONTEND.POPUP'] = "false";
-		$params['FRONTEND.REDIRECT_TIME'] = "0";
-		$params['REQUEST.VERSION'] = "1.0";
-		$params['FRONTEND.NEXTTARGET'] = "top.location.href";
-
 		/*
 		* Add response and css path
 		*/
-		$params['FRONTEND.RESPONSE_URL'] = JROUTE::_ (JURI::root(), $xhtml=true, $ssl=0) . 'plugins/vmpayment/heidelpay/heidelpay/heidelpay_response.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id;
+		$params['FRONTEND.RESPONSE_URL'] = JROUTE::_ (JURI::root(), $xhtml=true, $ssl=0) . 'plugins/vmpayment/heidelpay/heidelpay/heidelpay_response.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . urlencode($order['details']['BT']->order_number) . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id;
 		$cssFile = "heidelpay_default.css";
 		if (!empty($method->HEIDELPAY_STYLE)) {
 			$cssFile = $method->HEIDELPAY_STYLE ;
-		} 
-			
-		$params['FRONTEND.CSS_PATH'] = JROUTE::_ (JURI::root(), $xhtml=true, $ssl=0) . 'plugins/vmpayment/heidelpay/heidelpay/' . $cssFile;
+		}
 
+		$params['FRONTEND.CSS_PATH'] = JROUTE::_ (JURI::root(), $xhtml=true, $ssl=0) . 'plugins/vmpayment/heidelpay/heidelpay/' . $cssFile;
 		$requestUrl = $method->HEIDELPAY_PAYMENT_URL;
 		$params['SECURITY.SENDER'] = $method->HEIDELPAY_SECURITY_SENDER;
 		$params['USER.LOGIN'] = $method->HEIDELPAY_USER_LOGIN;
 		$params['USER.PWD'] = $method->HEIDELPAY_USER_PW;
 
+		if(substr ($method->HEIDELPAY_PAYMENT_TYPE, 0, 2) == 'DD') {
+			$sepaform = array();
+			$sepaform = $this->switchDirectDebitFrom($method->HEIDELPAY_SEPA_FORM);
+			$params = array_merge($sepaform , $params);
+		}
 		/*
-			 * send request to payment server
-			 */
-
+		 * send request to payment server
+		 */
 		$response = $this->doRequest ($requestUrl, $params, $method->HEIDELPAY_DEBUG);
 
 		if ($params['TRANSACTION.MODE'] != "LIVE") {
 			vmInfo('VMPAYMENT_HEIDELPAY_PAYMENT_TESTMODE');
 		}
-
 		/*
 		* On success show iframe or show error information for your customer
 		*/
@@ -286,26 +325,23 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 		if ($response['PROCESSING_RESULT'] == "ACK" || $response['POST_VALIDATION'] == "ACK") {
 			$returnValue = 2;
 			$html = $this->renderByLayout ('displaypayment', array(
-				'response'                       => $response['FRONTEND_REDIRECT_URL']
-			));
-
+			                                                      'response'                       => $response['FRONTEND_REDIRECT_URL']
+			                                                 ));
 		} else {
-			$html = JText::_ ('VMPAYMENT_HEIDELPAY_TECHNICAL_ERROR') .
-				" <br /> - " . addslashes ($response[PROCESSING_RETURN]) . "<br />" .
-				JText::_ ('VMPAYMENT_HEIDELPAY_CONTACT_SHOPOWNER');
+			$html = vmText::_ ('VMPAYMENT_HEIDELPAY_TECHNICAL_ERROR') .
+				" <br /> - " . addslashes ($response['PROCESSING_RETURN']) . "<br />" .
+				vmText::_ ('VMPAYMENT_HEIDELPAY_CONTACT_SHOPOWNER');
 		}
 		/*
-		 * Show debug information
-		 */
+		* Show debug information
+		*/
 		if ($method->HEIDELPAY_DEBUG == 1) {
 			vmDebug('HEIDELPAY plgVmConfirmedOrder', $params);
 		}
 		return $this->processConfirmedOrderPaymentResponse ($returnValue, $cart, $order, $html, '', '');
-
 	}
 
 	function plgVmgetPaymentCurrency ($virtuemart_paymentmethod_id, &$paymentCurrencyId) {
-
 		if (!($method = $this->getVmPluginMethod ($virtuemart_paymentmethod_id))) {
 			return NULL; // Another method was selected, do nothing
 		}
@@ -317,7 +353,17 @@ class plgVmPaymentHeidelpay extends vmPSPlugin {
 	}
 
 	function plgVmOnPaymentResponseReceived (&$html) {
-$virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
+		if (!class_exists ('VirtueMartCart')) {
+			require(VMPATH_SITE . DS . 'helpers' . DS . 'cart.php');
+		}
+		if (!class_exists ('shopFunctionsF')) {
+			require(VMPATH_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
+		}
+		if (!class_exists ('VirtueMartModelOrders')) {
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'orders.php');
+		}
+
+		$virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 		$order_number = JRequest::getString ('on', 0);
 
 		if (!($method = $this->getVmPluginMethod ($virtuemart_paymentmethod_id))) {
@@ -337,18 +383,21 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 		if (!($paymentData = $db->loadObject ())) {
 			// JError::raiseWarning(500, $db->getErrorMsg());
 		}
-		vmdebug ('HEILDEPAY paymentdata', $paymentData);
-		$cart = VirtueMartCart::getCart ();
-		$cart->emptyCart ();
+		vmdebug ('HEIDELPAY paymentdata', $paymentData);
+	
 
 		if ($paymentData->processing_result == "NOK") {
 			vmError ('VMPAYMENT_HEIDELPAY_PAYMENT_FAILED','VMPAYMENT_HEIDELPAY_PAYMENT_FAILED');
 			vmError (" - " . $paymentData->comment," - " . $paymentData->comment);
 		} else {
 			vmInfo ('VMPAYMENT_HEIDELPAY_PAYMENT_SUCESS');
-			$html  = "<h3>".JText::sprintf ('VMPAYMENT_HEIDELPAY_ORDER_NR') . ': ' . $order_number . " </h3>" ; 
-			$html .= $paymentData->comment;
-			
+			$html  = "<h3>".vmText::sprintf ('VMPAYMENT_HEIDELPAY_ORDER_NR') . ': ' . $order_number . " </h3>" ;
+			$tmpkom	= preg_replace("/\(-/", '<a href="', $paymentData->comment);
+			$tmpkom	= preg_replace('/-\)/', '" target="_blank">Barcode runterladen</a>', $tmpkom );
+			$html .= $tmpkom;
+			//delete basket only on success
+			$cart = VirtueMartCart::getCart ();
+			$cart->emptyCart ();
 		}
 		// if payment is in test mode
 		if ($paymentData->transaction_mode != "LIVE") {
@@ -356,7 +405,7 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 		}
 		$orgSecret = $this->createSecretHash ($order_number, $method->HEIDELPAY_SECRET);
 		$order['comments']="";
-		if ($virtuemart_order_id) {
+		if ($virtuemart_order_id && $paymentData->created_on == '0000-00-00 00:00:00') {
 			$order['customer_notified'] = 0;
 			$order['order_status'] = $this->getStatus ($method, $paymentData->processing_result);
 			$modelOrder = VmModel::getModel ('orders');
@@ -365,10 +414,9 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 			if ($orderitems['history'][$nb_history - 1]->order_status_code != $order['order_status']) {
 				if ($method->HEIDELPAY_CONFIRM_EMAIL == 1 or ($method->HEIDELPAY_CONFIRM_EMAIL == 2 and $paymentData->processing_result == "ACK")) {
 					$order['customer_notified'] = 1;
-					$order['comments'] = JText::sprintf ('VMPAYMENT_HEIDELPAY_EMAIL_SENT') . "<br />";
+					$order['comments'] = vmText::sprintf ('VMPAYMENT_HEIDELPAY_EMAIL_SENT') . "<br />";
 				}
 				$order['comments'] .= $paymentData->comment;
-
 				/*
 				* Verify Payment response
 				*/
@@ -377,22 +425,82 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 					$order['comments'] = "Hash verification error, suspecting manipulation. IP: " . $paymentData->response_ip;
 					$order['order_status'] = '';
 				}
+				$modelOrder->updateStatusForOneOrder ($virtuemart_order_id, $order, TRUE);
+			}
+			$dbu = JFactory::getDBO ();
+			$_u = "UPDATE `" . $this->_tablename . "` "."SET `created_on` = NOW() WHERE `virtuemart_order_id` = " . (int)$virtuemart_order_id;
+			$dbu->setQuery ($_u);
+			$result = $dbu->execute();
+		}
+		return TRUE;
+	}
+	
+	function plgVmOnUserPaymentCancel () {
+		if (!class_exists ('VirtueMartModelOrders')) {
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'orders.php');
+		}
+		
+		
+		$virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
+		$order_number = JRequest::getString ('on', 0);
 
+		if (!($method = $this->getVmPluginMethod ($virtuemart_paymentmethod_id))) {
+			return NULL; // Another method was selected, do nothing
+		}
+		if (!$this->selectedThisElement ($method->payment_element)) {
+			return NULL;
+		}
+
+		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber ($order_number))) {
+			return NULL;
+		}
+		$db = JFactory::getDBO ();
+		$_q = 'SELECT * FROM `' . $this->_tablename . '` '
+			. 'WHERE `virtuemart_order_id` = ' . $virtuemart_order_id;
+		$db->setQuery ($_q);
+		if (!($paymentData = $db->loadObject ())) {
+			// JError::raiseWarning(500, $db->getErrorMsg());
+		}
+		vmdebug ('HEIDELPAY paymentdata', $paymentData);
+	
+
+		if ($paymentData->processing_result == "NOK") {
+			vmError ('VMPAYMENT_HEIDELPAY_PAYMENT_FAILED','VMPAYMENT_HEIDELPAY_PAYMENT_FAILED');
+			vmError (" - " . $paymentData->comment," - " . $paymentData->comment);
+			$order['comments']="";
+			if ($virtuemart_order_id) {
+			$order['customer_notified'] = 0;
+			$order['order_status'] = $this->getStatus ($method, $paymentData->processing_result);
+			$modelOrder = VmModel::getModel ('orders');
+			$orderitems = $modelOrder->getOrder ($virtuemart_order_id);
+			$nb_history = count ($orderitems['history']);
+			if ($orderitems['history'][$nb_history - 1]->order_status_code != $order['order_status']) {
+				if ($method->HEIDELPAY_CONFIRM_EMAIL == 1 or ($method->HEIDELPAY_CONFIRM_EMAIL == 2 and $paymentData->processing_result == "ACK")) {
+					$order['customer_notified'] = 1;
+					$order['comments'] = vmText::sprintf ('VMPAYMENT_HEIDELPAY_EMAIL_SENT') . "<br />";
+				}
+				$order['comments'] .= $paymentData->comment;
 				$modelOrder->updateStatusForOneOrder ($virtuemart_order_id, $order, TRUE);
 			}
 		}
-
-		return TRUE;
-	}
-
-	function plgVmOnUserPaymentCancel () {
-
-		if (!class_exists ('VirtueMartModelOrders')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php');
+			
 		}
+		
+		
+		
+		
+		
+		
+			
+		
+		
 		$order_number = JRequest::getVar ('on');
 		if (!$order_number) {
 			return FALSE;
+		}
+		$virtuemart_paymentmethod_id = vRequest::getInt('pm', '');
+		if (empty($order_number) or empty($virtuemart_paymentmethod_id) or !$this->selectedThisByMethodId($virtuemart_paymentmethod_id)) {
+			return NULL;
 		}
 		$db = JFactory::getDBO ();
 		$query = 'SELECT ' . $this->_tablename . '.`virtuemart_order_id` FROM ' . $this->_tablename . " WHERE  `order_number`= '" . $order_number . "'";
@@ -407,7 +515,6 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 	}
 
 	function getStatus ($method, $status) {
-
 		if ($status == 'ACK') {
 			$new_status = $method->HEIDELPAY_STATUS_SUCCESS;
 		} else {
@@ -417,82 +524,68 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 	}
 
 	function plgVmOnStoreInstallPaymentPluginTable ($jplugin_id) {
-
 		return $this->onStoreInstallPluginTable ($jplugin_id);
 	}
 
-	public function plgVmOnSelectCheckPayment (VirtueMartCart $cart) {
-
+	public function plgVmOnSelectCheckPayment (VirtueMartCart $cart, &$msg) {
 		return $this->OnSelectCheck ($cart);
 	}
 
 	public function plgVmDisplayListFEPayment (VirtueMartCart $cart, $selected = 0, &$htmlIn) {
-
 		return $this->displayListFE ($cart, $selected, $htmlIn);
 	}
 
 	public function plgVmonSelectedCalculatePricePayment (VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
-
 		return $this->onSelectedCalculatePrice ($cart, $cart_prices, $cart_prices_name);
 	}
 
 	function plgVmOnCheckAutomaticSelectedPayment (VirtueMartCart $cart, array $cart_prices = array()) {
-
 		return $this->onCheckAutomaticSelected ($cart, $cart_prices);
 	}
 
 	public function plgVmOnShowOrderFEPayment ($virtuemart_order_id, $virtuemart_paymentmethod_id, &$payment_name) {
-
 		$this->onShowOrderFE ($virtuemart_order_id, $virtuemart_paymentmethod_id, $payment_name);
 	}
 
 	function plgVmonShowOrderPrintPayment ($order_number, $method_id) {
-
 		return $this->onShowOrderPrint ($order_number, $method_id);
 	}
 
-	function plgVmDeclarePluginParamsPayment ($name, $id, &$data) {
 
-		return $this->declarePluginParams ('payment', $name, $id, $data);
+	public function plgVmDeclarePluginParamsPaymentVM3( &$data) {
+		return $this->declarePluginParams('payment', $data);
 	}
 
 	function plgVmSetOnTablePluginParamsPayment ($name, $id, &$table) {
-
 		return $this->setOnTablePluginParams ($name, $id, $table);
 	}
 
 	public function plgVmOnUpdateOrderPayment ($_formData) {
-
 		return NULL;
 	}
 
 	public function plgVmOnUpdateOrderLine ($_formData) {
-
 		return NULL;
 	}
 
 
 	public function plgVmOnEditOrderLineBE ($_orderId, $_lineId) {
-
 		return NULL;
 	}
 
 
 	public function plgVmOnShowOrderLineFE ($_orderId, $_lineId) {
-
 		return NULL;
 	}
 
 
 	protected function getLang () {
-
-		$language =& JFactory::getLanguage ();
+		$language = JFactory::getLanguage ();
 		$tag = strtolower (substr ($language->get ('tag'), 0, 2));
 		return $tag;
 	}
 
 	private function doRequest ($url, $params, $debug) {
-
 		$data = $params;
 		$result = "";
 		// Erstellen des Strings für die Datenübermittlung
@@ -530,27 +623,22 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 				$msg = urlencode ('Curl Fehler');
 				$res = 'status=FAIL&msg=' . $this->error;
 			}
-
 		} else {
 			$msg = urlencode ('Curl Fehler');
 			$res = 'status=FAIL&&msg=' . $msg;
 		}
 		$result = NULL;
 		parse_str ($res, $result);
-
 		/*
-	  * Show debug information
-	 */
+		* Show debug information
+		*/
 		if ($debug == 1) {
 			vmdebug ('Heildepay Response', $result);
 		}
-
 		return $result;
-
 	}
 
 	private function isUTF8 ($string) /*{{{*/ {
-
 		if (is_array ($string)) {
 			$enc = implode ('', $string);
 			return @!((ord ($enc[0]) != 239) && (ord ($enc[1]) != 187) && (ord ($enc[2]) != 191));
@@ -560,7 +648,6 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 	}
 
 	protected function checkConditions ($cart, $method, $cart_prices) {
-
 		$address = (($cart->ST == 0) ? $cart->BT : $cart->ST);
 
 		$amount = $cart_prices['salesPrice'];
@@ -581,7 +668,6 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 			$address = array();
 			$address['virtuemart_country_id'] = 0;
 		}
-
 		if (!isset($address['virtuemart_country_id'])) {
 			$address['virtuemart_country_id'] = 0;
 		}
@@ -590,16 +676,123 @@ $virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
 				return TRUE;
 			}
 		}
-
 		return FALSE;
 	}
 
 	function createSecretHash ($orderID, $secret) {
-
 		$hash = sha1 ($orderID . $secret);
 		return $hash;
 
 	}
+	/**
+	 * methode to change the form fields of the hco(iframe)
+	 * nessuccary for support of SEPA (single euro payments area)
+	 * @param int $mode_id id to set version
+	 * @return array parameter for hco call
+	 */
+	public function switchDirectDebitFrom($mode_id) {
+		$params = array();
+		switch ($mode_id){
+			// account and bank no:
+			case 1:
+				$params['FRONTEND.SEPA']					= 'NO';
+				$params['FRONTEND.SEPASWITCH'] 	= 'NO';
+				break;
+			// both methodes separeted with an or
+			case 3:
+				$params['FRONTEND.SEPA']					= 'YES';
+				$params['FRONTEND.SEPASWITCH'] 	= 'YES';
+				break;
+			// both methodes with a selector
+			case 4:
+				$params['FRONTEND.SEPA']					= 'NO';
+				$params['FRONTEND.SEPASWITCH'] 	= 'YES';
+				break;
+			//  IBAN and BIC
+			default:
+				$params['FRONTEND.SEPA']					= 'YES';
+				$params['FRONTEND.SEPASWITCH']	= 'NO';
+		}
+		return $params;
+	}
+	/**
+	 * generate BillSafe informations from basket
+	 * @return array criterion for billSafe
+	 */
+	private function getBasketDetails(){
+		$user = JFactory::getUser();
+		$cart = VirtueMartCart::getCart(false);
+		$items = $cart->products;
+		$prices = $cart->cartPrices;
 
+		$params = array();
+		if ($items) {
+			$i = 0;
+			//	ITEMS
+			foreach($items as $key => $item){
+				$i++;
+				$prefix = 'CRITERION.POS_'.sprintf('%02d', $i);
+
+				$params[$prefix.'.POSITION']		= $i;
+				$params[$prefix.'.QUANTITY'] 	= (int)$item->quantity;
+				if (empty($item->product_unit)){ $item->product_unit = 'Stk.'; }
+				$params[$prefix.'.UNIT'] 				= $item->product_unit;
+				#price in cents
+				$params[$prefix.'.AMOUNT_UNIT_GROSS'] = ($prices[$key]['basePriceWithTax'] * 100);
+				$params[$prefix.'.AMOUNT_GROSS'] = ($prices[$key]['subtotal_with_tax'] * 100);
+				$item->product_name = preg_replace('/%/','Proz.', $item->product_name);
+				$item->product_name = preg_replace('/("|\'|!|$|=)/',' ', $item->product_name);
+				$params[$prefix.'.TEXT'] 			= strlen($item->product_name) > 100 ? substr($item->product_name, 0, 90) . '...' : $item->product_name;
+				$params[$prefix.'.ARTICLE_NUMBER'] 	= $item->product_sku;
+				$params[$prefix.'.PERCENT_VAT'] 	= sprintf('%1.2f', $prices[$key]['VatTax'][$item->product_tax_id]['1']);
+				$params[$prefix.'.ARTICLE_TYPE'] = 'goods';
+			}
+
+			//	SHIPPING			
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'shipmentmethod.php');
+			$vmms = new VirtueMartModelShipmentmethod();
+			$shipmentInfo = $vmms->getShipments();
+
+			foreach($shipmentInfo as $skey => $svalue){
+				if($svalue->virtuemart_shipmentmethod_id == $cart->virtuemart_shipmentmethod_id){
+					$shipmentData = array();
+					foreach (explode("|", $svalue->shipment_params) as $line) {
+						list($key, $value) = explode('=', $line, 2);
+						$shipmentData[$key] = str_replace('"','',$value);
+					}
+					$shipmentTaxId = $shipmentData['tax_id'];
+					$shipmentTax = sprintf('%1.2f',$cart->cartData['VatTax'][$shipmentTaxId]['calc_value']);
+				}
+			}
+			$i++;
+			$prefix = 'CRITERION.POS_'.sprintf('%02d', $i);
+
+			$params[$prefix.'.POSITION']		= $i;
+			$params[$prefix.'.QUANTITY'] 	= '1';
+			$params[$prefix.'.UNIT'] 				= 'Stk.';
+			$params[$prefix.'.AMOUNT_UNIT_GROSS'] = ($prices['salesPriceShipment'] * 100);
+			$params[$prefix.'.AMOUNT_GROSS']	= ($prices['salesPriceShipment'] * 100);
+			$params[$prefix.'.TEXT'] 			= 'Shipping';
+			$params[$prefix.'.ARTICLE_NUMBER']	= 'Shipping';
+			$params[$prefix.'.PERCENT_VAT']	= $shipmentTax;
+			$params[$prefix.'.ARTICLE_TYPE']	= 'shipment';
+
+			//	COUPON
+			if(isset($prices['couponValue']) && ($prices['couponValue'] != '')){
+				$i++;
+				$prefix = 'CRITERION.POS_'.sprintf('%02d', $i);
+
+				$params[$prefix.'.POSITION']		= $i;
+				$params[$prefix.'.QUANTITY'] 	= '1';
+				$params[$prefix.'.UNIT'] 				= 'Stk.';
+				$params[$prefix.'.AMOUNT_UNIT_GROSS'] = ($prices['couponValue'] * 100);
+				$params[$prefix.'.AMOUNT_GROSS']	= ($prices['couponValue'] * 100);
+				$params[$prefix.'.TEXT'] 			= 'Coupon';
+				$params[$prefix.'.ARTICLE_NUMBER']	= 'Coupon';
+				$params[$prefix.'.PERCENT_VAT']	= $prices['couponTax'];
+				$params[$prefix.'.ARTICLE_TYPE']	= 'voucher';
+			}
+		}
+		return $params;
+	}
 }
-

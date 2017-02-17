@@ -1,7 +1,7 @@
 <?php
 defined('_JEXEC') or die();
 /**
- * @version $Id: payment_cart.php 6501 2012-10-04 13:16:05Z alatak $
+ * @version $Id: payment_cart.php 7487 2013-12-17 15:03:42Z alatak $
  *
  * @author Valérie Isaksen
  * @package VirtueMart
@@ -21,7 +21,7 @@ $logo = '<img src="' .  $viewData['logo'] . '"/>';
 
 <div class="klarna_info">
     <span style="">
-	<a href="http://www.klarna.com/"><?php echo $logo ?></a><br /><?php echo $viewData['text'] ?>
+	<a href="http://www.klarna.com/" target="_blank"><?php echo $logo ?></a><br /><?php echo $viewData['text'] ?>
     </span>
 </div>
 

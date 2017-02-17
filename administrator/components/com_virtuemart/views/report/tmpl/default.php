@@ -3,7 +3,7 @@ if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not 
 
 /**
 *
-* @version $Id: default.php 6489 2012-10-01 23:17:36Z Milbo $
+* @version $Id: default.php 9257 2016-07-04 14:40:20Z kkmediaproduction $
 * @package VirtueMart
 * @subpackage Report
 * @copyright Copyright (C) VirtueMart Team - All rights reserved.
@@ -17,40 +17,38 @@ if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not 
 * http://virtuemart.org
 */
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 /* Load some variables */
 $rows = count( $this->report );
-$intervalTitle = JRequest::getVar('intervals','day');
+$intervalTitle = vRequest::getVar('intervals','day');
 if ( ($intervalTitle =='week') or ($intervalTitle =='month') ) $addDateInfo = true ;
 else $addDateInfo = false;
 
-// if( $this->pagination->limit < $rows ){
-	// if( ($this->pagination->limitstart + $this->pagination->limit) < $rows ) {
-		// $rows = $this->pagination->limitstart + $this->pagination->limit;
-	// }
-// }
-if ( JVM_VERSION == 2 )
-	JHtml::_('behavior.framework', true);
+//JHtml::_('behavior.framework', true);
+
 ?>
-<form action="index.php" method="post" name="adminForm" id="adminForm">
+<form action="index.php?option=com_virtuemart&view=report" method="post" name="adminForm" id="adminForm">
     <div id="header">
-        <h2><?php echo JText::sprintf('COM_VIRTUEMART_REPORT_TITLE', vmJsApi::date( $this->from_period, 'LC',true) , vmJsApi::date( $this->until_period, 'LC',true) ); ?></h2>
+        <h2><?php echo vmText::sprintf('COM_VIRTUEMART_REPORT_TITLE', vmJsApi::date( $this->from_period, 'LC',true) , vmJsApi::date( $this->until_period, 'LC',true) ); ?></h2>
         <div id="filterbox">
 
             <table>
                 <tr>
                     <td align="left" width="100%">
-						<?php echo JText::_('COM_VIRTUEMART_ORDERSTATUS') . $this->lists['state_list']; ?>
-						<?php echo JText::_('COM_VIRTUEMART_REPORT_INTERVAL') . $this->lists['intervals']; ?>
-                        <?php echo JText::_('COM_VIRTUEMART_REPORT_SET_PERIOD') . $this->lists['select_date'];
+						<?php echo vmText::_('COM_VIRTUEMART_ORDERSTATUS') . $this->lists['state_list']; ?>
+						<?php echo vmText::_('COM_VIRTUEMART_REPORT_INTERVAL') . $this->lists['intervals']; ?>
+                        <?php echo vmText::_('COM_VIRTUEMART_REPORT_SET_PERIOD') . $this->lists['select_date'];
 
-                    echo JText::_('COM_VIRTUEMART_REPORT_FROM_PERIOD') .  vmJsApi::jDate($this->from_period, 'from_period');
-                   echo JText::_('COM_VIRTUEMART_REPORT_UNTIL_PERIOD') . vmJsApi::jDate($this->until_period, 'until_period');
+                    echo vmText::_('COM_VIRTUEMART_REPORT_FROM_PERIOD') .  vmJsApi::jDate($this->from_period, 'from_period');
+                    echo vmText::_('COM_VIRTUEMART_REPORT_UNTIL_PERIOD') . vmJsApi::jDate($this->until_period, 'until_period');
                         if(VmConfig::get('multix','none')!='none'){
-                        	$vendorId = JRequest::getInt('virtuemart_vendor_id',1);
-                        	echo ShopFunctions::renderVendorList($vendorId,false);
+                            $vendorId = vmConfig::isSuperVendor();
+                            if(vmAccess::manager('managevendors')){
+                                $vendorId = vRequest::getInt('virtuemart_vendor_id',$vendorId);
+                            }
+                        	echo ShopFunctions::renderVendorList($vendorId);
                         } ?>
-                        <button onclick="this.form.period.value='';this.form.submit();"><?php echo JText::_('COM_VIRTUEMART_GO'); ?>
+                        <button class="btn btn-small" onclick="this.form.period.value='';this.form.submit();"><?php echo vmText::_('COM_VIRTUEMART_GO'); ?>
                         </button>
                     </td>
                 </tr>
@@ -62,7 +60,7 @@ if ( JVM_VERSION == 2 )
     </div>
 
     <div id="editcell">
-        <table class="adminlist" cellspacing="0" cellpadding="0">
+	    <table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
             <thead>
                 <tr>
                     <th>
@@ -81,7 +79,7 @@ if ( JVM_VERSION == 2 )
 		                <?php echo $this->sort('order_subtotal_brutto', 'COM_VIRTUEMART_REPORT_BASIC_REVENUE_BRUTTO') ; ?>
                     </th>
                 <?php
-                    $intervals = JRequest::getWord ('intervals', 'day');
+                    $intervals = vRequest::getCmd ('intervals', 'day');
 	                if($intervals=='product_s'){
 		        ?>
 		            <th>
@@ -144,7 +142,7 @@ if ( JVM_VERSION == 2 )
             </tbody>
            <thead>
                 <tr>
-                    <th  class="right"><?php echo JText::_('COM_VIRTUEMART_TOTAL').' : '; ?></th>
+                    <th  class="right"><?php echo vmText::_('COM_VIRTUEMART_TOTAL').' : '; ?></th>
                     <th><?php echo $this->totalReport['number_of_ordersTotal']?></th>
                     <th><?php echo $this->totalReport['itemsSoldTotal'];?></th>
                     <th class="right"><?php echo $this->totalReport['revenueTotal_netto'];?></th>

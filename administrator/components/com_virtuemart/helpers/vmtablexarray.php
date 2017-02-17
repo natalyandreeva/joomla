@@ -22,7 +22,7 @@
 
 defined('_JEXEC') or die();
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 class VmTableXarray extends VmTable {
 
@@ -30,7 +30,8 @@ class VmTableXarray extends VmTable {
 
 	protected $_autoOrdering = false;
 	protected $_orderable = false;
-
+    protected $_skey = '';
+    protected $_skeyForm = '';
 	protected $_pvalue = '';
 
 //    function setOrderable($key='ordering', $auto=true){
@@ -62,15 +63,16 @@ class VmTableXarray extends VmTable {
     		vmError( 'No secondary keys defined in VmTableXarray '.$this->_tbl );
     		return false;
     	}
-		$skeyId = JRequest::getInt($this->_skey, 0);
+		$skeyId = vRequest::getInt($this->_skey, 0);
 		// Initialize variables
 		$db		= JFactory::getDBO();
-		$cid	= JRequest::getVar( $this->_pkey , array(), 'post', 'array' );
-		$order	= JRequest::getVar( 'order', array(), 'post', 'array' );
+		$cid	= vRequest::getInt( $this->_pkey );
+		$order	= vRequest::getInt( 'order' ); //I found now two times "order" instead of ordering.
 
-		$query = 'SELECT `id` FROM `' . $this->_tbl . '` WHERE $this->_pkey = '.(int)$cid[0].' AND `virtuemart_category_id` = '.(int)$skeyId ;
-		$this->_db->setQuery( $query );
-		$id = $this->_db->loadResult();
+		//This sql is broken
+		$query = 'SELECT `id` FROM `' . $this->_tbl . '` WHERE '.$this->_pkey.' = '.(int)$cid[0].' AND `virtuemart_category_id` = '.(int)$skeyId ;
+		$db->setQuery( $query );
+		$id = $db->loadResult();
 		$keys = array_keys($order);
 		// TODO next 2 lines not used ????
 		if ($direction >0) $idToSwap = $order[$keys[array_search($id, $keys)]+1];
@@ -83,11 +85,11 @@ class VmTableXarray extends VmTable {
 			. ' WHERE `'.$this->_pkey.'` = ' . (int)$cid[0].
 			' AND `'.$this->_skey.'`  = ' . (int)$skeyId
 			;
-			$this->_db->setQuery( $query );
+			$db->setQuery( $query );
 
-			if (!$this->_db->query())
+			if (!$db->execute())
 			{
-				$err = $this->_db->getErrorMsg();
+				$err = $db->getErrorMsg();
 				JError::raiseError( 500, get_class( $this ).':: move '. $err );
 			}
 		}
@@ -106,29 +108,36 @@ class VmTableXarray extends VmTable {
     		return false;
     	}
 
-    	if(empty($this->_db)) $this->_db = JFactory::getDBO();
+		$pkey = $this->_pkey;
+		$this->$pkey = $oid;
+
+    	if(empty($db)) $db = JFactory::getDBO();
 
 		if($this->_orderable){
 			$orderby = 'ORDER BY `'.$this->_orderingKey.'`';
 		} else {
 			$orderby = '';
 		}
+		$hash = md5((int)$oid. $this->_skey . $this->_tbl . $this->_pkey . $orderby);
 
-		$q = 'SELECT `'.$this->_skey.'` FROM `'.$this->_tbl.'` WHERE `'.$this->_pkey.'` = "'.(int)$oid.'" '.$orderby;
-		$this->_db->setQuery($q);
-
-		$result = $this->_db->loadResultArray();
-// 		vmdebug('my q ',$q,$result);
-		$error = $this->_db->getErrorMsg();
-		if(!empty($error)){
-			vmError(get_class( $this ).':: load'.$error  );
-			return false;
-		} else {
-			if(empty($result)) return array();
-			if(!is_array($result)) $result = array($result);
-
-			return $result;
+		if (!isset (self::$_cache['ar'][$hash])) {
+			$q = 'SELECT `'.$this->_skey.'` FROM `'.$this->_tbl.'` WHERE `'.$this->_pkey.'` = "'.(int)$oid.'" '.$orderby;
+			$db->setQuery($q);
+			$result = $db->loadColumn();
+			if(!$result){
+				//vmError(get_class( $this ).':: load'  );
+				self::$_cache['ar'][$hash] = false;
+			} else {
+				if(empty($result)) $result = array();
+				if(!is_array($result)) $result = array($result);
+				self::$_cache['ar'][$hash] = $result;
+			}
 		}
+
+		$skey = $this->_skey;
+		$this->$skey = self::$_cache['ar'][$hash];
+
+		return self::$_cache['ar'][$hash];
 
     }
 
@@ -176,8 +185,8 @@ class VmTableXarray extends VmTable {
 
         // We select all database rows based on our _pkey
         $q  = 'SELECT * FROM `'.$this->_tbl.'` WHERE `'.$this->_pkey.'` = "'. $this->_pvalue.'" ';
-        $this->_db->setQuery($q);
-        $objList = $this->_db->loadObjectList();
+        $db->setQuery($q);
+        $objList = $db->loadObjectList();
 
         // We convert the database object list that we got in a more friendly array
         $oldArray = null;
@@ -214,23 +223,23 @@ class VmTableXarray extends VmTable {
 
                 // If the new row does not exist in the old rows, we will insert it
                 if( $result === false ) {
-                    $returnCode = $this->_db->insertObject($this->_tbl, $obj, $pkey);
+                    $returnCode = $db->insertObject($this->_tbl, $obj, $pkey);
                 }
                 else {
                     // If the new row exists in the old rows, we will update it
                     $obj->$tblkey = $objList[$result]->$tblkey;
-                    $returnCode = $this->_db->updateObject($this->_tbl, $obj, $tblkey);
+                    $returnCode = $db->updateObject($this->_tbl, $obj, $tblkey);
                 }
             }
         }
         else {
             // There are zero new rows, so the user asked for all the rows to be deleted
             $q  = 'DELETE FROM `'.$this->_tbl.'` WHERE `' . $pkey.'` = "'. $this->_pvalue .'" ';
-            $this->_db->setQuery($q);
+            $db->setQuery($q);
 
-            if(!$this->_db->query()){
+            if(!$db->execute()){
                 $returnCode = false;
-                vmError(get_class( $this ).':: store '.$this->_db->getErrorMsg());
+                vmError(get_class( $this ).':: store '.$db->getErrorMsg());
             }
         }
 
@@ -244,10 +253,10 @@ class VmTableXarray extends VmTable {
                 if( $result === false ) {
                     // If the old row does not exist in the new rows, we will delete it
                     $q  = 'DELETE FROM `'.$this->_tbl.'` WHERE `' . $tblkey.'` = "'. $objList[$i]->$tblkey .'" ';
-                    $this->_db->setQuery($q);
-                    if(!$this->_db->Query()){
+                    $db->setQuery($q);
+                    if(!$db->execute()){
                         $returnCode = false;
-                        vmError(get_class( $this ).':: store'.$this->_db->getErrorMsg());
+                        vmError(get_class( $this ).':: store'.$db->getErrorMsg());
                     }
                 }
              }
@@ -283,10 +292,11 @@ class VmTableXarray extends VmTable {
 
 
     function deleteRelation(){
+		$db = JFactory::getDbo();
     	$q  = 'DELETE FROM `'.$this->_tbl.'` WHERE `'.$this->_pkey.'` = "'. $this->_pvalue.'" ';
-    	$this->_db->setQuery($q);
-    	if(!$this->_db->Query()){
-    		vmError(get_class( $this ).':: store'.$this->_db->getErrorMsg(),'Couldnt delete relations');
+    	$db->setQuery($q);
+    	if(!$db->execute()){
+    		vmError(get_class( $this ).':: store'.$db->getErrorMsg(),'Couldnt delete relations');
     		return false;
     	}
 

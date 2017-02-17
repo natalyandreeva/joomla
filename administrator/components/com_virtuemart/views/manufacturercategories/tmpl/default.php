@@ -13,35 +13,35 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 5628 2012-03-08 09:00:21Z alatak $
+* @version $Id: default.php 9257 2016-07-04 14:40:20Z kkmediaproduction $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
-<form action="index.php" method="post" name="adminForm" id="adminForm">
+<form action="index.php?option=com_virtuemart&view=manufacturercategories" method="post" name="adminForm" id="adminForm">
 	<div id="editcell">
-		<table class="adminlist" cellspacing="0" cellpadding="0">
+		<table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 		<thead>
 		<tr>
-			<th width="10">
-				<input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count($this->manufacturerCategories); ?>);" />
+			<th class="admin-checkbox">
+				<input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" />
 			</th>
 			<th>
-				<?php echo  JText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_NAME'); ?>
+				<?php echo  vmText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_NAME'); ?>
 			</th>
 			<th>
-				<?php echo  JText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_DESCRIPTION'); ?>
+				<?php echo  vmText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_DESCRIPTION'); ?>
 			</th>
 			<th>
-				<?php echo  JText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_LIST'); ?>
+				<?php echo  vmText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_LIST'); ?>
 			</th>
 			<th width="20">
-				<?php echo JText::_('COM_VIRTUEMART_PUBLISH'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_PUBLISHED'); ?>
 			</th>
 			   <th><?php echo $this->sort('virtuemart_manufacturercategories_id', 'COM_VIRTUEMART_ID')  ?></th>
 		</tr>
@@ -51,14 +51,15 @@ AdminUIHelper::startAdminArea();
 		for ($i=0, $n=count( $this->manufacturerCategories ); $i < $n; $i++) {
 			$row = $this->manufacturerCategories[$i];
 
-			$checked = JHTML::_('grid.id', $i, $row->virtuemart_manufacturercategories_id);
-			$published = JHTML::_('grid.published', $row, $i);
+			$checked = JHtml::_('grid.id', $i, $row->virtuemart_manufacturercategories_id);
+			$published = $this->gridPublished( $row, $i );
+
 			$editlink = JROUTE::_('index.php?option=com_virtuemart&view=manufacturercategories&task=edit&virtuemart_manufacturercategories_id=' . $row->virtuemart_manufacturercategories_id);
 			$manufacturersList = JROUTE::_('index.php?option=com_virtuemart&view=manufacturer&virtuemart_manufacturercategories_id=' . $row->virtuemart_manufacturercategories_id);
 
 			?>
 			<tr class="row<?php echo $k ; ?>">
-				<td width="10">
+				<td class="admin-checkbox">
 					<?php echo $checked; ?>
 				</td>
 				<td align="left">
@@ -66,10 +67,10 @@ AdminUIHelper::startAdminArea();
 
 				</td>
 				<td>
-					<?php echo JText::_($row->mf_category_desc); ?>
+					<?php echo vmText::_($row->mf_category_desc); ?>
 				</td>
 				<td>
-					<a title="<?php echo JText::_('COM_VIRTUEMART_MANUFACTURER_SHOW'); ?>" href="<?php echo $manufacturersList; ?>"><?php echo JText::_('COM_VIRTUEMART_SHOW'); ?></a>
+					<a title="<?php echo vmText::_('COM_VIRTUEMART_MANUFACTURER_SHOW'); ?>" href="<?php echo $manufacturersList; ?>"><?php echo vmText::_('COM_VIRTUEMART_SHOW'); ?></a>
 				</td>
 				<td align="center">
 					<?php echo $published; ?>

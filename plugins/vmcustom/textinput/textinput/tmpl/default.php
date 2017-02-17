@@ -1,24 +1,28 @@
 <?php
 	defined('_JEXEC') or die();
 	$class='vmcustom-textinput';
-//vmdebug('$this',$viewData[0]);
-	//if ($field->custom_price_by_letter) $class='vmcustom-textinput';?>
+$product = $viewData[0];
+$params = $viewData[1];
+$name = 'customProductData['.$product->virtuemart_product_id.']['.$params->virtuemart_custom_id.']['.$params->virtuemart_customfield_id .'][comment]';
+?>
 
-	<input class="<?php echo $class ?>" type="text" value="" size="<?php echo $this->params->custom_size ?>" name="customPlugin[<?php echo $viewData[0]->virtuemart_customfield_id ?>][<?php echo $this->_name?>][comment]"><br />
+	<input class="<?php echo $class ?>"
+		   type="text" value=""
+		   size="<?php echo $params->custom_size ?>"
+		   name="<?php echo $name?>"
+		><br />
 <?php
-	// preventing 2 x load javascript
-	static $textinputjs;
-	if ($textinputjs) return true;
-	$textinputjs = true ;
+
 	//javascript to update price
-	$document = JFactory::getDocument();
-	$document->addScriptDeclaration('
-jQuery(document).ready( function($) {
+	$j = 'var test = function($) {
 	jQuery(".vmcustom-textinput").keyup(function() {
-			formProduct = $(this).parents("form.product");
+			formProduct = jQuery(this).parents("form.product");
 			virtuemart_product_id = formProduct.find(\'input[name="virtuemart_product_id[]"]\').val();
 		Virtuemart.setproducttype(formProduct,virtuemart_product_id);
 		});
+};
+jQuery("body").on("updateVirtueMartProductDetail", test);
+jQuery(document).ready(test);';
+	vmJsApi::addJScript('textinput',$j);
 
-});
-	');
+?>

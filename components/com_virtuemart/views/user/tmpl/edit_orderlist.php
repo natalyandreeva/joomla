@@ -13,7 +13,7 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: edit_orderlist.php 5351 2012-02-01 13:40:13Z alatak $
+* @version $Id: edit_orderlist.php 8887 2015-06-25 13:05:26Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
@@ -24,20 +24,21 @@ defined('_JEXEC') or die('Restricted access'); ?>
 	<thead>
 	<tr>
 		<th>
-			<?php echo JText::_('COM_VIRTUEMART_ORDER_LIST_ORDER_NUMBER'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_ORDER_LIST_ORDER_NUMBER'); ?>
 		</th>
 		<th>
-			<?php echo JText::_('COM_VIRTUEMART_ORDER_LIST_CDATE'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_ORDER_LIST_CDATE'); ?>
 		</th>
 		<th>
-			<?php echo JText::_('COM_VIRTUEMART_ORDER_LIST_MDATE'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_ORDER_LIST_MDATE'); ?>
 		</th>
 		<th>
-			<?php echo JText::_('COM_VIRTUEMART_ORDER_LIST_STATUS'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_ORDER_LIST_STATUS'); ?>
 		</th>
 		<th>
-			<?php echo JText::_('COM_VIRTUEMART_ORDER_LIST_TOTAL'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_ORDER_LIST_TOTAL'); ?>
 		</th>
+	</tr>
 	</thead>
 	<?php
 		$k = 0;
@@ -46,16 +47,16 @@ defined('_JEXEC') or die('Restricted access'); ?>
 			?>
 			<tr class="<?php echo "row$k"; ?>">
 				<td align="left">
-					<a href="<?php echo $editlink; ?>"><?php echo $row->order_number; ?></a>
+					<a href="<?php echo $editlink; ?>" rel="nofollow"><?php echo $row->order_number; ?></a>
 				</td>
 				<td align="left">
-					<?php echo JHTML::_('date', $row->created_on); ?>
+					<?php echo JHtml::_('date', $row->created_on); ?>
 				</td>
 				<td align="left">
-					<?php echo JHTML::_('date', $row->modified_on); ?>
+					<?php echo JHtml::_('date', $row->modified_on); ?>
 				</td>
 				<td align="left">
-					<?php echo ShopFunctions::getOrderStatusName($row->order_status); ?>
+					<?php echo ShopFunctionsF::getOrderStatusName($row->order_status); ?>
 				</td>
 				<td align="left">
 					<?php echo $this->currency->priceDisplay($row->order_total); ?>

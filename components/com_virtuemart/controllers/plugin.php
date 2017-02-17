@@ -23,7 +23,7 @@ jimport ('joomla.application.component.controller');
  *
  * @package        VirtueMart
  */
-class VirtuemartControllerPlugin extends JController {
+class VirtuemartControllerPlugin extends JControllerLegacy {
 
 	/**
 	 * Method to render the plugin datas
@@ -34,17 +34,15 @@ class VirtuemartControllerPlugin extends JController {
 	 */
 	function display($cachable = false, $urlparams = false)  {
 
-		if (!$type = JRequest::getWord ('vmtype', NULL)) {
-			$type = JRequest::getWord ('type', 'vmcustom');
+		if (!$type = vRequest::getCmd ('vmtype', NULL)) {
+			$type = vRequest::getCmd ('type', 'vmcustom');
 		}
 		$typeWhiteList = array('vmcustom', 'vmcalculation', 'vmuserfield', 'vmpayment', 'vmshipment');
 		if (!in_array ($type, $typeWhiteList)) {
 			return FALSE;
 		}
 
-// 		if(!$name = JRequest::getCmd('name', null) ) return $name;
-
-		$name = JRequest::getCmd ('name', 'none');
+		$name = vRequest::getCmd ('name', 'none');
 
 		$nameBlackList = array('plgVmValidateCouponCode', 'plgVmRemoveCoupon', 'none');
 		if (in_array ($name, $nameBlackList)) {
@@ -61,21 +59,26 @@ class VirtuemartControllerPlugin extends JController {
 		if ($render) {
 			// Get the document object.
 			$document = JFactory::getDocument ();
-			if (JRequest::getWord ('cache') == 'no') {
+			if (vRequest::getCmd ('cache') == 'no') {
 				JResponse::setHeader ('Cache-Control', 'no-cache, must-revalidate');
 				JResponse::setHeader ('Expires', 'Mon, 6 Jul 2000 10:00:00 GMT');
 			}
-			$format = JRequest::getWord ('format', 'json');
+			$format = vRequest::getCmd ('format', 'json');
 			if ($format == 'json') {
 				$document->setMimeEncoding ('application/json');
 				// Change the suggested filename.
-
-				JResponse::setHeader ('Content-Disposition', 'attachment;filename="' . $type . '".json"');
+				JResponse::setHeader ('Content-Disposition', 'attachment;filename="' . $type . '.json"');
+				JResponse::setHeader("Content-type","application/json");
+				JResponse::sendHeaders();
 				echo json_encode ($render);
+				jExit();
 			}
 			else {
 				echo $render;
+				jExit();
 			}
+		} else {
 		}
+
 	}
 }

@@ -1,6 +1,6 @@
 <?php  defined('_JEXEC') or die();
 /**
- * @version $Id: displaylogin.php 6369 2012-08-22 14:33:46Z alatak $
+ * @version $Id: displaylogin.php 7538 2014-01-06 11:36:43Z Milbo $
  *
  * @author Valérie Isaksen
  * @package VirtueMart
@@ -14,6 +14,6 @@
 ?>
 <!-- KLARNA BOX -->
 <div class="klarna_box_login">
-  <a href="<?php echo $viewData['editpayment_link']  ?>"><?php echo JText::_('VMPAYMENT_KLARNA_SWE_EDIT_PAYMENT') ?> </a>
+  <a href="<?php echo $viewData['editpayment_link']  ?>"><?php echo vmText::_('VMPAYMENT_KLARNA_SWE_EDIT_PAYMENT') ?> </a>
 </div>
 <!-- END KLARNA BOX LOGIN -->

@@ -109,7 +109,7 @@
                     var table = $(this);
                     var tbody = $(table).children("tbody").first();
 
-                    if (options.orderable && jQuery().sortable) {
+                    if (options.orderable && $().sortable) {
                         $(tbody).sortable({
                             handle:options.dragHandleClass,
                             helper:function (e, ui) {
@@ -184,8 +184,8 @@
                         oldIndex = $(this).addClass("current").siblings('li.current').removeClass("current").index();
                         if (oldIndex !== -1) {
                             if (cookie !== "") $.cookie(cookie, idx, options);
-                            div.eq(idx).slideDown();
-                            div.eq(oldIndex).slideUp();
+                            div.eq(idx).slideDown(0);
+                            div.eq(oldIndex).slideUp(0);
                         }
                     }
                 }
@@ -222,7 +222,7 @@
         media:function (mediatype, total) {
             var page = 0,
                 max = 24,
-                container = jQuery(this);
+                container = $(this);
             var pagetotal = Math.ceil(total / max);
             var cache = new Array();
 
@@ -238,13 +238,13 @@
                 return '<div class="media-pagination">' + (title && title.length ? '<b>' + title + '</b>' : '' ) + ' ' + pagination + '</div>';
             }
 
-            jQuery("#fancybox-title").delegate(".media-pagination span", "click", function (event) {
+            $("#fancybox-title").delegate(".media-pagination span", "click", function (event) {
                 var newPage = $(this).text();
                 display(newPage);
                 event.preventDefault();
             });
             container.delegate("a.vm_thumb", "click", function (event) {
-                jQuery.fancybox({
+                $.fancybox({
                     "type":"image",
                     "titlePosition":"inside",
                     "title":this.title,
@@ -252,7 +252,7 @@
                 });
                 event.preventDefault();
             });
-            jQuery("#media-dialog").delegate(".vm_thumb_image", "click", function (event) {
+            $("#media-dialog").delegate(".vm_thumb_image", "click", function (event) {
                 event.preventDefault();
                 var id = $(this).find('input').val(), ok = 0;
                 var inputArray = new Array();
@@ -262,25 +262,25 @@
                     }
                 );
                 if ($.inArray(id, inputArray) == -1) {
-                    that = jQuery(this);
-                    jQuery(this).clone().appendTo(container).unbind("click").append('<div class="vmicon vmicon-16-remove" title="remove"></div><div class="edit-24-grey" title="' + vm2string.editImage + '"><div>');
+                    that = $(this);
+                    $(this).clone().appendTo(container).unbind("click").append('<div class="vmicon vmicon-16-remove 4remove" title="remove"></div><div class="edit-24-grey" title="' + vm2string.editImage + '"><div>');
                     that.hide().fadeIn();
                 }
 
             });
 
-            jQuery("#admin-ui-tabs").delegate("div.vmicon-16-remove", "click", function () {
-                jQuery(this).closest(".vm_thumb_image").fadeOut("500", function () {
-                    jQuery(this).remove()
+            $("#admin-ui-tabs").delegate("div.4remove", "click", function () {
+                $(this).closest(".vm_thumb_image").fadeOut("500", function () {
+                    $(this).remove();
                 });
             });
-            jQuery("#admin-ui-tabs").delegate("span.vmicon-16-remove", "click", function () {
-                jQuery(this).closest(".removable").fadeOut("500", function () {
-                    jQuery(this).remove()
+            $("#admin-ui-tabs").delegate("span.4remove", "click", function () {
+                $(this).closest(".removable").fadeOut("500", function () {
+                    $(this).remove()
                 });
             });
 
-            jQuery("#addnewselectimage2").fancybox({
+            $("#addnewselectimage2").fancybox({
                 "hideOnContentClick":false,
                 "autoDimensions":true,
                 "titlePosition":"inside",
@@ -292,37 +292,39 @@
             });
 
             container.delegate(".edit-24-grey", "click", function () {
-
-                var data = jQuery(this).parent().find("input").val();
-                jQuery.getJSON("index.php?option=com_virtuemart&view=media&task=viewJson&format=json&virtuemart_media_id=" + data,
+                var data = $(this).parent().find("input").val();
+                $.getJSON("index.php?option=com_virtuemart&view=media&task=viewJson&format=json&virtuemart_media_id=" + data,
                     function (datas, textStatus) {
                         if (datas.msg == "OK") {
-                            jQuery("#vm_display_image").attr("src", datas.file_root + datas.file_url);
-                            jQuery("#vm_display_image").attr("alt", datas.file_title);
-                            jQuery("#file_title").html(datas.file_title);
-                            if (datas.published == 1) jQuery("#adminForm [name=media_published]").attr('checked', true);
-                            else jQuery("#adminForm [name=media_published]").attr('checked', false);
+                            $("#vm_display_image").attr("src", datas.file_root + datas.file_url);
+                            $("#vm_display_image").attr("alt", datas.file_title);
+                            $("#file_title").html(datas.file_title);
+                            if (datas.published == 1) $("#adminForm [name='media[media_published]']").attr('checked', true);
+                            else $("#adminForm [name=media_published]").attr('checked', false);
                             if (datas.file_is_downloadable == 0) {
-                                jQuery("#media_rolesfile_is_displayable").attr('checked', true);
-                                //jQuery("#adminForm [name=media_roles]").filter("value='file_is_downloadable'").attr('checked', false);
+                                $("#media_rolesfile_is_displayable").attr('checked', true);
+                                //$("#adminForm [name=media_roles]").filter("value='file_is_downloadable'").attr('checked', false);
                             }
                             else {
-                                //jQuery("#adminForm [name=media_roles]").filter("value='file_is_displayable'").attr('checked', false);
-                                jQuery("#media_rolesfile_is_downloadable").attr('checked', true);
+                                //$("#adminForm [name=media_roles]").filter("value='file_is_displayable'").attr('checked', false);
+                                $("#media_rolesfile_is_downloadable").attr('checked', true);
                             }
-                            jQuery("#adminForm [name=file_title]").val(datas.file_title);
-                            jQuery("#adminForm [name=file_description]").val(datas.file_description);
-                            jQuery("#adminForm [name=file_meta]").val(datas.file_meta);
-                            jQuery("#adminForm [name=file_url]").val(datas.file_url);
-                            jQuery("#adminForm [name=file_url_thumb]").val(datas.file_url_thumb);
-                            jQuery("[name=active_media_id]").val(datas.virtuemart_media_id);
-                            if (datas.file_url_thumb !== "undefined") {
-                                jQuery("#vm_thumb_image").attr("src", datas.file_root + datas.file_url_thumb);
+                            $("#adminForm [name='media[file_title]']").val(datas.file_title);
+                            $("#adminForm [name='media[file_description]']").val(datas.file_description);
+                            $("#adminForm [name='media[file_meta]']").val(datas.file_meta);
+							$("#adminForm [name='media[file_class]']").val(datas.file_class);
+                            $("#adminForm [name='media[file_url]']").val(datas.file_url);
+                            $("#adminForm [name='media[file_url_thumb]']").val(datas.file_url_thumb);
+							var lang = datas.file_lang.split(',');
+							$("#adminForm [name='media[active_languages][]']").val(lang).trigger("liszt:updated");
+                            $("[name='media[active_media_id]']").val(datas.virtuemart_media_id);
+                            if (typeof datas.file_url_thumb !== "undefined") {
+                                $(".vm_thumb_image").attr("src", datas.file_root + datas.file_url_thumb_dyn);
                             }
                             else {
-                                jQuery("#vm_thumb_image").attr("src", "");
+                                $(".vm_thumb_image").attr("src", "");
                             }
-                        } else jQuery("#file_title").html(datas.msg);
+                        } else $("#file_title").html(datas.msg);
                     });
             });
 
@@ -357,18 +359,18 @@
                     //var cache = this.cache ;
                     var start = this.page;
                     if (typeof display.cache[start] == "undefined") {
-                        jQuery.getJSON("index.php?option=com_virtuemart&view=media&task=viewJson&format=json&mediatype=" + mediatype + "&start=" + start,
+                        $.getJSON("index.php?option=com_virtuemart&view=media&task=viewJson&format=json&mediatype=" + mediatype + "&start=" + start,
                             function (data) {
                                 if (data.imageList != "ERROR") {
                                     display.cache[start] = data.imageList;
-                                    jQuery("#media-dialog").html(display.cache[start]);
-                                    jQuery(".page").text("Page(s) " + (start + 1));
+                                    $("#media-dialog").html(display.cache[start]);
+                                    $(".page").text("Page(s) " + (start + 1));
                                 } else {
-                                    jQuery(".page").text("No  more results : Page(s) " + (start + 1));
+                                    $(".page").text("No  more results : Page(s) " + (start + 1));
                                 }
                             }
                         );
-                    } else jQuery("#media-dialog").html(display.cache[start]);
+                    } else $("#media-dialog").html(display.cache[start]);
                     page = this.oldPage = this.page;
                     $('.media-pagination').children().removeClass('media-page-selected');
                     $('.media-pagination').children().eq(start + 3).addClass('media-page-selected');
@@ -379,9 +381,11 @@
             var xOffset = -20; // x distance from mouse
             var yOffset = 10; // y distance from mouse
             tip = this;
-            tip.unbind().hover(
+            tip.bind().hover(
                 function (e) {
-                    tip.t = this.title;
+                    //a kind of sanitizing the input
+                    tip.t = $('<div/>').text(this.title).html();
+                    //tip.t = this.title;
                     this.title = '';
                     tip.top = (e.pageY + yOffset);
                     tip.left = (e.pageX + xOffset);
@@ -414,25 +418,15 @@
         },
         toggle:function () {
             var options = { path:'/', expires:2};
-            if ($.cookie('vmmenu')) {
-                var status = $.cookie('vmmenu');
-                if (status == 'hide') {
-                    this.removeClass('vmicon-show').addClass('vmicon-hide');
-                    $('.menu-wrapper').toggle('slide');
-                }
-            }
 
             this.click(function () {
                 $this = $(this);
-                if ($this.hasClass('vmicon-show')) {
-                    $this.removeClass('vmicon-show').addClass('vmicon-hide');
-                    $('.menu-wrapper').toggle('slide');
-                    $.cookie('vmmenu', 'hide', options);
-                } else {
-                    $this.removeClass('vmicon-hide').addClass('vmicon-show');
-                    $('.menu-wrapper').toggle('slide');
+                if ($this.parent().hasClass('menu-collapsed')) {
                     $.cookie('vmmenu', 'show', options);
+                } else {
+                    $.cookie('vmmenu', 'hide', options);
                 }
+				$('.menu-wrapper').toggleClass('menu-collapsed').parent().toggleClass('menu-collapsed').children('.toggler').addClass('menu-collapsed');
             });
         },
 
@@ -543,7 +537,7 @@
                     var table = $(this);
                     var tbody = $(table).children("tbody").first();
 
-                    if (options.orderable && jQuery().sortable) {
+                    if (options.orderable && $().sortable) {
                         $(tbody).sortable({
                             handle:options.dragHandleClass,
                             helper:function (e, ui) {
@@ -597,5 +591,5 @@
     };
 })(jQuery);
 
-// load defaut scripts 
+// load defaut scripts
 jQuery.noConflict();

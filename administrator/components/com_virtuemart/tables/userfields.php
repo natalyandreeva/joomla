@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: userfields.php 6475 2012-09-21 11:54:21Z Milbo $
+* @version $Id: userfields.php 8724 2015-02-18 14:03:29Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Userfields table class
@@ -40,13 +40,16 @@ class TableUserfields extends VmTable {
 	{
 
 		parent::__construct('#__virtuemart_userfields', 'virtuemart_userfield_id', $db);
-		parent::loadFields();
+		parent::showFullColumns();
+		$this->setPrimaryKey('virtuemart_userfield_id');
 		$this->setUniqueName('name');
 		$this->setObligatoryKeys('title');
 
 		$this->setLoggable();
 
 		$this->setOrderable('ordering',false);
+		$this->_xParams = 'userfield_params';
+
 	}
 
 	/**
@@ -54,17 +57,17 @@ class TableUserfields extends VmTable {
 	 *
 	 * @return boolean True if the table buffer is contains valid data, false otherwise.
 	 */
-	function check($nrOfValues)
+	function check()
 	{
 
 		if (preg_match('/[^a-z0-9\._\-]/i', $this->name) > 0) {
-			vmError(JText::_('COM_VIRTUEMART_NAME_OF_USERFIELD_CONTAINS_INVALID_CHARACTERS'));
+			vmError(vmText::_('COM_VIRTUEMART_NAME_OF_USERFIELD_CONTAINS_INVALID_CHARACTERS'));
 			return false;
 		}
 		if($this->name !='virtuemart_country_id' and $this->name !='virtuemart_state_id'){
 			$reqValues = array('select', 'multiselect', 'radio', 'multicheckbox');
-			if (in_array($this->type, $reqValues) and $nrOfValues == 0 ) {
-				vmError(JText::_('COM_VIRTUEMART_VALUES_ARE_REQUIRED_FOR_THIS_TYPE'));
+			if (in_array($this->type, $reqValues) and $this->_nrOfValues == 0 ) {
+				vmError(vmText::_('COM_VIRTUEMART_VALUES_ARE_REQUIRED_FOR_THIS_TYPE'));
 				return false;
 			}
 		}
@@ -96,7 +99,7 @@ class TableUserfields extends VmTable {
 				break;
 
 			case 'age_verification':
-				$this->params = 'minimum_age='.(int)$_data['minimum_age']."\n";
+				//$this->params = 'minimum_age='.(int)$_data['minimum_age']."\n";
 			default:
 				$_fieldType = 'VARCHAR(255)';
 				break;
@@ -114,19 +117,19 @@ class TableUserfields extends VmTable {
 	{
 		$isNew = ($this->virtuemart_userfield_id == 0);
 		if (!parent::store($updateNulls)) { // Write data to the DB
-			vmError($this->getError());
+			vmError($this->_db->getError());
 			return false;
 		} else {
 			return $this->virtuemart_userfield_id;
 		}
 	}
 	
-	function checkAndDelete($table,$where = 0){
+	function checkAndDelete($table, $whereField = 0, $andWhere = ''){
 		$ok = 1;
 		$k = $this->_tbl_key;
 
-		if($where!==0){
-			$whereKey = $where;
+		if($whereField!==0){
+			$whereKey = $whereField;
 		} else {
 			$whereKey = $this->_pkey;
 		}
@@ -139,17 +142,16 @@ class TableUserfields extends VmTable {
 		 {
 		    
 			$umodel = VmModel::getModel('userfields'); 
-			$arr = $umodel->getCoreFields(); 
-			
+			$arr = $umodel->getCoreFields();
 			if (in_array($this->name, $arr))
 			 {
-			  vmError('Cannot delete core field!'); 
+			  vmError('Cannot delete core field! Use unpublish');
 			  return false; 
 			 }
 		 }
 
 		$this->_db->setQuery( $query );
-		$list = $this->_db->loadResultArray();
+		$list = $this->_db->loadColumn();
 
 		if($list){
 
@@ -158,8 +160,7 @@ class TableUserfields extends VmTable {
 				$query = 'DELETE FROM `'.$table.'` WHERE '.$this->_tbl_key.' = "'.$row.'"';
 				$this->_db->setQuery( $query );
 
-				if (!$this->_db->query()){
-					$this->setError($this->_db->getErrorMsg());
+				if (!$this->_db->execute()){
 					vmError('checkAndDelete '.$this->_db->getErrorMsg());
 					$ok = 0;
 				}

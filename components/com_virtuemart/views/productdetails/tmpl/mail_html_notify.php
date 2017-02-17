@@ -14,7 +14,7 @@ defined('_JEXEC') or die('');
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: mail_html_notify.php 6300 2012-07-26 00:40:10Z Milbo $
+ * @version $Id: mail_html_notify.php 8832 2015-04-15 16:05:49Z Milbo $
  */
 ?>
 
@@ -38,9 +38,9 @@ defined('_JEXEC') or die('');
 
 <body style="background: #F2F2F2;word-wrap: break-word;">
 <div style="background-color: #e6e6e6;" width="100%">
-	<table style="margin: auto;" cellpadding="0" cellspacing="0" width="600" ><tr><td>
+	<table style="margin: auto;" cellpadding="0" cellspacing="0"  ><tr><td>
 
-	<table width="600" border="0" cellpadding="0" cellspacing="0" class="html-email">
+	<table  border="0" cellpadding="0" cellspacing="0" class="html-email">
 	<tr>
 		<td valign="top">
 			<img src="<?php  echo JURI::root () . $this->vendor->images[0]->file_url ?>" />
@@ -51,12 +51,11 @@ defined('_JEXEC') or die('');
 	</tr>
 	<tr>
 		<td colspan="2">
-			<strong><?php echo JText::sprintf ('COM_VIRTUEMART_MAIL_SHOPPER_NAME', $this->user); ?></strong><br/>
+			<strong><?php echo vmText::sprintf ('COM_VIRTUEMART_MAIL_SHOPPER_NAME', $this->vendor->vendor_store_name); ?></strong><br/>
 		</td>
 	</tr>
 </table>
-
-	<table style="margin: auto;" cellpadding="0" cellspacing="0" width="600" >
+	<table style="margin: auto;" cellpadding="0" cellspacing="0"  >
 		<tr>
 			<td>
 				<table width="100%" border="0" cellpadding="0" cellspacing="0" class="html-email">
@@ -64,7 +63,7 @@ defined('_JEXEC') or die('');
 						<td >
 							<?php
 							if(!empty($this->mailbody)) echo nl2br($this->mailbody);
-							else echo JText::sprintf('COM_VIRTUEMART_CART_NOTIFY_MAIL_HTML', $this->productName,$this->link);
+							else echo vmText::sprintf('COM_VIRTUEMART_CART_NOTIFY_MAIL_HTML', $this->productName,$this->link);
 							?>
 						</td>
 					</tr>
@@ -73,8 +72,6 @@ defined('_JEXEC') or die('');
 		</tr>
 	</table>
 	<?php
-	// $uri    = JURI::getInstance();
-	// $prefix = $uri->toString(array('scheme', 'host', 'port'));
 	$link = JRoute::_ ( 'index.php?option=com_virtuemart',true,-1);
 
 	echo '<br/><br/>';
@@ -82,7 +79,7 @@ defined('_JEXEC') or die('');
 	/* GENERAL FOOTER FOR ALL MAILS */
 		$link = JURI::root().'index.php?option=com_virtuemart';
 
-		echo JText::_('COM_VIRTUEMART_MAIL_FOOTER' ) . '<a href="'.$link.'">'.$this->vendor->vendor_name.'</a>';
+		echo vmText::_('COM_VIRTUEMART_MAIL_FOOTER' ) . '<a href="'.$link.'">'.$this->vendor->vendor_name.'</a>';
 	echo '<br/>';
 	echo $this->vendor->vendor_name .'<br />'.$this->vendor->vendor_phone .' '.$this->vendor->vendor_store_name .'<br /> '.$this->vendor->vendor_store_desc.'<br />'.$this->vendor->vendor_legal_info;
 	?>

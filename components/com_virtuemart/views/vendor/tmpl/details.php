@@ -29,12 +29,10 @@ defined('_JEXEC') or die('Restricted access');
 		</div>
 	<?php
 	}
-?>	</h1></div>
-
+?>	</h1>
 <div class="vendor-description">
 <?php echo $this->vendor->vendor_store_desc.'<br>';
-	if(!class_exists('ShopFunctions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'shopfunctions.php');
-	echo shopFunctions::renderVendorAddress($this->vendor->virtuemart_vendor_id);
+	echo shopFunctionsF::renderVendorAddress($this->vendor->virtuemart_vendor_id);
 
 	?></div>
 
@@ -48,3 +46,4 @@ defined('_JEXEC') or die('Restricted access');
 	<?php echo $this->linkcontact ?>
 
 	<br class="clear" />
+</div>

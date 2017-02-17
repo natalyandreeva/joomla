@@ -19,9 +19,9 @@
  * http://virtuemart.net
  */
 jimport('joomla.application.component.controller');
-if (!class_exists('ShopFunctions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'shopfunctions.php');
+if (!class_exists('ShopFunctions')) require(VMPATH_ADMIN.DS.'helpers'.DS.'shopfunctions.php');
 
-class VmController extends JController{
+class VmController extends JControllerLegacy{
 
 	protected $_cidName = 0;
 	protected $_cname = 0;
@@ -41,12 +41,12 @@ class VmController extends JController{
 
 		//VirtuemartController
 		$this->_cname = strtolower(substr(get_class( $this ), 20));
-		$this->mainLangKey = JText::_('COM_VIRTUEMART_'.strtoupper($this->_cname));
+		$this->mainLangKey = vmText::_('COM_VIRTUEMART_'.strtoupper($this->_cname));
 		$this->redirectPath = 'index.php?option=com_virtuemart&view='.$this->_cname;
-		$task = explode ('.',JRequest::getCmd( 'task'));
+		$t = vRequest::getCmd( 'task');
+		$task = explode ('.',$t);
 		if ($task[0] == 'toggle') {
-			$val = (isset($task[2])) ? $task[2] : NULL;
-			$this->toggle($task[1],$val);
+			$this->registerTask($t,'toggle');
 		}
 
 	}
@@ -69,16 +69,20 @@ class VmController extends JController{
 	{
 		$document	= JFactory::getDocument();
 		$viewType	= $document->getType();
-		if(JVM_VERSION==2){
-			$viewName	= JRequest::getCmd('view', $this->default_view);
-			$viewLayout	= JRequest::getCmd('layout', 'default');
 
-			$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
-		} else {
-			$viewName	= JRequest::getCmd('view', '');
-			$viewLayout	= JRequest::getCmd('layout', 'default');
+		$viewName	= vRequest::getCmd('view', $this->default_view);
+		$viewLayout	= vRequest::getCmd('layout', 'default');
 
-			$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->_basePath));
+		if(vRequest::getCmd('manage')){
+			$this->addViewPath(VMPATH_ADMIN . DS . 'views');
+			$this->basePath = VMPATH_ROOT.'/administrator/components/com_virtuemart';
+		}
+
+		$view = $this->getView($viewName, $viewType, '', array('base_path' => $this->basePath));
+
+		$app = JFactory::getApplication();
+		if($app->isSite()){
+			$view->addTemplatePath(VMPATH_ADMIN.DS.'views'.DS.$viewName.DS.'tmpl');
 		}
 
 		// Set the layout
@@ -90,7 +94,7 @@ class VmController extends JController{
 
 		// Display the view
 		if ($cachable && $viewType != 'feed' && $conf->get('caching') >= 1) {
-			$option	= JRequest::getCmd('option');
+			$option	= vRequest::getCmd('option');
 			$cache	= JFactory::getCache($option, 'view');
 
 			if (is_array($urlparams)) {
@@ -129,17 +133,14 @@ class VmController extends JController{
 	 */
 	function edit($layout='edit'){
 
-		JRequest::setVar('controller', $this->_cname);
-		JRequest::setVar('view', $this->_cname);
-		JRequest::setVar('layout', $layout);
-// 		JRequest::setVar('hidemenu', 1);
+		vRequest::setVar('controller', $this->_cname);
+		vRequest::setVar('view', $this->_cname);
+		vRequest::setVar('layout', $layout);
 
-		if(empty($view)){
-			$this->addViewPath(JPATH_ADMINISTRATOR.DS.'components'.DS.'com_virtuemart' . DS . 'views');
-			$document = JFactory::getDocument();
-			$viewType = $document->getType();
-			$view = $this->getView($this->_cname, $viewType);
-		}
+		$this->addViewPath(VMPATH_ADMIN . DS . 'views');
+		$document = JFactory::getDocument();
+		$viewType = $document->getType();
+		$view = $this->getView($this->_cname, $viewType);
 
 		$view->setLayout($layout);
 
@@ -154,29 +155,33 @@ class VmController extends JController{
 	 */
 	function save($data = 0){
 
-		JRequest::checkToken() or jexit( 'Invalid Token save' );
+		vRequest::vmCheckToken();
 
-		if($data===0)$data = JRequest::get('post');
+		if($data===0) $data = vRequest::getRequest();
 
-		$model = VmModel::getModel($this->_cname);
+		$model = $this->getModel($this->_cname);
 		$id = $model->store($data);
 
-		$errors = $model->getErrors();
-		if(empty($errors)) {
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_SAVED',$this->mainLangKey);
-			$type = 'save';
+		$msg = 'failed';
+		if(!empty($id)) {
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_SAVED',$this->mainLangKey);
+			$type = 'message';
 		}
 		else $type = 'error';
-		foreach($errors as $error){
-			$msg = ($error).'<br />';
-		}
 
 		$redir = $this->redirectPath;
-		//vmInfo($msg);
-		if(JRequest::getCmd('task') == 'apply'){
+
+		if( JFactory::getApplication()->isSite()){
+			$redir .= '&tmpl=component';
+		}
+
+		$task = vRequest::getCmd('task');
+
+		if($task == 'apply'){
 
 			$redir .= '&task=edit&'.$this->_cidName.'[]='.$id;
-		} //else $this->display();
+
+		}
 
 		$this->setRedirect($redir, $msg,$type);
 	}
@@ -188,32 +193,26 @@ class VmController extends JController{
 	 */
 	function remove(){
 
-		JRequest::checkToken() or jexit( 'Invalid Token remove' );
+		vRequest::vmCheckToken();
 
-		$ids = JRequest::getVar($this->_cidName, JRequest::getVar('cid',array(),'', 'ARRAY'), '', 'ARRAY');
-		jimport( 'joomla.utilities.arrayhelper' );
-		JArrayHelper::toInteger($ids);
+		$ids = vRequest::getVar($this->_cidName, vRequest::getInt('cid', array() ));
 
+		$type = 'notice';
 		if(count($ids) < 1) {
-			$msg = JText::_('COM_VIRTUEMART_SELECT_ITEM_TO_DELETE');
-			$type = 'notice';
+			$msg = vmText::_('COM_VIRTUEMART_SELECT_ITEM_TO_DELETE');
+
 		} else {
-			$model = VmModel::getModel($this->_cname);
+			$model = $this->getModel($this->_cname);
 			$ret = $model->remove($ids);
-			$errors = $model->getErrors();
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_DELETED',$this->mainLangKey);
-			if(!empty($errors) or $ret==false) {
-				$msg = JText::sprintf('COM_VIRTUEMART_STRING_COULD_NOT_BE_DELETED',$this->mainLangKey);
+
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_DELETED',$this->mainLangKey);
+			if($ret==false) {
+				$msg = vmText::sprintf('COM_VIRTUEMART_STRING_COULD_NOT_BE_DELETED',$this->mainLangKey);
 						$type = 'error';
-			}
-			else $type = 'remove';
-			foreach($errors as $error){
-				$msg .= '<br />'.($error);
 			}
 		}
 
 		$this->setRedirect($this->redirectPath, $msg,$type);
-
 	}
 
 	/**
@@ -222,8 +221,8 @@ class VmController extends JController{
 	 * @author Max Milbers
 	 */
 	public function cancel(){
-		$msg = JText::sprintf('COM_VIRTUEMART_STRING_CANCELLED',$this->mainLangKey); //'COM_VIRTUEMART_OPERATION_CANCELED'
-		$this->setRedirect($this->redirectPath, $msg,'cancel');
+		$msg = vmText::sprintf('COM_VIRTUEMART_STRING_CANCELLED',$this->mainLangKey); //'COM_VIRTUEMART_OPERATION_CANCELED'
+		$this->setRedirect($this->redirectPath, $msg, 'message');
 	}
 
 	/**
@@ -234,13 +233,19 @@ class VmController extends JController{
 
 	public function toggle($field,$val=null){
 
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$model = VmModel::getModel($this->_cname);
-		if (!$model->toggle($field,$val,$this->_cidName)) {
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_TOGGLE_ERROR',$this->mainLangKey);
+		$task = explode ('.',vRequest::getCmd( 'task'));
+		if ($task[0] == 'toggle') {
+			$val = (isset($task[2])) ? $task[2] : NULL;
+			$field = $task[1];
+		}
+
+		$model = $this->getModel($this->_cname);
+		if (!$model->toggle($field, $val, $this->_cidName, 0, $this->_cname)) {
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_TOGGLE_ERROR',$this->mainLangKey);
 		} else{
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_TOGGLE_SUCCESS',$this->mainLangKey);
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_TOGGLE_SUCCESS',$this->mainLangKey);
 		}
 
 		$this->setRedirect( $this->redirectPath, $msg);
@@ -253,16 +258,16 @@ class VmController extends JController{
 	 */
 	public function publish($cidname=0,$table=0,$redirect = 0){
 
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$model = VmModel::getModel($this->_cname);
+		$model = $this->getModel($this->_cname);
 
 		if($cidname === 0) $cidname = $this->_cidName;
 
-		if (!$model->toggle('published', 1, $cidname, $table)) {
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_PUBLISHED_ERROR',$this->mainLangKey);
+		if (!$model->toggle('published', 1, $cidname, $table, $this->_cname)) {
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_PUBLISHED_ERROR',$this->mainLangKey);
 		} else{
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_PUBLISHED_SUCCESS',$this->mainLangKey);
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_PUBLISHED_SUCCESS',$this->mainLangKey);
 		}
 
 		if($redirect === 0) $redirect = $this->redirectPath;
@@ -278,16 +283,16 @@ class VmController extends JController{
 	 */
 	function unpublish($cidname=0,$table=0,$redirect = 0){
 
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$model = VmModel::getModel($this->_cname);
+		$model = $this->getModel($this->_cname);
 
 		if($cidname === 0) $cidname = $this->_cidName;
 
-		if (!$model->toggle('published', 0, $cidname, $table)) {
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_UNPUBLISHED_ERROR',$this->mainLangKey);
+		if (!$model->toggle('published', 0, $cidname, $table, $this->_cname)) {
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_UNPUBLISHED_ERROR',$this->mainLangKey);
 		} else{
-			$msg = JText::sprintf('COM_VIRTUEMART_STRING_UNPUBLISHED_SUCCESS',$this->mainLangKey);
+			$msg = vmText::sprintf('COM_VIRTUEMART_STRING_UNPUBLISHED_SUCCESS',$this->mainLangKey);
 		}
 
 		if($redirect === 0) $redirect = $this->redirectPath;
@@ -297,36 +302,42 @@ class VmController extends JController{
 
 	function orderup() {
 
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$model = VmModel::getModel($this->_cname);
+		$model = $this->getModel($this->_cname);
 		$model->move(-1);
-		$msg = JText::sprintf('COM_VIRTUEMART_STRING_ORDER_UP_SUCCESS',$this->mainLangKey);
+		$msg = vmText::sprintf('COM_VIRTUEMART_STRING_ORDER_UP_SUCCESS',$this->mainLangKey);
 		$this->setRedirect( $this->redirectPath, $msg);
 	}
 
 	function orderdown() {
 
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$model = VmModel::getModel($this->_cname);
+		$model = $this->getModel($this->_cname);
 		$model->move(1);
-		$msg = JText::sprintf('COM_VIRTUEMART_STRING_ORDER_DOWN_SUCCESS',$this->mainLangKey);
+		$msg = vmText::sprintf('COM_VIRTUEMART_STRING_ORDER_DOWN_SUCCESS',$this->mainLangKey);
 		$this->setRedirect( $this->redirectPath, $msg);
 	}
 
 	function saveorder() {
 
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$cid 	= JRequest::getVar( $this->_cidName, JRequest::getVar('cid',array(0)), 'post', 'array' );
-		$order 	= JRequest::getVar( 'order', array(), 'post', 'array' );
-		JArrayHelper::toInteger($cid);
-		JArrayHelper::toInteger($order);
+		$cid 	= vRequest::getInt( $this->_cidName, vRequest::getInt('cid', array() ) );
+		$order 	= vRequest::getInt( 'order', array() );
 
-		$model = VmModel::getModel($this->_cname);
-		if (!$model->saveorder($cid, $order)) $msg = 'error';
-		else $msg = JText::sprintf('COM_VIRTUEMART_STRING_SAVE_ORDER_SUCCESS',$this->mainLangKey);
+		$model = $this->getModel($this->_cname);
+		if (!$model->saveorder($cid, $order)) {
+			$msg = 'error';
+		} else {
+			if(JFactory::getApplication()->isAdmin() and VmConfig::showDebug()){
+				$msg = vmText::sprintf('COM_VIRTUEMART_NEW_ORDERING_SAVEDF',$this->mainLangKey);
+			} else {
+				$msg = vmText::sprintf('COM_VIRTUEMART_NEW_ORDERING_SAVED');
+			}
+
+		}
 		$this->setRedirect( $this->redirectPath, $msg);
 	}
 
@@ -336,7 +347,7 @@ class VmController extends JController{
 	 * @see JController::getModel()
 	 */
 	function getModel($name = '', $prefix = '', $config = array()){
-		if(!class_exists('ShopFunctions'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'shopfunctions.php');
+		if(!class_exists('ShopFunctions'))require(VMPATH_ADMIN.DS.'helpers'.DS.'shopfunctions.php');
 
 		if(empty($name)) $name = false;
 		return VmModel::getModel($name);

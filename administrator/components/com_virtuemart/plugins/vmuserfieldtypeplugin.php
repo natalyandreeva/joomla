@@ -20,7 +20,7 @@
  */
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
-if (!class_exists('vmPlugin')) require(JPATH_VM_PLUGINS . DS . 'vmplugin.php');
+if (!class_exists('vmPlugin')) require(VMPATH_PLUGINLIBS . DS . 'vmplugin.php');
 
 abstract class vmUserfieldPlugin extends vmPlugin {
 
@@ -50,7 +50,7 @@ abstract class vmUserfieldPlugin extends vmPlugin {
 	
 	function AddUserfieldParameterByPlgName($plgName){
 		if(empty($this->_db)) $this->_db = JFactory::getDBO();
-		$q = 'SELECT `params` FROM `#__virtuemart_userfields` WHERE `type` = "plugin' . $plgName.'"';
+		$q = 'SELECT `userfield_params` FROM `#__virtuemart_userfields` WHERE `type` = "plugin' . $plgName.'"';
 		$this->_db->setQuery($q);
 		$params = $this->_db->loadResult();
 		$this->AddUserfieldParameter($params);

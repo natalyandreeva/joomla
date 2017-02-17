@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: state.php 5399 2012-02-08 19:29:45Z Milbo $
+* @version $Id: state.php 8618 2014-12-10 22:45:48Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -43,7 +40,7 @@ class VirtuemartControllerState extends VmController {
 	function __construct() {
 		parent::__construct('virtuemart_state_id');
 
-		$country = JRequest::getInt('virtuemart_country_id', 0);
+		$country = vRequest::getInt('virtuemart_country_id', 0);
 		$this->redirectPath .= ($country > 0) ? '&virtuemart_country_id=' . $country : '';
 	}
 
@@ -52,11 +49,7 @@ class VirtuemartControllerState extends VmController {
 	 * Retrieve full statelist
 	 */
 	function getList() {
-
-		/* Create the view object. */
 		$view = $this->getView('state', 'json');
-
-		/* Now display the view. */
 		$view->display(null);
 	}
 }

@@ -13,12 +13,12 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: default.php 6053 2012-06-05 12:36:21Z Milbo $
+ * @version $Id: default.php 9009 2015-10-07 16:37:12Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
-AdminUIHelper::startAdminArea ();
+AdminUIHelper::startAdminArea($this);
 ?>
 
 <form action="index.php" method="post" name="adminForm" id="adminForm">
@@ -26,6 +26,7 @@ AdminUIHelper::startAdminArea ();
 <?php // Loading Templates in Tabs
 AdminUIHelper::buildTabs ( $this,  array (
 									'shop' 			=> 	'COM_VIRTUEMART_ADMIN_CFG_SHOPTAB',
+									'email' 			=> 	'COM_VIRTUEMART_ADMIN_CFG_EMAILTAB',
 									'shopfront' 	=> 	'COM_VIRTUEMART_ADMIN_CFG_SHOPFRONTTAB',
 									'templates' 	=> 	'COM_VIRTUEMART_ADMIN_CFG_TEMPLATESTAB',
 									'pricing' 		=> 	'COM_VIRTUEMART_ADMIN_CFG_PRICINGTAB',
@@ -40,7 +41,7 @@ AdminUIHelper::buildTabs ( $this,  array (
 	type="hidden" name="option" value="com_virtuemart" /> <input
 	type="hidden" name="view" value="config" />
 <?php
-echo JHTML::_ ( 'form.token' );
+echo JHtml::_ ( 'form.token' );
 ?>
 </form>
 <?php

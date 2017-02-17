@@ -23,9 +23,9 @@ defined('_JEXEC') or die('Restricted access');
 $iColumn = 1;
 $iManufacturer = 1;
 
-// Calculating Categories Per Row
-$manufacturerPerRow = 3;
-if ($manufacturerPerRow != 1) {
+// Calculating Manufacturers Per Row
+$manufacturerPerRow = VmConfig::get ('manufacturer_per_row', 3);
+if ($manufacturerPerRow > 1) {
 	$manufacturerCellWidth = ' width'.floor ( 100 / $manufacturerPerRow );
 } else {
 	$manufacturerCellWidth = '';
@@ -61,8 +61,8 @@ if (!empty($this->manufacturers)) { ?>
 		}
 
 		// Manufacturer Elements
-		$manufacturerURL = JRoute::_('index.php?option=com_virtuemart&view=manufacturer&virtuemart_manufacturer_id=' . $manufacturer->virtuemart_manufacturer_id);
-		$manufacturerIncludedProductsURL = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_manufacturer_id=' . $manufacturer->virtuemart_manufacturer_id);
+		$manufacturerURL = JRoute::_('index.php?option=com_virtuemart&view=manufacturer&virtuemart_manufacturer_id=' . $manufacturer->virtuemart_manufacturer_id, FALSE);
+		$manufacturerIncludedProductsURL = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_manufacturer_id=' . $manufacturer->virtuemart_manufacturer_id, FALSE);
 		$manufacturerImage = $manufacturer->images[0]->displayMediaThumb("",false);
 
 		// Show Category ?>

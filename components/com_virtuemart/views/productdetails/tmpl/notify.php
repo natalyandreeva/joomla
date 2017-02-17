@@ -18,30 +18,22 @@
 
 // Check to ensure this file is included in Joomla!
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
+// Implement Joomla's form validation
+JHTML::_('behavior.formvalidation');
 ?>
-
-
-<form method="post" action="<?php echo JRoute::_('index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id='.$this->product->virtuemart_product_id.'&virtuemart_category_id='.$this->product->virtuemart_category_id) ; ?>" name="notifyform" id="notifyform">
-	<h4><?php echo JText::_('COM_VIRTUEMART_CART_NOTIFY') ?></h4>
-
-	<div class="list-reviews">
-		<?php echo JText::sprintf('COM_VIRTUEMART_CART_NOTIFY_DESC', $this->product->product_name); ?>
-		<br /><br />
-	<div class="clear"></div>
-	</div>
-	
-	<div><span class="floatleft"><input type="text" name="notify_email" value="<?php echo $this->user->email; ?>" /></span>
-		 <span class="addtocart-button"><input type="submit" name="notifycustomer"  class="notify-button" value="<?php echo JText::_('COM_VIRTUEMART_CART_NOTIFY') ?>" title="<?php echo JText::_('COM_VIRTUEMART_CART_NOTIFY') ?>" /></span>
-	</div>
-
-	<input type="hidden" name="virtuemart_product_id" value="<?php echo $this->product->virtuemart_product_id; ?>" />
-	<input type="hidden" name="option" value="com_virtuemart" />
-	<input type="hidden" name="virtuemart_category_id" value="<?php echo JRequest::getInt('virtuemart_category_id'); ?>" />
-	<input type="hidden" name="virtuemart_user_id" value="<?php echo $this->user->id; ?>" />
-	<input type="hidden" name="task" value="notifycustomer" />
-	<?php echo JHTML::_( 'form.token' ); ?>
-</form>
-<br />
-<br />
-<br />
-
+<div class="vm-wrap">
+  <h1><?php echo vmText::_('COM_VIRTUEMART_CART_NOTIFY') ?></h1>
+  <p><?php echo vmText::sprintf('COM_VIRTUEMART_CART_NOTIFY_DESC', $this->product->product_name); ?></p>
+  <form class="form-validate" method="post" action="<?php echo JRoute::_('index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id='.$this->product->virtuemart_product_id.'&virtuemart_category_id='.$this->product->virtuemart_category_id, FALSE) ; ?>" name="notifyform" id="notifyform">
+    <label for="notify_email" class="vm-nodisplay"><?php echo vmText::_('COM_VIRTUEMART_EMAIL') ?></label>
+    <input class="required validate-email" id="notify_email" type="email" name="notify_email" value="<?php echo $this->user->email; ?>" placeholder="<?php echo vmText::_('COM_VIRTUEMART_EMAIL') ?>" title="<?php echo vmText::_('COM_VIRTUEMART_ENTER_A_VALID_EMAIL_ADDRESS') ?>" />
+    <input type="submit" name="notifycustomer" class="notify-button highlight-button validate" value="<?php echo vmText::_('COM_VIRTUEMART_CART_NOTIFY') ?>" title="<?php echo vmText::_('COM_VIRTUEMART_CART_NOTIFY') ?>" />
+    <input type="hidden" name="virtuemart_product_id" value="<?php echo $this->product->virtuemart_product_id; ?>" />
+    <input type="hidden" name="option" value="com_virtuemart" />
+    <input type="hidden" name="virtuemart_category_id" value="<?php echo vRequest::getInt('virtuemart_category_id'); ?>" />
+    <input type="hidden" name="virtuemart_user_id" value="<?php echo $this->user->id; ?>" />
+    <input type="hidden" name="task" value="notifycustomer" />
+    <input type="hidden" name="controller" value="productdetails" />
+    <?php echo JHtml::_( 'form.token' ); ?>
+  </form>
+</div>

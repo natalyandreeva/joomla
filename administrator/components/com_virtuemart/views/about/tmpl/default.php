@@ -18,9 +18,9 @@
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
  
-include(JPATH_VM_ADMINISTRATOR.DS.'COPYRIGHT.php');
+include(VMPATH_ADMIN.DS.'COPYRIGHT.php');
 
 AdminUIHelper::endAdminArea();
 

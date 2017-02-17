@@ -95,10 +95,10 @@ class plgVmCustomSpecification extends vmCustomPlugin {
 	*/
 	public function plgVmAddToSearch(&$where,&$PluginJoinTables,$custom_id)
 	{
-		if ($keyword = vmRequest::uword('custom_specification_name1', null, ' ')) {
+		if ($keyword = vRequest::uword('custom_specification_name1', null, ' ')) {
 			$db = JFactory::getDBO();
 			if ($this->_name != $this->GetNameByCustomId($custom_id)) return;
-			$keyword = '"%' . $db->getEscaped( $keyword, true ) . '%"' ;
+			$keyword = '"%' . $db->escape( $keyword, true ) . '%"' ;
 			$where[] = $this->_name .'.`custom_specification_default1` LIKE '.$keyword;
 			$PluginJoinTables[] = $this->_name ;
 		}
@@ -134,7 +134,7 @@ class plgVmCustomSpecification extends vmCustomPlugin {
 	 * @author Patrick Kohl
 	 *  Display product
 	 */
-	function plgVmOnDisplayProductFE($product,&$idx,&$group) {
+	function plgVmOnDisplayProductFE(&$product,&$group) {
 		// default return if it's not this plugin
 		if ($group->custom_element != $this->_name) return '';
 
@@ -143,9 +143,9 @@ class plgVmCustomSpecification extends vmCustomPlugin {
 		$this->getPluginCustomData($group, $product->virtuemart_product_id);
 
 		// Here the plugin values
-		//$html =JTEXT::_($group->custom_title) ;
+		//$html =vmTEXT::_($group->custom_title) ;
 
-		$group->display .=  $this->renderByLayout('default',array($this->params,&$idx,&$group ) );
+		$group->display .=  $this->renderByLayout('default',array($this->params,&$group ) );
 
 		return true;
 	}
@@ -167,8 +167,8 @@ class plgVmCustomSpecification extends vmCustomPlugin {
 		return $this->setOnTablePluginParams($name, $id, $table);
 	}
 
-	function plgVmDeclarePluginParamsCustom($psType,$name,$id, &$data){
-		return $this->declarePluginParams('custom', $name, $id, $data);
+	function plgVmDeclarePluginParamsCustomVM3(&$data){
+		return $this->declarePluginParams('custom', $data);
 	}
 
 	/**

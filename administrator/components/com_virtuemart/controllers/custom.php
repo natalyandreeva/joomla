@@ -19,10 +19,7 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -55,7 +52,14 @@ class VirtuemartControllerCustom extends VmController {
 	}
 
 	function save($data = 0) {
-		$data = JRequest::get('post');
+
+		if($data===0)$data = vRequest::getPost();
+		$data['custom_desc'] = vRequest::getHtml('custom_desc');
+		$data['custom_value'] = vRequest::getHtml('custom_value');
+		$data['layout_pos'] = vRequest::getCmd('layout_pos');
+		if(isset($data['params'])){
+			$data['params'] = vRequest::getHtml('params','');
+		}
 		// onSaveCustom plugin;
 		parent::save($data);
 	}
@@ -63,7 +67,7 @@ class VirtuemartControllerCustom extends VmController {
 	/**
 	* Clone a product
 	*
-	* @author RolandD, Max Milbers
+	* @author Max Milbers
 	*/
 	public function createClone() {
 		$mainframe = Jfactory::getApplication();
@@ -73,13 +77,12 @@ class VirtuemartControllerCustom extends VmController {
 
 		$model = VmModel::getModel('custom');
 		$msgtype = '';
-		$cids = JRequest::getVar($this->_cidName, JRequest::getVar('virtuemart_custom_id',array(),'', 'ARRAY'), '', 'ARRAY');
-		jimport( 'joomla.utilities.arrayhelper' );
-		JArrayHelper::toInteger($cids);
+		$cids = vRequest::getInt($this->_cidName, vRequest::getInt('virtuemart_custom_id'));
+
 		foreach ($cids as $custom_id) {
-			if ($model->createClone($custom_id)) $msg = JText::_('COM_VIRTUEMART_CUSTOM_CLONED_SUCCESSFULLY');
+			if ($model->createClone($custom_id)) $msg = vmText::_('COM_VIRTUEMART_CUSTOM_CLONED_SUCCESSFULLY');
 			else {
-				$msg = JText::_('COM_VIRTUEMART_CUSTOM_NOT_CLONED_SUCCESSFULLY').' : '.$custom_id;
+				$msg = vmText::_('COM_VIRTUEMART_CUSTOM_NOT_CLONED_SUCCESSFULLY').' : '.$custom_id;
 				$msgtype = 'error';
 			}
 		}

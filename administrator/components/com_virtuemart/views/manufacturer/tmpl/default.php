@@ -13,17 +13,17 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 5814 2012-04-06 10:23:12Z Milbo $
+* @version $Id: default.php 9257 2016-07-04 14:40:20Z kkmediaproduction $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
-<form action="index.php" method="post" name="adminForm" id="adminForm">
+<form action="index.php?option=com_virtuemart&view=manufacturer" method="post" name="adminForm" id="adminForm">
 <div id="header">
 <div id="filterbox">
 	<table class="">
@@ -39,29 +39,29 @@ AdminUIHelper::startAdminArea();
 
 </div>
     <div id="editcell">
-	<table class="adminlist" cellspacing="0" cellpadding="0">
+	    <table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 	    <thead>
 		<tr>
-		    <th width="10">
-			<input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count($this->manufacturers); ?>);" />
+		    <th class="admin-checkbox">
+			<input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" />
 		    </th>
-		    <th>
+		    <th width="25%">
 				<?php echo $this->sort('mf_name', 'COM_VIRTUEMART_MANUFACTURER_NAME') ; ?>
 		    </th>
-		    <th>
+		    <th width="20%">
 				<?php echo $this->sort('mf_email', 'COM_VIRTUEMART_MANUFACTURER_EMAIL') ; ?>
 		    </th>
-		    <th>
+		    <th width="30%">
 				<?php echo $this->sort('mf_desc', 'COM_VIRTUEMART_MANUFACTURER_DESCRIPTION'); ?>
 		    </th>
-		    <th>
+		    <th width="15%">
 				<?php echo $this->sort('mf_category_name', 'COM_VIRTUEMART_MANUFACTURER_CATEGORY'); ?>
 		    </th>
-		    <th>
+		    <th width="15%">
 				<?php echo $this->sort('mf_url', 'COM_VIRTUEMART_MANUFACTURER_URL'); ?>
 		    </th>
-		    <th width="20">
-				<?php echo JText::_('COM_VIRTUEMART_PUBLISH'); ?>
+		    <th width="20px">
+				<?php echo vmText::_('COM_VIRTUEMART_PUBLISHED'); ?>
 		    </th>
 		      <th><?php echo $this->sort('m.virtuemart_manufacturer_id', 'COM_VIRTUEMART_ID')  ?></th>
 		</tr>
@@ -71,15 +71,20 @@ AdminUIHelper::startAdminArea();
 	    for ($i=0, $n=count( $this->manufacturers ); $i < $n; $i++) {
 		$row = $this->manufacturers[$i];
 
-		$checked = JHTML::_('grid.id', $i, $row->virtuemart_manufacturer_id,null,'virtuemart_manufacturer_id');
-		$published = JHTML::_('grid.published', $row, $i);
+		$checked = JHtml::_('grid.id', $i, $row->virtuemart_manufacturer_id,null,'virtuemart_manufacturer_id');
+		$published = $this->gridPublished( $row, $i );
 		$editlink = JROUTE::_('index.php?option=com_virtuemart&view=manufacturer&task=edit&virtuemart_manufacturer_id=' . $row->virtuemart_manufacturer_id);
 		?>
 	    <tr class="row<?php echo $k ; ?>">
-		<td width="10">
+		<td class="admin-checkbox">
 			<?php echo $checked; ?>
 		</td>
 		<td align="left">
+			<?php
+			if(empty($row->mf_name)){
+				$row->mf_name = 'Language Missing id '.$row->virtuemart_manufacturer_id;
+			}
+			?>
 		    <a href="<?php echo $editlink; ?>"><?php echo $row->mf_name; ?></a>
 
 		</td>
@@ -87,10 +92,10 @@ AdminUIHelper::startAdminArea();
 			<?php if (!empty($row->mf_email)) echo  '<a href="mailto:'.$row->mf_name.'<'.$row->mf_email.'>">'.$row->mf_email ; ?>
 		</td>
 		<td>
-			<?php echo $row->mf_desc; ?>
+			<?php if (!empty($row->mf_desc)) echo $row->mf_desc; ?>
 		</td>
 		<td>
-			<?php echo $row->mf_category_name; ?>
+			<?php if (!empty($row->mf_category_name)) echo $row->mf_category_name; ?>
 		</td>
 		<td>
 			<?php if (!empty($row->mf_url)) echo '<a href="'. $row->mf_url.'">'. $row->mf_url ; ?>

@@ -13,39 +13,60 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 5628 2012-03-08 09:00:21Z alatak $
+* @version $Id: default.php 9257 2016-07-04 14:40:20Z kkmediaproduction $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
-<form action="index.php" method="post" name="adminForm" id="adminForm">
+<form action="index.php?option=com_virtuemart&view=coupon" method="post" name="adminForm" id="adminForm">
+	<div id="header">
+		<div id="filterbox">
+			<table>
+				<tr>
+					<td align="left" width="100%">
+						<?php echo vmText::_('COM_VIRTUEMART_FILTER'); ?>:
+						<input type="text" name="filter_ratings" value="<?php echo vRequest::getVar('filter_ratings', ''); ?>" />
+						<button class="btn btn-small" onclick="this.form.submit();"><?php echo vmText::_('COM_VIRTUEMART_GO'); ?></button>
+						<button class="btn btn-small" onclick="document.adminForm.filter_ratings.value='';"><?php echo vmText::_('COM_VIRTUEMART_RESET'); ?></button>
+						<?php if($this->showVendors()){
+							echo Shopfunctions::renderVendorList(vmAccess::getVendorId());
+						} ?>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="resultscounter" ><?php echo $this->pagination->getResultsCounter();?></div>
+	</div>
     <div id="editcell">
-	<table class="adminlist" cellspacing="0" cellpadding="0">
+	    <table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 	    <thead>
 		<tr>
-		    <th width="10">
-			<input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count($this->coupons); ?>);" />
+		    <th class="admin-checkbox">
+			<input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" />
 		    </th>
-		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_COUPON_CODE'); ?>
+		    <th width="25%">
+			<?php echo vmText::_('COM_VIRTUEMART_COUPON_CODE'); ?>
 		    </th>
-		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_COUPON_PERCENT_TOTAL'); ?>
+		    <th width="16%">
+			<?php echo vmText::_('COM_VIRTUEMART_COUPON_PERCENT_TOTAL'); ?>
 		    </th>
-		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_COUPON_TYPE'); ?>
+		    <th width="16%">
+			<?php echo vmText::_('COM_VIRTUEMART_COUPON_TYPE'); ?>
 		    </th>
-		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_VALUE'); ?>
+		    <th width="16%">
+			<?php echo vmText::_('COM_VIRTUEMART_VALUE'); ?>
 		    </th>
-		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_COUPON_VALUE_VALID_AT'); ?>
+		    <th min-width="130px" width="18%">
+			<?php echo vmText::_('COM_VIRTUEMART_COUPON_VALUE_VALID_AT'); ?>
 		    </th>
+			<th min-width="100px" width="18%">
+				<?php echo vmText::_('COM_VIRTUEMART_COUPON_USED'); ?>
+			</th>
 		     <th><?php echo $this->sort('virtuemart_coupon_id', 'COM_VIRTUEMART_ID')  ?></th>
 		</tr>
 	    </thead>
@@ -54,32 +75,43 @@ AdminUIHelper::startAdminArea();
 	    for ($i=0, $n=count($this->coupons); $i < $n; $i++) {
 		$row = $this->coupons[$i];
 
-		$checked = JHTML::_('grid.id', $i, $row->virtuemart_coupon_id);
+		$checked = JHtml::_('grid.id', $i, $row->virtuemart_coupon_id);
 		$editlink = JROUTE::_('index.php?option=com_virtuemart&view=coupon&task=edit&cid[]=' . $row->virtuemart_coupon_id);
 		?>
 	    <tr class="row<?php echo $k; ?>">
-		<td width="10">
+		<td class="admin-checkbox">
 			<?php echo $checked; ?>
 		</td>
 		<td align="left">
 		    <a href="<?php echo $editlink; ?>"><?php echo $row->coupon_code; ?></a>
 		</td>
 		<td>
-			<?php echo JText::_($row->percent_or_total); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_COUPON_'.strtoupper($row->percent_or_total)); ?>
 		</td>
 		<td align="left">
-			<?php echo JText::_($row->coupon_type); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_COUPON_TYPE_'.strtoupper($row->coupon_type)); ?>
 		</td>
 		<td>
-			<?php echo JText::_($row->coupon_value); ?>
+			<?php echo vmText::_($row->coupon_value); ?>
 		    <?php if ( $row->percent_or_total=='percent') echo '%' ;
 		    else echo $this->vendor_currency;   ?>
 		</td>
 		<td align="left">
-			<?php echo JText::_($row->coupon_value_valid); ?> <?php echo $this->vendor_currency; ?>
+			<?php echo vmText::_($row->coupon_value_valid); ?> <?php echo $this->vendor_currency; ?>
 		</td>
+		    <td align="center">
+			    <?php
+			    if( $row->coupon_type=='gift'){
+				    if ($row->coupon_used ) {
+					    echo vmText::_('COM_VIRTUEMART_YES');
+				    } else  {
+					    echo vmText::_('COM_VIRTUEMART_NO');
+				    }
+			     }
+			    ?>
+		    </td>
 		<td align="left">
-			<?php echo JText::_($row->virtuemart_coupon_id); ?>
+			<?php echo vmText::_($row->virtuemart_coupon_id); ?>
 		</td>
 	    </tr>
 		<?php
@@ -101,7 +133,7 @@ AdminUIHelper::startAdminArea();
     <input type="hidden" name="view" value="coupon" />
     <input type="hidden" name="task" value="" />
     <input type="hidden" name="boxchecked" value="0" />
-    <?php echo JHTML::_( 'form.token' ); ?>
+    <?php echo JHtml::_( 'form.token' ); ?>
 </form>
 
 

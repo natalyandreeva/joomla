@@ -13,40 +13,43 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 6048 2012-05-30 20:18:53Z Milbo $
+* @version $Id: default.php 8670 2015-01-27 14:10:38Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
 <form action="index.php" method="post" name="adminForm" id="adminForm">
     <div id="editcell">
-    <div><?php echo JHTML::_('link','index.php?option=com_virtuemart&view=country&virtuemart_country_id='.$this->virtuemart_country_id,JText::sprintf('COM_VIRTUEMART_STATES_COUNTRY',$this->country_name)); ?></div>
-	<table class="adminlist" cellspacing="0" cellpadding="0">
+    <div><?php echo JHtml::_('link','index.php?option=com_virtuemart&view=country&virtuemart_country_id='.$this->virtuemart_country_id,vmText::sprintf('COM_VIRTUEMART_STATES_COUNTRY',$this->country_name)); ?></div>
+	    <table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 	    <thead>
 		<tr>
-		    <th width="10">
-			<input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count( $this->states ); ?>);" />
+		    <th class="admin-checkbox">
+			<input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" />
 		    </th>
 		    <th>
-			<?php echo   JText::_('COM_VIRTUEMART_STATE_NAME'); ?>
+			<?php echo   vmText::_('COM_VIRTUEMART_STATE_NAME'); ?>
 		    </th>
 		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_ZONE_ASSIGN_CURRENT_LBL'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_ZONE_ASSIGN_CURRENT_LBL'); ?>
 		    </th>
 		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_STATE_2_CODE'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_STATE_2_CODE'); ?>
 		    </th>
 		    <th>
-			<?php echo JText::_('COM_VIRTUEMART_STATE_3_CODE'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_STATE_3_CODE'); ?>
 		    </th>
-		    <th width="20">
-			<?php echo JText::_('COM_VIRTUEMART_PUBLISH'); ?>
+		    <th width="20px">
+			<?php echo vmText::_('COM_VIRTUEMART_PUBLISHED'); ?>
 		    </th>
+			<th width="20px">
+				<?php echo $this->sort('virtuemart_state_id', 'COM_VIRTUEMART_ID')  ?>
+			</th>
 		</tr>
 	    </thead>
 	    <?php
@@ -55,13 +58,13 @@ AdminUIHelper::startAdminArea();
 	    for ($i=0, $n=count( $this->states ); $i < $n; $i++) {
 		$row = $this->states[$i];
 
-		$checked = JHTML::_('grid.id', $i, $row->virtuemart_state_id,null,'virtuemart_state_id');
-		$published = JHTML::_('grid.published', $row, $i);
+		$checked = JHtml::_('grid.id', $i, $row->virtuemart_state_id,null,'virtuemart_state_id');
+		$published = JHtml::_('grid.published', $row, $i);
 		$editlink = JROUTE::_('index.php?option=com_virtuemart&view=state&task=edit&virtuemart_state_id=' . $row->virtuemart_state_id);
 
 		?>
 	    <tr class="row<?php echo $k ; ?>">
-		<td width="10">
+		<td class="admin-checkbox">
 			<?php echo $checked; ?>
 		</td>
 		<td align="left">
@@ -78,6 +81,9 @@ AdminUIHelper::startAdminArea();
 		</td>
 		<td>
 			<?php echo $published; ?>
+		</td>
+		<td align="left">
+			<?php echo $row->virtuemart_state_id; ?>
 		</td>
 	    </tr>
 		<?php

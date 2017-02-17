@@ -13,7 +13,7 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: product_edit_images.php 5887 2012-04-14 13:16:20Z electrocity $
+* @version $Id: product_edit_images.php 9021 2015-10-20 23:54:07Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
@@ -28,5 +28,21 @@ defined('_JEXEC') or die('Restricted access');
 		if (!empty($this->product->virtuemart_media_id)) echo $this->product->images[0]->displayFilesHandler($this->product->virtuemart_media_id,'product');
 		else echo $this->product->images[0]->displayFilesHandler(null,'product');
 	?>
+	</div>
+	<div>
+		<?php
+			//echo '<div width="100px">'.vmText::_('COM_VIRTUEMART_RTB_AD').'</div>';
+			$jlang =JFactory::getLanguage();
+			$tag = $jlang->getTag();
+			$imgUrl = 'http://www.pixelz.com/images/gmail.png';
+			if(strpos($tag,'de')!==FALSE){
+				$url = 'http://de.pixelz.com/virtuemart/';
+			} else if(strpos($tag,'fr')!==FALSE){
+				$url = 'http://fr.pixelz.com/virtuemart/';
+			} else {
+				$url = 'http://uk.pixelz.com/virtuemart/';
+			}
+			echo '<a href="'.$url.'" target="_blank" alt="'.vmText::_('COM_VIRTUEMART_RTB_AD').'"><img  style="width: 150px;" src="'.$imgUrl.'" title="'.vmText::_('COM_VIRTUEMART_RTB_AD').'"></a>';
+		?>
 	</div>
 </div>

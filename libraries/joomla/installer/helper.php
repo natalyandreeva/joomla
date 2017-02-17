@@ -48,9 +48,15 @@ abstract class JInstallerHelper
 
 		$http = JHttpFactory::getHttp();
 
+		// load installer plugins, and allow url and headers modification
+		$headers = array();
+		JPluginHelper::importPlugin('installer');
+		$dispatcher	= JDispatcher::getInstance();
+		$results = $dispatcher->trigger('onInstallerBeforePackageDownload', array(&$url, &$headers));
+		
 		try
 		{
-			$response = $http->get($url);
+			$response = $http->get($url, $headers);
 		}
 		catch (Exception $exc)
 		{
@@ -80,10 +86,11 @@ abstract class JInstallerHelper
 			return false;
 		}
 
-		if (isset($response->headers['Content-Disposition']))
+		// Parse the Content-Disposition header to get the file name
+		if (isset($response->headers['Content-Disposition'])
+			&& preg_match("/\s*filename\s?=\s?(.*)/", $response->headers['Content-Disposition'], $parts))
 		{
-			$contentfilename = explode("\"", $response->headers['Content-Disposition']);
-			$target = $contentfilename[1];
+			$target = trim(rtrim($parts[1], ";"), '"');
 		}
 
 		// Set the target path if not given

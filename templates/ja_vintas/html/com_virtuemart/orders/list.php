@@ -21,7 +21,7 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 ?>
-<h1 class="vm-pageheading"><?php echo JText::_('COM_VIRTUEMART_ORDERS_VIEW_DEFAULT_TITLE'); ?></h1>
+<h1><?php echo JText::_('COM_VIRTUEMART_ORDERS_VIEW_DEFAULT_TITLE'); ?></h1>
 <?php
 if (count($this->orderlist) == 0) {
 	//echo JText::_('COM_VIRTUEMART_ACC_NO_ORDER');
@@ -29,7 +29,7 @@ if (count($this->orderlist) == 0) {
 } else {
  ?>
 <div id="editcell">
-	<table class="adminlist tbl-list">
+	<table class="adminlist" width="80%">
 	<thead>
 	<tr>
 		<th>
@@ -66,8 +66,8 @@ if (count($this->orderlist) == 0) {
 				<td align="left">
 					<?php echo ShopFunctions::getOrderStatusName($row->order_status); ?>
 				</td>
-				<td align="left" class="price">
-					<?php echo $this->currency->priceDisplay($row->order_total); ?>
+				<td align="left">
+					<?php echo $this->currency->priceDisplay($row->order_total, $row->currency); ?>
 				</td>
 			</tr>
 	<?php

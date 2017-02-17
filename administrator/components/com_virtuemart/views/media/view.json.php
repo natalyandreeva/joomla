@@ -20,7 +20,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-jimport( 'joomla.application.component.view');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * Json View class for the VirtueMart Component
@@ -28,7 +28,7 @@ jimport( 'joomla.application.component.view');
  * @package		VirtueMart
  * @author  Patrick Kohl
  */
-class VirtuemartViewMedia extends JView {
+class VirtuemartViewMedia extends VmViewAdmin {
 
 	/* json object */
 	private $json = null;
@@ -37,30 +37,33 @@ class VirtuemartViewMedia extends JView {
 		$document =JFactory::getDocument();
 		$document->setMimeEncoding( 'application/json' );
 
-		if ($virtuemart_media_id = JRequest::getInt('virtuemart_media_id')) {
+		if ($virtuemart_media_id = vRequest::getInt('virtuemart_media_id')) {
 			//JResponse::setHeader( 'Content-Disposition', 'attachment; filename="media'.$virtuemart_media_id.'.json"' );
 
 			$model = VmModel::getModel('Media');
 			$image = $model->createMediaByIds($virtuemart_media_id);
+			if(isset($image[0]) and is_object($image[0])){
+				$image[0]->file_url_thumb_dyn = $image[0] -> getFileUrlThumb();
 // 			echo '<pre>'.print_r($image,1).'</pre>';
-			$this->json = $image[0];
-			//echo json_encode($this->json);
-			if (isset($this->json->file_url)) {
-				$this->json->file_root = JURI::root(true).'/';
-				$this->json->msg =  'OK';
-				echo @json_encode($this->json);
-			} else {
-				$this->json->msg =  '<b>'.JText::_('COM_VIRTUEMART_NO_IMAGE_SET').'</b>';
-				echo @json_encode($this->json);
+				$this->json = $image[0];
+				//echo json_encode($this->json);
+				if (isset($this->json->file_url)) {
+					$this->json->file_root = JURI::root(true).'/';
+					$this->json->msg =  'OK';
+					echo vmJsApi::safe_json_encode($this->json);
+				} else {
+					$this->json->msg =  '<b>'.vmText::_('COM_VIRTUEMART_NO_IMAGE_SET').'</b>';
+					echo @json_encode($this->json);
+				}
 			}
 		}
 		else {
-			$this->loadHelper('mediahandler');
-			$start = JRequest::getInt('start',0);
+			if (!class_exists('VmMediaHandler')) require(VMPATH_ADMIN.DS.'helpers'.DS.'mediahandler.php');
+			$start = vRequest::getInt('start',0);
 
-			$type = JRequest::getWord('mediatype',0);
+			$type = vRequest::getCmd('mediatype',0);
 			$list = VmMediaHandler::displayImages($type,$start );
-			echo @json_encode($list);
+			echo vmJsApi::safe_json_encode($list);
 		}
 
 		jExit();

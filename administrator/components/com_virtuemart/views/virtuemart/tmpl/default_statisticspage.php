@@ -20,14 +20,14 @@
 defined('_JEXEC') or die('Restricted access');
 ?>
 
-<table class="adminlist" cellspacing="0" cellpadding="0">
+<table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 		<tr>
-			<th colspan="2" class="title"><?php echo JText::_('COM_VIRTUEMART_STATISTIC_STATISTICS') ?></th>
+			<th colspan="2" class="title"><?php echo vmText::_('COM_VIRTUEMART_STATISTIC_STATISTICS') ?></th>
 		</tr>
 		<tr>
 		  	<td width="50%">
 		  		<a href="<?php echo JROUTE::_('index.php?option=com_virtuemart&view=user');?>">
-					<?php echo JText::_('COM_VIRTUEMART_STATISTIC_CUSTOMERS') ?>
+					<?php echo vmText::_('COM_VIRTUEMART_STATISTIC_CUSTOMERS') ?>
 				</a>
 			</td>
 		  	<td width="50%"> <?php echo $this->nbrCustomers ?></td>
@@ -35,19 +35,19 @@ defined('_JEXEC') or die('Restricted access');
 		<tr>
 		  	<td width="50%">
 		  		<a href="<?php echo JROUTE::_('index.php?option=com_virtuemart&view=product');?>">
-					<?php echo JText::_('COM_VIRTUEMART_STATISTIC_ACTIVE_PRODUCTS') ?>
+					<?php echo vmText::_('COM_VIRTUEMART_STATISTIC_ACTIVE_PRODUCTS') ?>
 				</a>
 			</td>
 		  <td width="50%"> <?php echo $this->nbrActiveProducts ?> </td>
 		</tr>
 		<tr>
-		  <td width="50%"><?php echo JText::_('COM_VIRTUEMART_STATISTIC_INACTIVE_PRODUCTS') ?>:</td>
+		  <td width="50%"><?php echo vmText::_('COM_VIRTUEMART_STATISTIC_INACTIVE_PRODUCTS') ?>:</td>
 		  <td width="50%"> <?php  echo $this->nbrInActiveProducts ?></td>
 		</tr>
 		<tr>
 			<td width="50%">
 		  		<a href="<?php echo JROUTE::_('index.php?option=com_virtuemart&view=product&group=featured');?>">
-					<?php echo JText::_('COM_VIRTUEMART_SHOW_FEATURED') ?>
+					<?php echo vmText::_('COM_VIRTUEMART_SHOW_FEATURED') ?>
 				</a>
 			</td>
 		  <td width="50%"><?php echo $this->nbrFeaturedProducts ?></td>
@@ -55,7 +55,7 @@ defined('_JEXEC') or die('Restricted access');
 		<tr>
 			<th colspan="2" class="title">
 		  		<a href="<?php echo JROUTE::_('index.php?option=com_virtuemart&view=orders');?>">
-					<?php echo JText::_('COM_VIRTUEMART_ORDER_MOD') ?>
+					<?php echo vmText::_('COM_VIRTUEMART_ORDER_MOD') ?>
 				</a>
 			</th>
 		</tr>
@@ -67,7 +67,7 @@ defined('_JEXEC') or die('Restricted access');
 			?>
 			<tr>
 		  		<td width="50%">
-		  			<a href="<?php echo $link; ?>"><?php echo $row->order_status_name; ?></a>
+		  			<a href="<?php echo $link; ?>"><?php echo vmText::_($row->order_status_name); ?></a>
 				</td>
 		  		<td width="50%">
 		  			<?php echo $row->order_count; ?>
@@ -77,11 +77,11 @@ defined('_JEXEC') or die('Restricted access');
 			$sum = $sum + $row->order_count;
 		} ?>
 		<tr>
-		  <td width="50%"><strong><?php echo JText::_('COM_VIRTUEMART_STATISTIC_SUM') ?>:</strong></td>
+		  <td width="50%"><strong><?php echo vmText::_('COM_VIRTUEMART_STATISTIC_SUM') ?>:</strong></td>
 		  <td width="50%"><strong><?php echo $sum ?></strong></td>
 		</tr>
 		<tr>
-			<th colspan="2" class="title"><?php echo JText::_('COM_VIRTUEMART_STATISTIC_NEW_ORDERS') ?></th>
+			<th colspan="2" class="title"><?php echo vmText::_('COM_VIRTUEMART_STATISTIC_NEW_ORDERS') ?></th>
 		</tr>
 		<?php
 		for ($i=0, $n=count($this->recentOrders); $i < $n; $i++) {
@@ -99,7 +99,7 @@ defined('_JEXEC') or die('Restricted access');
 			<?php
 		} ?>
 		<tr>
-		  <th colspan="2" class="title"><?php echo JText::_('COM_VIRTUEMART_STATISTIC_NEW_CUSTOMERS') ?></th>
+		  <th colspan="2" class="title"><?php echo vmText::_('COM_VIRTUEMART_STATISTIC_NEW_CUSTOMERS') ?></th>
 		</tr>
 		<?php
 		for ($i=0, $n=count($this->recentCustomers); $i < $n; $i++) {

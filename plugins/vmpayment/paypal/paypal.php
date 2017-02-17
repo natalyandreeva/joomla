@@ -1,17 +1,14 @@
 <?php
-
-defined ('_JEXEC') or die('Restricted access');
-
 /**
  *
- * a special type of 'paypal ':
+ * Paypal payment plugin
  *
- * @author Max Milbers
+ * @author Jeremy Magne
  * @author Valérie Isaksen
- * @version $Id: paypal.php 5177 2011-12-28 18:44:10Z alatak $
+ * @version $Id: paypal.php 7217 2013-09-18 13:42:54Z alatak $
  * @package VirtueMart
  * @subpackage payment
- * @copyright Copyright (C) 2004-2008 soeren - All rights reserved.
+ * Copyright (C) 2004 - 2016 Virtuemart Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
  * VirtueMart is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -19,284 +16,579 @@ defined ('_JEXEC') or die('Restricted access');
  * other free or open source software licenses.
  * See /administrator/components/com_virtuemart/COPYRIGHT.php for copyright notices and details.
  *
- * http://virtuemart.org
+ * http://virtuemart.net
  */
-if (!class_exists ('vmPSPlugin')) {
+
+defined('_JEXEC') or die('Restricted access');
+if (!class_exists('vmPSPlugin')) {
 	require(JPATH_VM_PLUGINS . DS . 'vmpsplugin.php');
 }
 
+if (!class_exists('PaypalHelperPaypal')) {
+	require(VMPATH_ROOT .DS.'plugins'.DS.'vmpayment'.DS.'paypal'.DS.'paypal'.DS.'helpers'.DS.'paypal.php');
+}
+if (!class_exists('PaypalHelperCustomerData')) {
+	require(VMPATH_ROOT .DS.'plugins'.DS.'vmpayment'.DS.'paypal'.DS.'paypal'.DS.'helpers'.DS.'customerdata.php');
+}
+if (!class_exists('PaypalHelperPayPalStd')) {
+	require(VMPATH_ROOT . DS.'plugins'.DS.'vmpayment'.DS.'paypal'.DS.'paypal'.DS.'helpers'.DS.'paypalstd.php');
+}
+if (!class_exists('PaypalHelperPayPalExp')) {
+	require(VMPATH_ROOT . DS.'plugins'.DS.'vmpayment'.DS.'paypal'.DS.'paypal'.DS.'helpers'.DS.'paypalexp.php');
+}
+if (!class_exists('PaypalHelperPayPalHosted')) {
+	require(VMPATH_ROOT . DS.'plugins'.DS.'vmpayment'.DS.'paypal'.DS.'paypal'.DS.'helpers'.DS.'paypalhosted.php');
+}
+if (!class_exists('PaypalHelperPayPalApi')) {
+	require(VMPATH_ROOT . DS.'plugins'.DS.'vmpayment'.DS.'paypal'.DS.'paypal'.DS.'helpers'.DS.'paypalapi.php');
+}
 class plgVmPaymentPaypal extends vmPSPlugin {
 
 	// instance of class
-	public static $_this = FALSE;
+	private $customerData;
+	private $_autobilling_max_amount = '';
+	private $_cc_name = '';
+	private $_cc_type = '';
+	private $_cc_number = '';
+	private $_cc_cvv = '';
+	private $_cc_expire_month = '';
+	private $_cc_expire_year = '';
+	private $_cc_valid = false;
+	private $_user_data_valid = false;
+	private $_errormessage = array();
 
-	function __construct (& $subject, $config) {
+	function __construct(& $subject, $config) {
 
 		//if (self::$_this)
 		//   return self::$_this;
-		parent::__construct ($subject, $config);
+		parent::__construct($subject, $config);
 
+		$this->customerData = new PaypalHelperCustomerData();
 		$this->_loggable = TRUE;
-		$this->tableFields = array_keys ($this->getTableSQLFields ());
+		$this->tableFields = array_keys($this->getTableSQLFields());
 		$this->_tablepkey = 'id'; //virtuemart_paypal_id';
 		$this->_tableId = 'id'; //'virtuemart_paypal_id';
-		$varsToPush = array('paypal_merchant_email'  => array('', 'char'),
-		                    'paypal_verified_only'   => array('', 'int'),
-		                    'payment_currency'       => array('', 'int'),
-		                    'email_currency'         => array('', 'int'),
-		                    'log_ipn'                => array('', 'int'),
-		                    'sandbox'                => array(0, 'int'),
-		                    'sandbox_merchant_email' => array('', 'char'),
-		                    'payment_logos'          => array('', 'char'),
-		                    'debug'                  => array(0, 'int'),
-		                    'status_pending'         => array('', 'char'),
-		                    'status_success'         => array('', 'char'),
-		                    'status_canceled'        => array('', 'char'),
-		                    'countries'              => array('', 'char'),
-		                    'min_amount'             => array('', 'int'),
-		                    'max_amount'             => array('', 'int'),
-		                    'secure_post'            => array('', 'int'),
-		                    'ipn_test'               => array('', 'int'),
-		                    'no_shipping'            => array('', 'int'),
-		                    'address_override'       => array('', 'int'),
-		                    'cost_per_transaction'   => array('', 'int'),
-		                    'cost_percent_total'     => array('', 'int'),
-		                    'tax_id'                 => array(0, 'int')
+		$varsToPush = array(
+			'paypal_merchant_email' => array('', 'char'),
+			'accelerated_onboarding' => array('', 'int'),
+			'api_login_id' => array('', 'char'),
+			'api_password' => array('', 'char'),
+			'authentication' => array('', 'char'),
+			'api_signature' => array('', 'int'),
+			'api_certificate' => array('', 'char'),
+
+			'sandbox' => array(0, 'int'),
+			'sandbox_merchant_email' => array('', 'char'),
+			'sandbox_api_login_id' => array('', 'char'),
+			'sandbox_api_password' => array('', 'char'),
+			'sandbox_api_signature' => array('', 'char'),
+			'sandbox_api_certificate' => array('', 'char'),
+			'sandbox_payflow_vendor' => array('', 'char'),
+			'sandbox_payflow_partner' => array('', 'char'),
+			'payflow_vendor' => array('', 'char'),
+			'payflow_partner' => array('', 'char'),
+			'creditcards' => array('', 'int'),
+			'cvv_required' => array('', 'int'),
+			'cvv_images' => array('', 'int'),
+
+			'paypalproduct' => array('', 'char'),
+			'paypal_verified_only' => array('', 'int'),
+			'payment_currency' => array('', 'int'),
+			'email_currency' => array('', 'char'),
+			'log_ipn' => array('', 'int'),
+			'payment_logos' => array('', 'char'),
+			'debug' => array(0, 'int'),
+			'log' => array(0, 'int'),
+			'status_pending' => array('', 'char'),
+			'status_success' => array('', 'char'),
+			'status_canceled' => array('', 'char'),
+			'status_expired' => array('', 'char'),
+			'status_capture' => array('', 'char'),
+			'status_refunded' => array('', 'char'),
+			'status_denied' => array('', 'char'),
+			'status_partial_refunded' => array('', 'char'),
+			'expected_maxamount' => array('', 'int'),
+
+			'secure_post' => array('', 'int'),
+			'ipn_test' => array('', 'int'),
+			'no_shipping' => array('', 'int'),
+			'address_override' => array('', 'int'),
+			'payment_type' => array('_xclick', 'char'),
+			'subcription_trials' => array(0, 'int'),
+			'trial1_price' => array('', 'int'),
+			'trial1_duration' => array('', 'char'),
+			//'trial2_price'         	 => array('', 'int'),
+			//'trial2_duration'	     => array('', 'char'),
+			'subscription_duration' => array('', 'char'),
+			'subscription_term' => array('', 'int'),
+
+			'payment_plan_duration' => array('', 'char'),
+			'payment_plan_term' => array('', 'int'),
+			'payment_plan_defer' => array('', 'int'),
+			'payment_plan_defer_duration' => array('', 'char'),
+			'payment_plan_defer_strtotime' => array('', 'char'),
+
+			'billing_max_amount_type' => array('', 'char'),
+			'billing_max_amount' => array('', 'float'),
+			//Settlement
+			'sftp_login' => array('', 'char'),
+			'sftp_password' => array('', 'char'),
+			'sftp_host' => array('', 'char'),
+			'sftp_sandbox_login' => array('', 'char'),
+			'sftp_sandbox_password' => array('', 'char'),
+
+			//Restrictions
+			'countries' => array('', 'char'),
+			'min_amount' => array('', 'float'),
+			'max_amount' => array('', 'float'),
+			'publishup' => array('', 'char'),
+			'publishdown' => array('', 'char'),
+
+			//discount
+			'cost_per_transaction' => array('', 'float'),
+			'cost_percent_total' => array('', 'char'),
+			'cost_method' => array('', 'int'),
+			'tax_id' => array(0, 'int'),
+
+			//Layout
+			'headerBgColor' => array('', 'char'),
+			'headerHeight' => array('', 'char'),
+			'logoFont' => array('', 'char'),
+			'logoFontColor' => array('', 'char'),
+			'logoFontSize' => array('', 'char'),
+			'bodyBgImg' => array('', 'char'),
+			'bodyBgColor' => array('', 'char'),
+			'PageTitleTextColor' => array('', 'char'),
+			'PageCollapseBgColor' => array('', 'char'),
+			'PageCollapseTextColor' => array('', 'char'),
+
+			'orderSummaryBgColor' => array('', 'char'),
+			'orderSummaryBgImage' => array('', 'char'),
+			'footerTextColor' => array('', 'char'),
+			'footerTextlinkColor' => array('', 'char'),
+
+			'pageButtonBgColor' => array('', 'char'),
+			'pageButtonTextColor' => array('', 'char'),
+			'pageTitleTextColor' => array('', 'char'),
+			'sectionBorder' => array('', 'char'),
+
+			'bordercolor' => array('', 'char'),
+			'headerimg' => array('', 'char'),
+			'logoimg' => array('', 'char'),
+			'payment_action' => array('sale', 'char'),
+			'template' => array('', 'char'),
+			'add_prices_api' => array('', 'int'),
+
 		);
 
-		$this->setConfigParameterable ($this->_configTableFieldName, $varsToPush);
-
+		$this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
 		//self::$_this = $this;
 	}
 
-	/**
-	 * @return string
-	 */
-	public function getVmPluginCreateTableSQL () {
-
-		return $this->createTableSQL ('Payment Paypal Table');
+	public function getVmPluginCreateTableSQL() {
+		return $this->createTableSQL('PayPal Table');
 	}
 
-	/**
-	 * @return array
-	 */
-	function getTableSQLFields () {
+	function getTableSQLFields() {
 
 		$SQLfields = array(
-			'id'                                     => 'int(11) UNSIGNED NOT NULL AUTO_INCREMENT',
-			'virtuemart_order_id'                    => 'int(1) UNSIGNED',
-			'order_number'                           => 'char(64)',
-			'virtuemart_paymentmethod_id'            => 'mediumint(1) UNSIGNED',
-			'payment_name'                           => 'varchar(5000)',
-			'payment_order_total'                    => 'decimal(15,5) NOT NULL',
-			'payment_currency'                       => 'smallint(1)',
-			'email_currency'                         => 'smallint(1)',
-			'cost_per_transaction'                   => 'decimal(10,2)',
-			'cost_percent_total'                     => 'decimal(10,2)',
-			'tax_id'                                 => 'smallint(1)',
-			'paypal_custom'                          => 'varchar(255)',
-			'paypal_response_mc_gross'               => 'decimal(10,2)',
-			'paypal_response_mc_currency'            => 'char(10)',
-			'paypal_response_invoice'                => 'char(32)',
+			'id' => 'int(11) UNSIGNED NOT NULL AUTO_INCREMENT',
+			'virtuemart_order_id' => 'int(1) UNSIGNED',
+			'order_number' => 'char(64)',
+			'virtuemart_paymentmethod_id' => 'mediumint(1) UNSIGNED',
+			'payment_name' => 'varchar(5000)',
+			'payment_order_total' => 'decimal(15,5) NOT NULL',
+			'payment_currency' => 'smallint(1)',
+			'email_currency' => 'smallint(1)',
+			'cost_per_transaction' => 'decimal(10,2)',
+			'cost_percent_total' => 'decimal(10,2)',
+			'tax_id' => 'smallint(1)',
+			'paypal_custom' => 'varchar(255)',
+			'paypal_method' => 'varchar(200)',
+
+			'paypal_response_mc_gross' => 'decimal(10,2)',
+			'paypal_response_mc_currency' => 'char(10)',
+			'paypal_response_invoice' => 'char(32)',
 			'paypal_response_protection_eligibility' => 'char(128)',
-			'paypal_response_payer_id'               => 'char(13)',
-			'paypal_response_tax'                    => 'decimal(10,2)',
-			'paypal_response_payment_date'           => 'char(28)',
-			'paypal_response_payment_status'         => 'char(50)',
-			'paypal_response_pending_reason'         => 'char(50)',
-			'paypal_response_mc_fee'                 => 'decimal(10,2)',
-			'paypal_response_payer_email'            => 'char(128)',
-			'paypal_response_last_name'              => 'char(64)',
-			'paypal_response_first_name'             => 'char(64)',
-			'paypal_response_business'               => 'char(128)',
-			'paypal_response_receiver_email'         => 'char(128)',
-			'paypal_response_transaction_subject'    => 'char(128)',
-			'paypal_response_residence_country'      => 'char(2)',
-			'paypal_response_txn_id'                 => 'char(32)',
-			'paypal_response_txn_type'               => 'char(32)', //The kind of transaction for which the IPN message was sent
-			'paypal_response_parent_txn_id'          => 'char(32)',
-			'paypal_response_case_creation_date'     => 'char(32)',
-			'paypal_response_case_id'                => 'char(32)',
-			'paypal_response_case_type'              => 'char(32)',
-			'paypal_response_reason_code'            => 'char(32)',
-			'paypalresponse_raw'                     => 'varchar(512)',
+			'paypal_response_payer_id' => 'char(13)',
+			'paypal_response_tax' => 'decimal(10,2)',
+			'paypal_response_payment_date' => 'char(28)',
+			'paypal_response_payment_status' => 'char(50)',
+			'paypal_response_pending_reason' => 'char(50)',
+			'paypal_response_mc_fee' => 'decimal(10,2)',
+			'paypal_response_payer_email' => 'char(128)',
+			'paypal_response_last_name' => 'char(64)',
+			'paypal_response_first_name' => 'char(64)',
+			'paypal_response_business' => 'char(128)',
+			'paypal_response_receiver_email' => 'char(128)',
+			'paypal_response_transaction_subject' => 'char(128)',
+			'paypal_response_residence_country' => 'char(2)',
+			'paypal_response_txn_id' => 'char(32)',
+			'paypal_response_txn_type' => 'char(32)', //The kind of transaction for which the IPN message was sent
+			'paypal_response_parent_txn_id' => 'char(32)',
+			'paypal_response_case_creation_date' => 'char(32)',
+			'paypal_response_case_id' => 'char(32)',
+			'paypal_response_case_type' => 'char(32)',
+			'paypal_response_reason_code' => 'char(32)',
+			'paypalresponse_raw' => 'varchar(512)',
+			'paypal_fullresponse' => 'text',
 		);
 		return $SQLfields;
 	}
 
 	/**
-	 * @param $cart
-	 * @param $order
+	 * @param $product
+	 * @param $productDisplay
+	 * @return bool
+	 */
+	function plgVmOnProductDisplayPayment($product, &$productDisplay) {
+		return;
+		$vendorId = 1;
+		if ($this->getPluginMethods($vendorId) === 0) {
+			return FALSE;
+		}
+
+		foreach ($this->methods as $this->_currentMethod) {
+			if ($this->_currentMethod->paypalproduct == 'exp') {
+				$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod);
+				$paypalInterface = $this->_loadPayPalInterface();
+				$product = $paypalInterface->getExpressProduct();
+				$productDisplayHtml = $this->renderByLayout('expproduct',
+					array(
+						'text' => vmText::_('VMPAYMENT_PAYPAL_EXPCHECKOUT_AVAILABALE'),
+						'img' => $product['img'],
+						'link' => $product['link'],
+						'sandbox' => $this->_currentMethod->sandbox,
+						'virtuemart_paymentmethod_id' => $this->_currentMethod->virtuemart_paymentmethod_id,
+					)
+				);
+				$productDisplay[] = $productDisplayHtml;
+
+			}
+		}
+		return TRUE;
+	}
+
+	/**
+	 * @param VirtuemartViewUser $user
+	 * @param                    $html
+	 * @param bool               $from_cart
 	 * @return bool|null
 	 */
-	function plgVmConfirmedOrder ($cart, $order) {
+	function plgVmDisplayLogin(VmView $view, &$html, $from_cart = FALSE) {
 
-		if (!($method = $this->getVmPluginMethod ($order['details']['BT']->virtuemart_paymentmethod_id))) {
+		// only to display it in the cart, not in list orders view
+		if (!$from_cart) {
+			return NULL;
+		}
+
+		if (!class_exists('VirtueMartCart')) {
+			require(VMPATH_SITE . DS . 'helpers' . DS . 'cart.php');
+		}
+
+		$cart = VirtueMartCart::getCart();
+		if ($this->getPluginMethods($cart->vendorId) === 0) {
+			return FALSE;
+		}
+
+		if (!($selectedMethod = $this->getVmPluginMethod($cart->virtuemart_paymentmethod_id))) {
+			return FALSE;
+		}
+		if (!$this->isExpToken($selectedMethod, $cart) ) {
+			$html .= $this->getExpressCheckoutHtml( $cart);
+		}
+
+		return;
+
+	}
+
+	/**
+	 * @param $cart
+	 * @param $payment_advertise
+	 * @return bool|null
+	 */
+	function plgVmOnCheckoutAdvertise($cart, &$payment_advertise) {
+
+		if ($this->getPluginMethods($cart->vendorId) === 0) {
+			return FALSE;
+		}
+		if (!($selectedMethod = $this->getVmPluginMethod($cart->virtuemart_paymentmethod_id))) {
+			return NULL;
+		}
+		if (isset($cart->cartPrices['salesPrice']) && $cart->cartPrices['salesPrice'] <= 0.0) {
+			return NULL;
+		}
+		if (!$this->isExpToken($selectedMethod, $cart))  {
+			$payment_advertise[] = $this->getExpressCheckoutHtml($cart);
+		}
+
+		return;
+	}
+
+/**
+ * check if selected method is PayPalEC, and if a token exist
+ */
+	function isExpToken($selectedMethod, $cart) {
+
+		if (!$this->selectedThisElement($selectedMethod->payment_element)) {
+			return FALSE;
+		}
+		if ($selectedMethod->paypalproduct == 'exp') {
+			$this->_currentMethod = $selectedMethod;
+
+			$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod);
+			$paypalExpInterface = $this->_loadPayPalInterface();
+			$paypalExpInterface->loadCustomerData();
+
+				$paypalExpInterface->setCart($cart);
+				$paypalExpInterface->loadCustomerData();
+				$token = $paypalExpInterface->customerData->getVar('token');
+				$payerid = $paypalExpInterface->customerData->getVar('payer_id');
+				if (empty($token) and empty($payerid)) {
+					$paypalExpInterface->customerData->clear();
+					$cart->virtuemart_paymentmethod_id = 0;
+					$cart->setCartIntoSession();
+					return false;
+				}
+				if (!empty($token) and !empty($payerid)) {
+					return true;
+				}
+		}
+		return false;
+	}
+
+	/**
+	 * @param $cart
+	 * @return null|string
+	 */
+	function getExpressCheckoutHtml( $cart) {
+
+
+		$html = '';
+		foreach ($this->methods as $this->_currentMethod) {
+			if ($this->_currentMethod->paypalproduct == 'exp') {
+				$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod);
+				//$paypalInterface = $this->_loadPayPalInterface();
+				$paypalInterface = new PaypalHelperPayPalExp($this->_currentMethod, $this);
+
+				$button = $paypalInterface->getExpressCheckoutButton();
+				$html .= $this->renderByLayout('expcheckout',
+					array(
+						'text' => vmText::_('VMPAYMENT_PAYPAL_EXPCHECKOUT_BUTTON'),
+						'img' => $button['img'],
+						'link' => $button['link'],
+						'sandbox' => $this->_currentMethod->sandbox,
+						'virtuemart_paymentmethod_id' => $this->_currentMethod->virtuemart_paymentmethod_id
+					)
+				);
+			}
+		}
+		return $html;
+	}
+
+	static function getPaymentCurrency (&$method, $selectedUserCurrency = false) {
+
+		if (empty($method->payment_currency)) {
+			$vendor_model = VmModel::getModel('vendor');
+			$vendor = $vendor_model->getVendor($method->virtuemart_vendor_id);
+			$method->payment_currency = $vendor->vendor_currency;
+			return $method->payment_currency;
+		} else {
+
+			$vendor_model = VmModel::getModel( 'vendor' );
+			$vendor_currencies = $vendor_model->getVendorAndAcceptedCurrencies( $method->virtuemart_vendor_id );
+
+			if(!$selectedUserCurrency) {
+				if($method->payment_currency == -1) {
+					$mainframe = JFactory::getApplication();
+					$selectedUserCurrency = $mainframe->getUserStateFromRequest( "virtuemart_currency_id", 'virtuemart_currency_id', vRequest::getInt( 'virtuemart_currency_id', $vendor_currencies['vendor_currency'] ) );
+				} else {
+					$selectedUserCurrency = $method->payment_currency;
+				}
+			}
+
+			$vendor_currencies['all_currencies'] = explode(',', $vendor_currencies['all_currencies']);
+			if(in_array($selectedUserCurrency,$vendor_currencies['all_currencies'])){
+				$method->payment_currency = $selectedUserCurrency;
+			} else {
+				$method->payment_currency = $vendor_currencies['vendor_currency'];
+			}
+
+			return $method->payment_currency;
+		}
+
+	}
+
+
+
+	/**
+	 *
+	 * @param $cart
+	 * @param $order
+	 * @return bool|null|void
+	 */
+	function plgVmConfirmedOrder($cart, $order) {
+
+		if (!($this->_currentMethod = $this->getVmPluginMethod($order['details']['BT']->virtuemart_paymentmethod_id))) {
 			return NULL; // Another method was selected, do nothing
 		}
-		if (!$this->selectedThisElement ($method->payment_element)) {
+		if (!$this->selectedThisElement($this->_currentMethod->payment_element)) {
 			return FALSE;
 		}
-		$session = JFactory::getSession ();
-		$return_context = $session->getId ();
-		$this->_debug = $method->debug;
-		$this->logInfo ('plgVmConfirmedOrder order number: ' . $order['details']['BT']->order_number, 'message');
 
-		if (!class_exists ('VirtueMartModelOrders')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php');
+		if (!class_exists('VirtueMartModelOrders')) {
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'orders.php');
 		}
-		if (!class_exists ('VirtueMartModelCurrency')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'currency.php');
+		if (!class_exists('VirtueMartModelCurrency')) {
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'currency.php');
 		}
+		$html='';
+		$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod,$order['details']['BT']->payment_currency_id);
+		//$this->_currentMethod->payment_currency=$order['details']['BT']->user_currency_id;
+		$email_currency = $this->getEmailCurrency($this->_currentMethod);
 
-		$address = ((isset($order['details']['ST'])) ? $order['details']['ST'] : $order['details']['BT']);
+		$payment_name = $this->renderPluginName($this->_currentMethod, $order);
 
-		if (!class_exists ('TableVendors')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'table' . DS . 'vendors.php');
-		}
-		$vendorModel = VmModel::getModel ('Vendor');
-		$vendorModel->setId (1);
-		$vendor = $vendorModel->getVendor ();
-		$vendorModel->addImages ($vendor, 1);
-		$this->getPaymentCurrency ($method);
-		$email_currency = $this->getEmailCurrency ($method);
-		$currency_code_3 = shopFunctions::getCurrencyByID ($method->payment_currency, 'currency_code_3');
+		$paypalInterface = $this->_loadPayPalInterface();
 
-		$paymentCurrency = CurrencyDisplay::getInstance ($method->payment_currency);
-		$totalInPaymentCurrency = round ($paymentCurrency->convertCurrencyTo ($method->payment_currency, $order['details']['BT']->order_total, FALSE), 2);
-		$cd = CurrencyDisplay::getInstance ($cart->pricesCurrency);
-		if ($totalInPaymentCurrency <= 0) {
-			vmInfo (JText::_ ('VMPAYMENT_PAYPAL_PAYMENT_AMOUNT_INCORRECT'));
-			return FALSE;
-		}
-		$merchant_email = $this->_getMerchantEmail ($method);
-		if (empty($merchant_email)) {
-			vmInfo (JText::_ ('VMPAYMENT_PAYPAL_MERCHANT_EMAIL_NOT_SET'));
-			return FALSE;
-		}
-		$quantity = 0;
-		foreach ($cart->products as $key => $product) {
-			$quantity = $quantity + $product->quantity;
-		}
-		$post_variables = Array(
-			'cmd'               => '_ext-enter',
-			'redirect_cmd'      => '_xclick',
-			'upload'            => '1', //Indicates the use of third-party shopping cart
-			'business'          => $merchant_email, //Email address or account ID of the payment recipient (i.e., the merchant).
-			'receiver_email'    => $merchant_email, //Primary email address of the payment recipient (i.e., the merchant
-			'order_number'      => $order['details']['BT']->order_number,
-			"invoice"           => $order['details']['BT']->order_number,
-			'custom'            => $return_context,
-			'item_name'         => JText::_ ('VMPAYMENT_PAYPAL_ORDER_NUMBER') . ': ' . $order['details']['BT']->order_number,
-			//'quantity'          => $quantity,
-			"amount"            => $totalInPaymentCurrency,
-			"currency_code"     => $currency_code_3,
-			/*
-					 * 1 – L'adresse spécifiée dans les variables pré-remplies remplace l'adresse de livraison enregistrée auprès de PayPal.
-					 * Le payeur voit l'adresse qui est transmise mais ne peut pas la modifier.
-					 * Aucune adresse n'est affichée si l'adresse n'est pas valable
-					 * (par exemple si des champs requis, tel que le pays, sont manquants) ou pas incluse.
-					 * Valeurs autorisées : 0, 1. Valeur par défaut : 0
-					 */
-			"address_override"  => isset($method->address_override) ? $method->address_override : 0, // 0 ??   Paypal does not allow your country of residence to ship to the country you wish to
-			"first_name"        => $address->first_name,
-			"last_name"         => $address->last_name,
-			"address1"          => $address->address_1,
-			"address2"          => isset($address->address_2) ? $address->address_2 : '',
-			"zip"               => $address->zip,
-			"city"              => $address->city,
-			"state"             => isset($address->virtuemart_state_id) ? ShopFunctions::getStateByID ($address->virtuemart_state_id) : '',
-			"country"           => ShopFunctions::getCountryByID ($address->virtuemart_country_id, 'country_2_code'),
-			"email"             => $order['details']['BT']->email,
-			"night_phone_b"     => $address->phone_1,
-			"return"            => JROUTE::_ (JURI::root () . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginresponsereceived&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id . '&Itemid=' . JRequest::getInt ('Itemid')),
-			// Keep this line, needed when testing
-			//"return" => JROUTE::_(JURI::root() . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginnotification&tmpl=component'),
-			"notify_url"        => JROUTE::_ (JURI::root () . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginnotification&tmpl=component'),
-			"cancel_return"     => JROUTE::_ (JURI::root () . 'index.php?option=com_virtuemart&view=pluginresponse&task=pluginUserPaymentCancel&on=' . $order['details']['BT']->order_number . '&pm=' . $order['details']['BT']->virtuemart_paymentmethod_id . '&Itemid=' . JRequest::getInt ('Itemid')),
-			//"undefined_quantity" => "0",
-			"ipn_test"          => $method->debug,
-			"rm"                => '2', // the buyer’s browser is redirected to the return URL by using the POST method, and all payment variables are included
-			//"pal" => "NRUBJXESJTY24",
-			"image_url"         => JURI::root () . $vendor->images[0]->file_url,
-			"no_shipping"       => isset($method->no_shipping) ? $method->no_shipping : 0,
-			"no_note"           => "1");
+		$paypalInterface->debugLog('order number: ' . $order['details']['BT']->order_number, 'plgVmConfirmedOrder', 'debug');
+		$paypalInterface->setCart($cart);
+		$paypalInterface->setOrder($order);
 
-		/*
-					  $i = 1;
-					  foreach ($cart->products as $key => $product) {
-					  $post_variables["item_name_" . $i] = substr(strip_tags($product->product_name), 0, 127);
-					  $post_variables["item_number_" . $i] = $i;
-					  $post_variables["amount_" . $i] = $cart->pricesUnformatted[$key]['salesPrice'];
-					  $post_variables["quantity_" . $i] = $product->quantity;
-					  $i++;
-					  }
-					  if ($cart->pricesUnformatted ['shipmentValue']) {
-					  $post_variables["item_name_" . $i] = JText::_('VMPAYMENT_PAYPAL_SHIPMENT_PRICE');
-					  $post_variables["item_number_" . $i] = $i;
-					  $post_variables["amount_" . $i] = $cart->pricesUnformatted ['shipmentValue'];
-					  $post_variables["quantity_" . $i] = 1;
-					  $i++;
-					  }
-					  if ($cart->pricesUnformatted ['paymentValue']) {
-					  $post_variables["item_name_" . $i] = JText::_('VMPAYMENT_PAYPAL_PAYMENT_PRICE');
-					  $post_variables["item_number_" . $i] = $i;
-					  $post_variables["amount_" . $i] = $cart->pricesUnformatted ['paymentValue'];
-					  $post_variables["quantity_" . $i] = 1;
-					  $i++;
-					  }
-					  if (!empty($order->cart->coupon)) {
-					  $post_variables["discount_amount_cart"] = $cart->pricesUnformatted['discountAmount'];
-					  }
-					 */
+		$paypalInterface->setTotal($order['details']['BT']->order_total);
+		$paypalInterface->loadCustomerData();
+
 
 		// Prepare data that should be stored in the database
 		$dbValues['order_number'] = $order['details']['BT']->order_number;
-		$dbValues['payment_name'] = $this->renderPluginName ($method, $order);
+		$dbValues['payment_name'] = $payment_name;
 		$dbValues['virtuemart_paymentmethod_id'] = $cart->virtuemart_paymentmethod_id;
-		$dbValues['paypal_custom'] = $return_context;
-		$dbValues['cost_per_transaction'] = $method->cost_per_transaction;
-		$dbValues['cost_percent_total'] = $method->cost_percent_total;
-		$dbValues['payment_currency'] = $method->payment_currency;
+		$dbValues['paypal_custom'] = $paypalInterface->getContext();
+		$dbValues['cost_per_transaction'] = $this->_currentMethod->cost_per_transaction;
+		$dbValues['cost_percent_total'] = $this->_currentMethod->cost_percent_total;
+		$dbValues['payment_currency'] = $this->_currentMethod->payment_currency;
 		$dbValues['email_currency'] = $email_currency;
-		$dbValues['payment_order_total'] = $totalInPaymentCurrency;
-		$dbValues['tax_id'] = $method->tax_id;
-		$this->storePSPluginInternalData ($dbValues);
+		$dbValues['payment_order_total'] = $paypalInterface->getTotal();
+		$dbValues['tax_id'] = $this->_currentMethod->tax_id;
+		$this->storePSPluginInternalData($dbValues);
+		VmConfig::loadJLang('com_virtuemart_orders', TRUE);
 
-		$url = $this->_getPaypalUrlHttps ($method);
+		$paypalInterface->debugLog('Amount/Currency stored ' . $dbValues['payment_order_total'].' paymentcurrency '.$dbValues['payment_currency'].' orderusercurrency'.$order['details']['BT']->user_currency_id, 'plgVmConfirmedOrder', 'message');
 
-		// add spin image
-		$html = '<html><head><title>Redirection</title></head><body><div style="margin: auto; text-align: center;">';
-		$html .= '<form action="' . "https://" . $url . '" method="post" name="vm_paypal_form" >';
-		$html .= '<input type="submit"  value="' . JText::_ ('VMPAYMENT_PAYPAL_REDIRECT_MESSAGE') . '" />';
-		foreach ($post_variables as $name => $value) {
-			$html .= '<input type="hidden" name="' . $name . '" value="' . htmlspecialchars ($value) . '" />';
+		if ($this->_currentMethod->paypalproduct == 'std') {
+			$html = $paypalInterface->ManageCheckout();
+			// 	2 = don't delete the cart, don't send email and don't redirect
+			$cart->_confirmDone = FALSE;
+			$cart->_dataValidated = FALSE;
+			$cart->setCartIntoSession();
+			vRequest::setVar('html', $html);
+
+		} else {
+			if ($this->_currentMethod->paypalproduct == 'exp') {
+				$success = $paypalInterface->ManageCheckout();
+				$response = $paypalInterface->getResponse();
+
+			$payment = $this->_storePaypalInternalData(  $response, $order['details']['BT']->virtuemart_order_id, $cart->virtuemart_paymentmethod_id, $order['details']['BT']->order_number);
+
+				if ($success) {
+					$new_status = $paypalInterface->getNewOrderStatus();
+
+					if ($this->_currentMethod->payment_type == '_xclick-subscriptions' || $this->_currentMethod->payment_type == '_xclick-payment-plan') {
+						$profilesuccess = $paypalInterface->GetRecurringPaymentsProfileDetails($response['PROFILEID']);
+						$response = $paypalInterface->getResponse();
+					$this->_storePaypalInternalData(  $response, $order['details']['BT']->virtuemart_order_id, $cart->virtuemart_paymentmethod_id, $order['details']['BT']->order_number);
+					}
+					$this->customerData->clear();
+					$returnValue = 1;
+					$html = $this->renderByLayout('expresponse',
+						array("method" => $this->_currentMethod,
+							"success" => $success,
+							"payment_name" => $payment_name,
+							"response" => $response,
+							"order" => $order));
+					$cart->BT=0;
+					$cart->ST=0;
+					$cart->setCartIntoSession();
+					return $this->processConfirmedOrderPaymentResponse($returnValue, $cart, $order, $html, $payment_name, $new_status);
+				} else {
+					$new_status = $this->_currentMethod->status_canceled;
+					$returnValue = 2;
+					$cart->virtuemart_paymentmethod_id = 0;
+					$cart->setCartIntoSession();
+					$this->customerData->clear();
+					VmInfo('VMPAYMENT_PAYPAL_PAYMENT_NOT_VALID');
+					$paypalInterface->debugLog($response, 'plgVmConfirmedOrder, response:', 'error');
+
+					$app = JFactory::getApplication();
+					$app->redirect(JRoute::_('index.php?option=com_virtuemart&view=cart&Itemid=' . vRequest::getInt('Itemid'), false));
+				}
+
+
+			} else {
+				if ($this->_currentMethod->paypalproduct == 'api') {
+					$this->setInConfirmOrder($cart);
+
+					$success = $paypalInterface->ManageCheckout();
+					$response = $paypalInterface->getResponse();
+			$payment = $this->_storePaypalInternalData(  $response, $order['details']['BT']->virtuemart_order_id, $cart->virtuemart_paymentmethod_id, $order['details']['BT']->order_number);
+					if ($success) {
+						if ($this->_currentMethod->payment_action == 'Authorization' || $this->_currentMethod->payment_type == '_xclick-payment-plan') {
+							$new_status = $this->_currentMethod->status_pending;
+						} else {
+							$new_status = $this->_currentMethod->status_success;
+						}
+						if ($this->_currentMethod->payment_type == '_xclick-subscriptions' || $this->_currentMethod->payment_type == '_xclick-payment-plan') {
+							$profilesuccess = $paypalInterface->GetRecurringPaymentsProfileDetails($response['PROFILEID']);
+							$response = $paypalInterface->getResponse();
+					$this->_storePaypalInternalData(  $response, $order['details']['BT']->virtuemart_order_id, $cart->virtuemart_paymentmethod_id, $order['details']['BT']->order_number);
+						}
+						$this->customerData->clear();
+						$returnValue = 1;
+					} else {
+						$cart->virtuemart_paymentmethod_id = 0;
+						$cart->setCartIntoSession();
+						$this->redirectToCart();
+						return;
+					}
+//			$this->customerData->clear();
+					$html = $this->renderByLayout('apiresponse', array('method' => $this->_currentMethod, 'success' => $success, 'payment_name' => $payment_name, 'responseData' => $response, "order" => $order));
+					return $this->processConfirmedOrderPaymentResponse($returnValue, $cart, $order, $html, $payment_name, $new_status);
+				} else {
+					if ($this->_currentMethod->paypalproduct == 'hosted') {
+						$paypalInterface->ManageCheckout();
+						if ($this->_currentMethod->template == 'templateD') {
+							jimport('joomla.environment.browser');
+							$browser = JBrowser::getInstance();
+
+
+							// this code is only called incase of iframe (templateD), in all other cases redirecttopayapl has been done
+							$html = $this->renderByLayout('hostediframe', array("url" => $paypalInterface->response['EMAILLINK'],
+								"isMobile" => $browser->isMobile()
+							));
+						}
+						// 	2 = don't delete the cart, don't send email and don't redirect
+						$cart->_confirmDone = FALSE;
+						$cart->_dataValidated = FALSE;
+						$cart->setCartIntoSession();
+						vRequest::setVar('html', $html);
+					} else {
+						vmError('Unknown Paypal mode');
+					}
+				}
+			}
 		}
-		$html .= '</form></div>';
-		$html .= ' <script type="text/javascript">';
-		$html .= ' document.vm_paypal_form.submit();';
-		$html .= ' </script></body></html>';
+	}
 
-		// 	2 = don't delete the cart, don't send email and don't redirect
-		$cart->_confirmDone = FALSE;
-		$cart->_dataValidated = FALSE;
-		$cart->setCartIntoSession ();
-		JRequest::setVar ('html', $html);
-
-		/*
-
-			  $qstring = '?';
-			  foreach ($post_variables AS $k => $v) {
-			  $qstring .= ( empty($qstring) ? '' : '&')
-			  . urlencode($k) . '=' . urlencode($v);
-			  }
-			  // we can display the logo, or do the redirect
-			  $mainframe = JFactory::getApplication();
-			  $mainframe->redirect("https://" . $url . $qstring);
-
-
-			  return false; // don't delete the cart, don't send email
-			 */
+	/**
+	 * @param null $msg
+	 */
+	function redirectToCart ($msg = NULL) {
+		if (!$msg) {
+			$msg = vmText::_('VMPAYMENT_PAYPAL_ERROR_TRY_AGAIN');
+		}
+		$this->customerData->clear();
+		$app = JFactory::getApplication();
+		$app->redirect(JRoute::_('index.php?option=com_virtuemart&view=cart&Itemid=' . vRequest::getInt('Itemid'), false), $msg);
 	}
 
 	/**
@@ -304,285 +596,365 @@ class plgVmPaymentPaypal extends vmPSPlugin {
 	 * @param $paymentCurrencyId
 	 * @return bool|null
 	 */
-	function plgVmgetPaymentCurrency ($virtuemart_paymentmethod_id, &$paymentCurrencyId) {
+	function plgVmgetPaymentCurrency($virtuemart_paymentmethod_id, &$paymentCurrencyId) {
 
-		if (!($method = $this->getVmPluginMethod ($virtuemart_paymentmethod_id))) {
+		if (!($this->_currentMethod = $this->getVmPluginMethod($virtuemart_paymentmethod_id))) {
 			return NULL; // Another method was selected, do nothing
 		}
-		if (!$this->selectedThisElement ($method->payment_element)) {
+		if (!$this->selectedThisElement($this->_currentMethod->payment_element)) {
 			return FALSE;
 		}
-		$this->getPaymentCurrency ($method);
-		$paymentCurrencyId = $method->payment_currency;
+
+		$paymentCurrencyId = $this->getPaymentCurrency($this->_currentMethod);
 	}
 
-	/**
-	 * @param $virtuemart_paymentmethod_id
-	 * @param $paymentCurrencyId
-	 * @return bool|null
-	 */
-	function plgVmgetEmailCurrency ($virtuemart_paymentmethod_id, $virtuemart_order_id, &$emailCurrencyId) {
+	function plgVmgetEmailCurrency($virtuemart_paymentmethod_id, $virtuemart_order_id, &$emailCurrencyId) {
 
-		if (!($method = $this->getVmPluginMethod ($virtuemart_paymentmethod_id))) {
+		if (!($method = $this->getVmPluginMethod($virtuemart_paymentmethod_id))) {
 			return NULL; // Another method was selected, do nothing
 		}
-		if (!$this->selectedThisElement ($method->payment_element)) {
+		if (!$this->selectedThisElement($method->payment_element)) {
 			return FALSE;
 		}
-		if (!($payments = $this->_getPaypalInternalData ($virtuemart_order_id))) {
+		/*if (!($payments = $this->_getPaypalInternalData($virtuemart_order_id))) {
 			// JError::raiseWarning(500, $db->getErrorMsg());
 			return '';
-		}
-		if (empty($payments[0]->email_currency)) {
-			$vendorId = 1; //VirtueMartModelVendor::getLoggedVendor();
-			$db = JFactory::getDBO ();
-			$q = 'SELECT   `vendor_currency` FROM `#__virtuemart_vendors` WHERE `virtuemart_vendor_id`=' . $vendorId;
-			$db->setQuery ($q);
-			$emailCurrencyId = $db->loadResult ();
-		} else {
-			$emailCurrencyId = $payments[0]->email_currency;
-		}
+		}*/
+		$emailCurrencyId = $this -> getEmailCurrency($method);
+		return $emailCurrencyId;
 
+	}
+
+	function getEmailCurrency (&$method) {
+
+		if(empty($method->email_currency) or $method->email_currency == 'vendor'){
+			$vendor_model = VmModel::getModel('vendor');
+			$vendor = $vendor_model->getVendor($method->virtuemart_vendor_id);
+			$emailCurrencyId = $vendor->vendor_currency;
+		} else if($method->email_currency == 'payment'){
+			$emailCurrencyId = $this->getPaymentCurrency($method);
+		}
+		else if($method->email_currency == 'user'){
+
+		}
+		return $emailCurrencyId;
 	}
 
 	/**
 	 * @param $html
 	 * @return bool|null|string
 	 */
-	function plgVmOnPaymentResponseReceived (&$html) {
+	function plgVmOnPaymentResponseReceived(&$html) {
 
-		if (!class_exists ('VirtueMartCart')) {
-			require(JPATH_VM_SITE . DS . 'helpers' . DS . 'cart.php');
+		if (!class_exists('VirtueMartCart')) {
+			require(VMPATH_SITE . DS . 'helpers' . DS . 'cart.php');
 		}
-		if (!class_exists ('shopFunctionsF')) {
-			require(JPATH_VM_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
+		if (!class_exists('shopFunctionsF')) {
+			require(VMPATH_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
 		}
-		if (!class_exists ('VirtueMartModelOrders')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php');
+		if (!class_exists('VirtueMartModelOrders')) {
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'orders.php');
 		}
+		VmConfig::loadJLang('com_virtuemart_orders', TRUE);
 
-		//vmdebug('PAYPAL plgVmOnPaymentResponseReceived', $paypal_data);
 		// the payment itself should send the parameter needed.
-		$virtuemart_paymentmethod_id = JRequest::getInt ('pm', 0);
-		$order_number = JRequest::getString ('on', 0);
+		$virtuemart_paymentmethod_id = vRequest::getInt('pm', 0);
+		$expresscheckout = vRequest::getVar('expresscheckout', '');
+		if ($expresscheckout) {
+			return;
+
+		}
+		$order_number = vRequest::getString('on', 0);
 		$vendorId = 0;
-		if (!($method = $this->getVmPluginMethod ($virtuemart_paymentmethod_id))) {
+		if (!($this->_currentMethod = $this->getVmPluginMethod($virtuemart_paymentmethod_id))) {
 			return NULL; // Another method was selected, do nothing
 		}
-		if (!$this->selectedThisElement ($method->payment_element)) {
+		if (!$this->selectedThisElement($this->_currentMethod->payment_element)) {
 			return NULL;
 		}
 
-		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber ($order_number))) {
+		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($order_number))) {
 			return NULL;
 		}
-		if (!($paymentTable = $this->getDataByOrderId ($virtuemart_order_id))) {
-			// JError::raiseWarning(500, $db->getErrorMsg());
+		if (!($payments = $this->getDatasByOrderNumber($order_number))) {
 			return '';
 		}
-		$payment_name = $this->renderPluginName ($method);
-		$html = $this->_getPaymentResponseHtml ($paymentTable, $payment_name);
+
+		VmConfig::loadJLang('com_virtuemart');
+		$orderModel = VmModel::getModel('orders');
+		$order = $orderModel->getOrder($virtuemart_order_id);
+
+		$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod,$order['details']['BT']->payment_currency_id);
+		$payment_name = $this->renderPluginName($this->_currentMethod);
+		$payment = end($payments);
+
+
+		// to do: this
+		$this->debugLog($payment, 'plgVmOnPaymentResponseReceived', 'debug', false);
+		if (!class_exists('CurrencyDisplay')) {
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
+		}
+		//$currency = CurrencyDisplay::getInstance('', $order['details']['BT']->order_currency);
+		$currency = CurrencyDisplay::getInstance('', $order['details']['BT']->payment_currency_id);
+		$paypal_data = new stdClass();
+		if ($payment->paypal_fullresponse) {
+			$paypal_data = json_decode($payment->paypal_fullresponse);
+			$success = ($paypal_data->payment_status == 'Completed' or $paypal_data->payment_status == 'Pending');
+		} else {
+			$success = false;
+		}
+
+		$html = $this->renderByLayout($this->_currentMethod->paypalproduct . 'response', array("success" => $success,
+			"payment_name" => $payment_name,
+			"payment" => $paypal_data,
+			"order" => $order,
+			"currency" => $currency,
+		));
 
 		//We delete the old stuff
 		// get the correct cart / session
-		$cart = VirtueMartCart::getCart ();
-		$cart->emptyCart ();
+		$cart = VirtueMartCart::getCart();
+		$cart->emptyCart();
 		return TRUE;
 	}
 
-	/**
-	 * @return bool|null
-	 */
-	function plgVmOnUserPaymentCancel () {
+	function plgVmOnUserPaymentCancel() {
 
-		if (!class_exists ('VirtueMartModelOrders')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php');
+		if (!class_exists('VirtueMartModelOrders')) {
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'orders.php');
 		}
 
-		$order_number = JRequest::getString ('on', '');
-		$virtuemart_paymentmethod_id = JRequest::getInt ('pm', '');
-		if (empty($order_number) or empty($virtuemart_paymentmethod_id) or !$this->selectedThisByMethodId ($virtuemart_paymentmethod_id)) {
+		$order_number = vRequest::getString('on', '');
+		$virtuemart_paymentmethod_id = vRequest::getInt('pm', '');
+		if (empty($order_number) or empty($virtuemart_paymentmethod_id) or !$this->selectedThisByMethodId($virtuemart_paymentmethod_id)) {
 			return NULL;
 		}
-		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber ($order_number))) {
+		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($order_number))) {
 			return NULL;
 		}
-		if (!($paymentTable = $this->getDataByOrderId ($virtuemart_order_id))) {
+		if (!($paymentTable = $this->getDataByOrderNumber($order_number))) {
 			return NULL;
 		}
 
-		VmInfo (Jtext::_ ('VMPAYMENT_PAYPAL_PAYMENT_CANCELLED'));
-		$session = JFactory::getSession ();
-		$return_context = $session->getId ();
-		if (strcmp ($paymentTable->paypal_custom, $return_context) === 0) {
-			$this->handlePaymentUserCancel ($virtuemart_order_id);
+		$method = $this->getPluginMethod($virtuemart_paymentmethod_id);
+		$oM = VmModel::getModel('orders');
+		$theorder = $oM->getOrder($virtuemart_order_id);
+		if ($theorder['details']['BT']->order_status == $method->status_success || $theorder['details']['BT']->order_status == $method->status_pending ||   $theorder['details']['BT']->order_status == $method->status_capture) {
+			return NULL;
+		}
+
+		VmInfo(vmText::_('VMPAYMENT_PAYPAL_PAYMENT_CANCELLED'));
+		$session = JFactory::getSession();
+		$return_context = $session->getId();
+		if (strcmp($paymentTable->paypal_custom, $return_context) === 0) {
+			$this->handlePaymentUserCancel($virtuemart_order_id);
 		}
 		return TRUE;
 	}
 
-	/*
-		 *   plgVmOnPaymentNotification() - This event is fired by Offline Payment. It can be used to validate the payment data as entered by the user.
-		 * Return:
-		 * Parameters:
-		 *  None
-		 *  @author Valerie Isaksen
-		 */
+	function plgVmOnPaymentNotification() {
 
-	/**
-	 * @return bool|null
-	 */
-	function plgVmOnPaymentNotification () {
+		//https://developer.paypal.com/webapps/developer/docs/classic/ipn/integration-guide/IPNandPDTVariables/
 
-		//$this->_debug = true;
-		if (!class_exists ('VirtueMartModelOrders')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'orders.php');
+		if (!class_exists('VirtueMartModelOrders')) {
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'orders.php');
 		}
-		$paypal_data = JRequest::get ('post');
+		$paypal_data = $_POST;
+
+		//Recuring payment return rp_invoice_id instead of invoice
+		if (array_key_exists('rp_invoice_id', $paypal_data)) {
+			$paypal_data['invoice'] = $paypal_data['rp_invoice_id'];
+		}
 		if (!isset($paypal_data['invoice'])) {
-			return NULL;
-		}
-		$order_number = $paypal_data['invoice'];
-		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber ($paypal_data['invoice']))) {
-			return NULL;
-		}
-
-		$vendorId = 0;
-		if (!($payments = $this->getDatasByOrderId ($virtuemart_order_id))) {
-			return NULL;
-		}
-
-		$method = $this->getVmPluginMethod ($payments[0]->virtuemart_paymentmethod_id);
-		if (!$this->selectedThisElement ($method->payment_element)) {
 			return FALSE;
 		}
-		if (isset($method->log_ipn) and $method->log_ipn) {
-			$this->logIpn ();
+
+		$order_number = $paypal_data['invoice'];
+		if (!($virtuemart_order_id = VirtueMartModelOrders::getOrderIdByOrderNumber($paypal_data['invoice']))) {
+			return FALSE;
 		}
-		$this->_debug = $method->debug;
 
-		$this->logInfo ('paypal_data ' . implode ('   ', $paypal_data), 'message');
+		if (!($payments = $this->getDatasByOrderNumber($order_number))) {
+			return FALSE;
+		}
 
-		//$this->_storePaypalInternalData ($method, $paypal_data, $virtuemart_order_id, $payment->virtuemart_paymentmethod_id);
-		$modelOrder = VmModel::getModel ('orders');
-		$order = array();
+		$this->_currentMethod = $this->getVmPluginMethod($payments[0]->virtuemart_paymentmethod_id);
+		if (!$this->selectedThisElement($this->_currentMethod->payment_element)) {
+			return FALSE;
+		}
 
-		// _processIPN checks that  $res== "VERIFIED"
-		$error_msg = $this->_processIPN ($paypal_data, $method);
+		$orderModel = VmModel::getModel('orders');
+		$order = $orderModel->getOrder($virtuemart_order_id);
 
-		$this->logInfo ('process IPN ' . $error_msg, 'message');
+		$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod,$order['details']['BT']->payment_currency_id);
 
-		if (!(empty($error_msg))) {
-			$this->logInfo ('process IPN ' . $error_msg . ' ' . $order['order_status'], 'ERROR');
-			return NULL;
+		$paypalInterface = $this->_loadPayPalInterface();
+		$paypalInterface->setOrder($order);
+		$paypalInterface->debugLog($paypal_data, 'PaymentNotification, paypal_data:', 'debug');
+		$paypalInterface->debugLog($order_number, 'PaymentNotification, order_number:', 'debug');
+		$paypalInterface->debugLog($payments[0]->virtuemart_paymentmethod_id, 'PaymentNotification, virtuemart_paymentmethod_id:', 'debug');
+		$order_history = $paypalInterface->processIPN($paypal_data, $payments);
+		if (!$order_history) {
+			return false;
 		} else {
-			$this->logInfo ('process IPN OK', 'message');
-		}
-		/*
-		 * https://cms.paypal.com/us/cgi-bin/?cmd=_render-content&content_ID=developer/e_howto_html_IPNandPDTVariables
-		 * The status of the payment:
-		 * Canceled_Reversal: A reversal has been canceled. For example, you won a dispute with the customer, and the funds for the transaction that was reversed have been returned to you.
-		 * Completed: The payment has been completed, and the funds have been added successfully to your account balance.
-		 * Created: A German ELV payment is made using Express Checkout.
-		 * Denied: You denied the payment. This happens only if the payment was previously pending because of possible reasons described for the pending_reason variable or the Fraud_Management_Filters_x variable.
-		 * Expired: This authorization has expired and cannot be captured.
-		 * Failed: The payment has failed. This happens only if the payment was made from your customer’s bank account.
-		 * Pending: The payment is pending. See pending_reason for more information.
-		 * Refunded: You refunded the payment.
-		 * Reversed: A payment was reversed due to a chargeback or other type of reversal. The funds have been removed from your account balance and returned to the buyer. The reason for the reversal is specified in the ReasonCode element.
-		 * Processed: A payment has been accepted.
-		 * Voided: This authorization has been voided.
-		 *
-		 */
-		if (empty($paypal_data['payment_status']) || ($paypal_data['payment_status'] != 'Completed' && $paypal_data['payment_status'] != 'Pending')) {
-			//return false;
-		}
-		$lang = JFactory::getLanguage ();
-		$order['customer_notified'] = 1;
+			$this->_storePaypalInternalData( $paypal_data, $virtuemart_order_id, $payments[0]->virtuemart_paymentmethod_id, $order_number);
+			$paypalInterface->debugLog('plgVmOnPaymentNotification order_number:' . $order_number . ' new_status:' . $order_history['order_status'], 'plgVmOnPaymentNotification', 'debug');
 
-		// 1. check the payment_status is Completed
-		if (strcmp ($paypal_data['payment_status'], 'Completed') == 0) {
-			// 2. check that txn_id has not been previously processed
-			if ($this->_check_txn_id_already_processed ($payments, $paypal_data['txn_id'], $method)) {
-				return;
+			$orderModel->updateStatusForOneOrder($virtuemart_order_id, $order_history, TRUE);
+			//// remove vmcart
+			if (isset($paypal_data['custom'])) {
+				$this->emptyCart($paypal_data['custom'], $order_number);
+				$paypalInterface->debugLog('plgVmOnPaymentNotification empty cart ', 'plgVmOnPaymentNotification', 'debug');
 			}
-			// 3. check email and amount currency is correct
-			if (!$this->_check_email_amount_currency ($payments, $this->_getMerchantEmail ($method), $paypal_data)) {
-				return;
-			}
-			// now we can process the payment
-			$order['order_status'] = $method->status_success;
-			$order['comments'] = JText::sprintf ('VMPAYMENT_PAYPAL_PAYMENT_STATUS_CONFIRMED', $order_number);
-		} elseif (strcmp ($paypal_data['payment_status'], 'Pending') == 0) {
-			$key = 'VMPAYMENT_PAYPAL_PENDING_REASON_FE_' . strtoupper ($paypal_data['pending_reason']);
-			if (!$lang->hasKey ($key)) {
-				$key = 'VMPAYMENT_PAYPAL_PENDING_REASON_FE_DEFAULT';
-			}
-			$order['comments'] = JText::sprintf ('VMPAYMENT_PAYPAL_PAYMENT_STATUS_PENDING', $order_number) . JText::_ ($key);
-			$order['order_status'] = $method->status_pending;
-		} elseif (isset ($paypal_data['payment_status'])) {
-			$order['order_status'] = $method->status_canceled;
-		} else {
-			/*
-			* a notification was received that concerns one of the payment (since $paypal_data['invoice'] is found in our table),
-			* but the IPN notification has no $paypal_data['payment_status']
-			* We just log the info in the order, and do not change the status, do not notify the customer
-			*/
-			$order['comments'] = JText::_ ('VMPAYMENT_PAYPAL_IPN_NOTIFICATION_RECEIVED');
-			$order['customer_notified'] = 0;
 		}
-		$this->_storePaypalInternalData ($method, $paypal_data, $virtuemart_order_id, $payments[0]->virtuemart_paymentmethod_id);
-		$this->logInfo ('plgVmOnPaymentNotification return new_status:' . $order['order_status'], 'message');
-
-		$modelOrder->updateStatusForOneOrder ($virtuemart_order_id, $order, TRUE);
-		//// remove vmcart
-		if (isset($paypal_data['custom'])) {
-			$this->emptyCart ($paypal_data['custom'], $order_number);
-		}
-		//die();
 	}
 
-	function logIpn () {
+	/*********************/
+	/* Private functions */
+	/*********************/
+	private function _loadPayPalInterface() {
 
-		$file = JPATH_ROOT . "/logs/paypal-ipn.log";
-		$date = JFactory::getDate ();
+		static $paypalInterface = true;
 
-		$fp = fopen ($file, 'a');
-		fwrite ($fp, "\n\n" . $date->toFormat ('%Y-%m-%d %H:%M:%S'));
-		fwrite ($fp, "\n" . var_export ($_POST, TRUE));
-		fclose ($fp);
+		if(empty($this->_currentMethod->paypalproduct)) $this->_currentMethod->paypalproduct = $this->getPaypalProduct($this->_currentMethod);
+
+		if($paypalInterface === true){
+			if ($this->_currentMethod->paypalproduct == 'std') {
+				$paypalInterface = new PaypalHelperPayPalStd($this->_currentMethod, $this);
+			} else {
+				if ($this->_currentMethod->paypalproduct == 'api') {
+					$paypalInterface = new PaypalHelperPayPalApi($this->_currentMethod, $this);
+				} else {
+					if ($this->_currentMethod->paypalproduct == 'exp') {
+						$paypalInterface = new PaypalHelperPayPalExp($this->_currentMethod, $this);
+					} else {
+						if ($this->_currentMethod->paypalproduct == 'hosted') {
+							$paypalInterface = new PaypalHelperPayPalHosted($this->_currentMethod, $this);
+						} else {
+							Vmerror('Wrong paypal mode');
+							return NULL;
+						}
+					}
+				}
+			}
+		} else {
+			$paypalInterface->paypalPlugin = $this;
+			$paypalInterface->_method = $this->_currentMethod;
+		}
+
+		return $paypalInterface;
+	}
+
+	private function _storePaypalInternalData( $paypal_data, $virtuemart_order_id, $virtuemart_paymentmethod_id, $order_number) {
+		$paypalInterface = $this->_loadPayPalInterface();
+		// get all know columns of the table
+		$db = JFactory::getDBO();
+		$query = 'SHOW COLUMNS FROM `' . $this->_tablename . '` ';
+		$db->setQuery($query);
+		$columns = $db->loadColumn(0);
+
+		$post_msg = '';
+		/*
+        foreach ($paypal_data as $key => $value) {
+            $post_msg .= $key . "=" . $value . "<br />";
+            $table_key = 'paypal_response_' . $key;
+            $table_key=strtolower($table_key);
+            if (in_array($table_key, $columns)   ) {
+                $response_fields[$table_key] = $value;
+            }
+        }
+		*/
+		//$response_fields = $paypalInterface->storePaypalInternalData($paypal_data);
+		if (array_key_exists('PAYMENTINFO_0_PAYMENTSTATUS', $paypal_data)) {
+			$response_fields['paypal_response_payment_status'] = $paypal_data['PAYMENTINFO_0_PAYMENTSTATUS'];
+		} else {
+			if (array_key_exists('PAYMENTSTATUS', $paypal_data)) {
+				$response_fields['paypal_response_payment_status'] = $paypal_data['PAYMENTSTATUS'];
+			} else {
+				if (array_key_exists('PROFILESTATUS', $paypal_data)) {
+					$response_fields['paypal_response_payment_status'] = $paypal_data['PROFILESTATUS'];
+				} else {
+					if (array_key_exists('STATUS', $paypal_data)) {
+						$response_fields['paypal_response_payment_status'] = $paypal_data['STATUS'];
+					}
+				}
+			}
+		}
+
+
+		if ($paypal_data) {
+			$response_fields['paypal_fullresponse'] = json_encode($paypal_data);
+		}
+		$response_fields['order_number'] = $order_number;
+		if (isset($paypal_data['invoice'])) {
+			$response_fields['paypal_response_invoice'] = $paypal_data['invoice'];
+		}
+
+		$response_fields['virtuemart_order_id'] = $virtuemart_order_id;
+		$response_fields['virtuemart_paymentmethod_id'] = $virtuemart_paymentmethod_id;
+		if (array_key_exists('custom', $paypal_data)) {
+			$response_fields['paypal_custom'] = $paypal_data['custom'];
+		}
+
+		//$preload=true   preload the data here too preserve not updated data
+		return $this->storePSPluginInternalData($response_fields, $this->_tablepkey, 0);
+
 	}
 
 	/**
-	 * @param $method
-	 * @param $paypal_data
-	 * @param $virtuemart_order_id
+	 * @param   int $virtuemart_order_id
+	 * @param string $order_number
+	 * @return mixed|string
 	 */
-	function _storePaypalInternalData ($method, $paypal_data, $virtuemart_order_id, $virtuemart_paymentmethod_id) {
-
-		// get all know columns of the table
-		$db = JFactory::getDBO ();
-		$query = 'SHOW COLUMNS FROM `' . $this->_tablename . '` ';
-		$db->setQuery ($query);
-		$columns = $db->loadResultArray (0);
-		$post_msg = '';
-		foreach ($paypal_data as $key => $value) {
-			$post_msg .= $key . "=" . $value . "<br />";
-			$table_key = 'paypal_response_' . $key;
-			if (in_array ($table_key, $columns)) {
-				$response_fields[$table_key] = $value;
-			}
+	private function _getPaypalInternalData($virtuemart_order_id, $order_number = '') {
+		if (empty($order_number)) {
+			$orderModel = VmModel::getModel('orders');
+			$order_number = $orderModel->getOrderNumber($virtuemart_order_id);
 		}
+		$db = JFactory::getDBO();
+		$q = 'SELECT * FROM `' . $this->_tablename . '` WHERE ';
+		$q .= " `order_number` = '" . $order_number . "'";
 
-		//$response_fields[$this->_tablepkey] = $this->_getTablepkeyValue($virtuemart_order_id);
-		$response_fields['payment_name'] = $this->renderPluginName ($method);
-		$response_fields['paypalresponse_raw'] = $post_msg;
-		$response_fields['order_number'] = $paypal_data['invoice'];
-		$response_fields['virtuemart_order_id'] = $virtuemart_order_id;
-		$response_fields['virtuemart_paymentmethod_id'] = $virtuemart_paymentmethod_id;
-		$response_fields['paypal_custom'] = $paypal_data['custom'];
+		$db->setQuery($q);
+		if (!($payments = $db->loadObjectList())) {
+			// JError::raiseWarning(500, $db->getErrorMsg());
+			return '';
+		}
+		return $payments;
+	}
 
-		//$preload=true   preload the data here too preserve not updated data
-		$this->storePSPluginInternalData ($response_fields);
+	protected function renderPluginName($activeMethod) {
+		$return = '';
+		$plugin_name = $this->_psType . '_name';
+		$plugin_desc = $this->_psType . '_desc';
+		$description = '';
+		// 		$params = new JParameter($plugin->$plugin_params);
+		// 		$logo = $params->get($this->_psType . '_logos');
+		$logosFieldName = $this->_psType . '_logos';
+		$logos = $activeMethod->$logosFieldName;
+		if (!empty($logos)) {
+			$return = $this->displayLogos($logos) . ' ';
+		}
+		$pluginName = $return . '<span class="' . $this->_type . '_name">' . $activeMethod->$plugin_name . '</span>';
+		if ($activeMethod->sandbox) {
+			$pluginName .= ' <span style="color:red;font-weight:bold">Sandbox (' . $activeMethod->virtuemart_paymentmethod_id . ')</span>';
+		}
+		if (!empty($activeMethod->$plugin_desc)) {
+			$pluginName .= '<span class="' . $this->_type . '_description">' . $activeMethod->$plugin_desc . '</span>';
+		}
+		$pluginName .= $this->displayExtraPluginNameInfo($activeMethod);
+		return $pluginName;
+	}
+
+	function displayExtraPluginNameInfo($activeMethod) {
+		$this->_currentMethod = $activeMethod;
+
+		$paypalInterface = $this->_loadPayPalInterface();
+		$paypalInterface->loadCustomerData();
+		$extraInfo = $paypalInterface->displayExtraPluginInfo();
+
+		return $extraInfo;
+
 	}
 
 	/**
@@ -590,347 +962,123 @@ class plgVmPaymentPaypal extends vmPSPlugin {
 	 *
 	 * @see components/com_virtuemart/helpers/vmPSPlugin::plgVmOnShowOrderBEPayment()
 	 */
-	function plgVmOnShowOrderBEPayment ($virtuemart_order_id, $payment_method_id) {
+	function plgVmOnShowOrderBEPayment($virtuemart_order_id, $payment_method_id) {
 
-		if (!$this->selectedThisByMethodId ($payment_method_id)) {
+		if (!$this->selectedThisByMethodId($payment_method_id)) {
 			return NULL; // Another method was selected, do nothing
 		}
-
-		if (!($payments = $this->_getPaypalInternalData ($virtuemart_order_id))) {
+		if (!($this->_currentMethod = $this->getVmPluginMethod($payment_method_id))) {
+			return FALSE;
+		}
+		if (!($payments = $this->_getPaypalInternalData($virtuemart_order_id))) {
 			// JError::raiseWarning(500, $db->getErrorMsg());
 			return '';
 		}
 
-		$html = '<table class="adminlist" width="50%">' . "\n";
-		$html .= $this->getHtmlHeaderBE ();
+		//$html = $this->renderByLayout('orderbepayment', array($payments, $this->_psType));
+		$html = '<table class="adminlist table" >' . "\n";
+		$html .= $this->getHtmlHeaderBE();
 		$code = "paypal_response_";
 		$first = TRUE;
 		foreach ($payments as $payment) {
-			$html .= '<tr class="row1"><td>' . JText::_ ('VMPAYMENT_PAYPAL_DATE') . '</td><td align="left">' . $payment->created_on . '</td></tr>';
+			$html .= ' <tr class="row1"><td><strong>' . vmText::_('VMPAYMENT_PAYPAL_DATE') . '</strong></td><td align="left"><strong>' . $payment->created_on . '</strong></td></tr> ';
 			// Now only the first entry has this data when creating the order
 			if ($first) {
-				$html .= $this->getHtmlRowBE ('PAYPAL_PAYMENT_NAME', $payment->payment_name);
+				$html .= $this->getHtmlRowBE('COM_VIRTUEMART_PAYMENT_NAME', $payment->payment_name);
 				// keep that test to have it backwards compatible. Old version was deleting that column  when receiving an IPN notification
 				if ($payment->payment_order_total and  $payment->payment_order_total != 0.00) {
-					$html .= $this->getHtmlRowBE ('PAYPAL_PAYMENT_ORDER_TOTAL', $payment->payment_order_total . " " . shopFunctions::getCurrencyByID ($payment->payment_currency, 'currency_code_3'));
+					$html .= $this->getHtmlRowBE('COM_VIRTUEMART_TOTAL', $payment->payment_order_total . " " . shopFunctions::getCurrencyByID($payment->payment_currency, 'currency_code_3'));
 				}
-				if ($payment->email_currency and  $payment->email_currency != 0) {
-					$html .= $this->getHtmlRowBE ('PAYPAL_PAYMENT_EMAIL_CURRENCY', shopFunctions::getCurrencyByID ($payment->email_currency, 'currency_code_3'));
-				}
+
 				$first = FALSE;
-			}
-			foreach ($payment as $key => $value) {
-				// only displays if there is a value or the value is different from 0.00 and the value
-				if ($value) {
-					if (substr ($key, 0, strlen ($code)) == $code) {
-						$html .= $this->getHtmlRowBE ($key, $value);
-					}
-				}
-			}
+			} else {
+				$paypalInterface = $this->_loadPayPalInterface();
 
-		}
-		$html .= '</table>' . "\n";
-		return $html;
-	}
+				if (isset($payment->paypal_fullresponse) and !empty($payment->paypal_fullresponse)) {
+					$paypal_data = json_decode($payment->paypal_fullresponse);
+					$paypalInterface = $this->_loadPayPalInterface();
+					$html .= $paypalInterface->onShowOrderBEPayment($paypal_data);
 
-	/**
-	 * @param        $virtuemart_order_id
-	 * @param string $order_number
-	 * @return mixed|string
-	 */
-	function _getPaypalInternalData ($virtuemart_order_id, $order_number = '') {
+					$html .= '<tr><td></td><td>
+    <a href="#" class="PayPalLogOpener" rel="' . $payment->id . '" >
+        <div style="background-color: white; z-index: 100; right:0; display: none; border:solid 2px; padding:10px;" class="vm-absolute" id="PayPalLog_' . $payment->id . '">';
 
-		$db = JFactory::getDBO ();
-		$q = 'SELECT * FROM `' . $this->_tablename . '` WHERE ';
-		if ($order_number) {
-			$q .= " `order_number` = '" . $order_number . "'";
-		} else {
-			$q .= ' `virtuemart_order_id` = ' . $virtuemart_order_id;
-		}
-
-		$db->setQuery ($q);
-		if (!($payments = $db->loadObjectList ())) {
-			// JError::raiseWarning(500, $db->getErrorMsg());
-			return '';
-		}
-		return $payments;
-	}
-
-	/**
-	 * Get ipn data, send verification to PayPal, run corresponding handler
-	 *
-	 * @param array $data
-	 * @return string Empty string if data is valid and an error message otherwise
-	 * @access protected
-	 */
-	function _processIPN ($paypal_data, $method) {
-
-		$secure_post = $method->secure_post;
-		$paypal_url = $this->_getPaypalURL ($method);
-		// read the post from PayPal system and add 'cmd'
-		$post_msg = 'cmd=_notify-validate';
-		foreach ($paypal_data as $key => $value) {
-			if ($key != 'view' && $key != 'layout') {
-				$value = urlencode ($value);
-				$post_msg .= "&$key=$value";
-			}
-		}
-
-		$this->checkPaypalIps ($paypal_data['ipn_test']);
-
-		// post back to PayPal system to validate
-		$header = "POST /cgi-bin/webscr HTTP/1.0\r\n";
-		$header .= "Content-Type: application/x-www-form-urlencoded\r\n";
-		$header .= "Content-Length: " . strlen ($post_msg) . "\r\n\r\n";
-
-		if ($secure_post) {
-			// If possible, securely post back to paypal using HTTPS
-			// Your PHP server will need to be SSL enabled
-			$fps = fsockopen ('ssl://' . $paypal_url, 443, $errno, $errstr, 30);
-		} else {
-			$fps = fsockopen ($paypal_url, 80, $errno, $errstr, 30);
-		}
-
-		if (!$fps) {
-			$this->sendEmailToVendorAndAdmins ("error with paypal", JText::sprintf ('VMPAYMENT_PAYPAL_ERROR_POSTING_IPN', $errstr, $errno));
-			return JText::sprintf ('VMPAYMENT_PAYPAL_ERROR_POSTING_IPN', $errstr, $errno); // send email
-		} else {
-			fputs ($fps, $header . $post_msg);
-			while (!feof ($fps)) {
-				$res = fgets ($fps, 1024);
-
-				if (strcmp ($res, 'VERIFIED') == 0) {
-					return '';
-				} elseif (strcmp ($res, 'INVALID') == 0) {
-					$emailBody = "Hello,\n\nerror with paypal IPN NOTIFICATION" . " " . $res . "\n";
-					// If 'INVALID', send an email. TODO: Log for manual investigation.
 					foreach ($paypal_data as $key => $value) {
-						$emailBody .= $key . " = " . $value . "\n";
+						$html .= ' <b>' . $key . '</b>:&nbsp;' . $value . '<br />';
 					}
-					$this->sendEmailToVendorAndAdmins (JText::_ ('VMPAYMENT_PAYPAL_ERROR_IPN_VALIDATION') . " " . $res, $emailBody);
-					return JText::_ ('VMPAYMENT_PAYPAL_ERROR_IPN_VALIDATION') . $res;
+
+					$html .= ' </div>
+        <span class="icon-nofloat vmicon vmicon-16-xml"></span>&nbsp;';
+					$html .= vmText::_('VMPAYMENT_PAYPAL_VIEW_TRANSACTION_LOG');
+					$html .= '  </a>';
+					$html .= ' </td></tr>';
+				} else {
+					$html .= $paypalInterface->onShowOrderBEPaymentByFields($payment);
 				}
 			}
-		}
 
-		fclose ($fps);
-		return '';
-	}
 
-	function _check_txn_id_already_processed ($payments, $txn_id, $method) {
-
-		$virtuemart_order_id = $payments[0] ->virtuemart_order_id;
-		$orderModel = VmModel::getModel ('orders');
-		$order = $orderModel->getOrder ($virtuemart_order_id);
-
-		if ($order['details']['BT']->order_status == $method->status_success) {
-			foreach ($payments as $payment) {
-				if ($payment->paypal_response_txn_id == $txn_id) {
-					return TRUE;
-				}
-			}
-		}
-		return FALSE;
-	}
-
-	function _check_email_amount_currency ($payments, $email, $paypal_data) {
-
-		/*
-		 * TODO Not checking yet because config do not have primary email address
-		* Primary email address of the payment recipient (that is, the merchant).
-		* If the payment is sent to a non-primary email address on your PayPal account,
-		* the receiver_email is still your primary email.
-		*/
-		/*
-		if ($payments[0]->payment_order_total==$email) {
-			return true;
-		}
-		*/
-		if ($payments[0]->payment_order_total == $paypal_data['mc_gross']) {
-			return TRUE;
-		}
-		$currency_code_3 = shopFunctions::getCurrencyByID ($payments[0]->payment_currency, 'currency_code_3');
-		if ($currency_code_3 == $paypal_data['mc_currency']) {
-			return TRUE;
-		}
-		$mailsubject = "PayPal Transaction";
-		$mailbody = "Hello,
-		An IPN notification was received with an invalid amount or currency
-		----------------------------------
-		IPN Notification content:
-		";
-		foreach ($paypal_data as $key => $value) {
-			$mailbody .= $key . " = " . $value . "\n\n";
-		}
-		$this->sendEmailToVendorAndAdmins ($mailsubject, $mailbody);
-
-		return FALSE;
-	}
-
-	/**
-	 * @param $method
-	 * @return mixed
-	 */
-	function _getMerchantEmail ($method) {
-
-		return $method->sandbox ? $method->sandbox_merchant_email : $method->paypal_merchant_email;
-	}
-
-	/**
-	 * @param $method
-	 * @return string
-	 */
-	function _getPaypalUrl ($method) {
-
-		$url = $method->sandbox ? 'www.sandbox.paypal.com' : 'www.paypal.com';
-
-		return $url;
-	}
-
-	/**
-	 * @param $method
-	 * @return string
-	 */
-	function _getPaypalUrlHttps ($method) {
-
-		$url = $this->_getPaypalUrl ($method);
-		$url = $url . '/cgi-bin/webscr';
-
-		return $url;
-	}
-
-	/*
-		 * CheckPaypalIPs
-		 * Cannot be checked with Sandbox
-		 * From VM1.1
-		 */
-
-	/**
-	 * @param $test_ipn
-	 * @return mixed
-	 */
-	function checkPaypalIps ($test_ipn) {
-
-		return;
-		// Get the list of IP addresses for www.paypal.com and notify.paypal.com
-
-		$paypal_iplist = gethostbynamel ('www.paypal.com');
-		$paypal_iplist2 = gethostbynamel ('notify.paypal.com');
-		$paypal_iplist3 = array('216.113.188.202', '216.113.188.203', '216.113.188.204', '66.211.170.66');
-		$paypal_iplist = array_merge ($paypal_iplist, $paypal_iplist2, $paypal_iplist3);
-
-		$paypal_sandbox_hostname = 'ipn.sandbox.paypal.com';
-		$remote_hostname = gethostbyaddr ($_SERVER['REMOTE_ADDR']);
-
-		$valid_ip = FALSE;
-
-		if ($paypal_sandbox_hostname == $remote_hostname) {
-			$valid_ip = TRUE;
-			$hostname = 'www.sandbox.paypal.com';
-		} else {
-			$ips = "";
-			// Loop through all allowed IPs and test if the remote IP connected here
-			// is a valid IP address
-			if (in_array ($_SERVER['REMOTE_ADDR'], $paypal_iplist)) {
-				$valid_ip = TRUE;
-			}
-			$hostname = 'www.paypal.com';
-		}
-
-		if (!$valid_ip) {
-
-			$mailsubject = "PayPal IPN Transaction on your site: Possible fraud";
-			$mailbody = "Error code 506. Possible fraud. Error with REMOTE IP ADDRESS = " . $_SERVER['REMOTE_ADDR'] . ".
-                        The remote address of the script posting to this notify script does not match a valid PayPal ip address\n
-            These are the valid IP Addresses: $ips
-
-            The Order ID received was: $invoice";
-
-			$this->sendEmailToVendorAndAdmins ($mailsubject, $mailbody);
-
-			exit();
-		}
-
-		if (!($hostname == "www.sandbox.paypal.com" && $test_ipn == 1)) {
-			$res = "FAILED";
-			$mailsubject = "PayPal Sandbox Transaction";
-			$mailbody = "Hello,
-		A fatal error occurred while processing a paypal transaction.
-		----------------------------------
-		Hostname: $hostname
-		URI: $uri
-		A Paypal transaction was made using the sandbox without your site in Paypal-Debug-Mode";
-			//vmMail($mosConfig_mailfrom, $mosConfig_fromname, $debug_email_address, $mailsubject, $mailbody );
-			$this->sendEmailToVendorAndAdmins ($mailsubject, $mailbody);
-			exit();
-		}
-	}
-
-	/**
-	 * @param $paypalTable
-	 * @param $payment_name
-	 * @return string
-	 */
-	function _getPaymentResponseHtml ($paypalTable, $payment_name) {
-
-		$html = '<table>' . "\n";
-		$html .= $this->getHtmlRow ('PAYPAL_PAYMENT_NAME', $payment_name);
-		if (!empty($paypalTable)) {
-			$html .= $this->getHtmlRow ('PAYPAL_ORDER_NUMBER', $paypalTable->order_number);
-			//$html .= $this->getHtmlRow('PAYPAL_AMOUNT', $paypalTable->payment_order_total. " " . $paypalTable->payment_currency);
 		}
 		$html .= '</table>' . "\n";
 
+		$doc = JFactory::getDocument();
+		$js = "
+	jQuery().ready(function($) {
+		$('.PayPalLogOpener').click(function() {
+			var logId = $(this).attr('rel');
+			$('#PayPalLog_'+logId).toggle();
+			return false;
+		});
+	});";
+		$doc->addScriptDeclaration($js);
 		return $html;
+
 	}
 
-	/**
-	 * @param VirtueMartCart $cart
-	 * @param                $method
-	 * @param                $cart_prices
-	 * @return int
-	 */
-	function getCosts (VirtueMartCart $cart, $method, $cart_prices) {
-
-		if (preg_match ('/%$/', $method->cost_percent_total)) {
-			$cost_percent_total = substr ($method->cost_percent_total, 0, -1);
-		} else {
-			$cost_percent_total = $method->cost_percent_total;
-		}
-		return ($method->cost_per_transaction + ($cart_prices['salesPrice'] * $cost_percent_total * 0.01));
-	}
 
 	/**
 	 * Check if the payment conditions are fulfilled for this payment method
-	 *
-	 * @author: Valerie Isaksen
-	 *
-	 * @param $cart_prices: cart prices
-	 * @param $payment
-	 * @return true: if the conditions are fulfilled, false otherwise
-	 *
+	 * @param VirtueMartCart $cart
+	 * @param int $activeMethod
+	 * @param array $cart_prices
+	 * @return bool
 	 */
-	protected function checkConditions ($cart, $method, $cart_prices) {
+	protected function checkConditions($cart, $activeMethod, $cart_prices) {
 
-		$this->convert ($method);
+		//Check method publication start
+		if ($activeMethod->publishup) {
+			$nowDate = JFactory::getDate();
+			$publish_up = JFactory::getDate($activeMethod->publishup);
+			if ($publish_up->toUnix() > $nowDate->toUnix()) {
+				return FALSE;
+			}
+		}
+		if ($activeMethod->publishdown) {
+			$nowDate = JFactory::getDate();
+			$publish_down = JFactory::getDate($activeMethod->publishdown);
+			if ($publish_down->toUnix() <= $nowDate->toUnix()) {
+				return FALSE;
+			}
+		}
+		$this->convert_condition_amount($activeMethod);
 
-		$address = (($cart->ST == 0) ? $cart->BT : $cart->ST);
+		$address = $cart->getST();
 
-		$amount = $cart_prices['salesPrice'];
-		$amount_cond = ($amount >= $method->min_amount AND $amount <= $method->max_amount
+		$amount = $this->getCartAmount($cart_prices);
+		$amount_cond = ($amount >= $activeMethod->min_amount AND $amount <= $activeMethod->max_amount
 			OR
-			($method->min_amount <= $amount AND ($method->max_amount == 0)));
+			($activeMethod->min_amount <= $amount AND ($activeMethod->max_amount == 0)));
 
 		$countries = array();
-		if (!empty($method->countries)) {
-			if (!is_array ($method->countries)) {
-				$countries[0] = $method->countries;
+		if (!empty($activeMethod->countries)) {
+			if (!is_array($activeMethod->countries)) {
+				$countries[0] = $activeMethod->countries;
 			} else {
-				$countries = $method->countries;
+				$countries = $activeMethod->countries;
 			}
 		}
 		// probably did not gave his BT:ST address
-		if (!is_array ($address)) {
+		if (!is_array($address)) {
 			$address = array();
 			$address['virtuemart_country_id'] = 0;
 		}
@@ -938,7 +1086,7 @@ class plgVmPaymentPaypal extends vmPSPlugin {
 		if (!isset($address['virtuemart_country_id'])) {
 			$address['virtuemart_country_id'] = 0;
 		}
-		if (in_array ($address['virtuemart_country_id'], $countries) || count ($countries) == 0) {
+		if (in_array($address['virtuemart_country_id'], $countries) || count($countries) == 0) {
 			if ($amount_cond) {
 				return TRUE;
 			}
@@ -947,211 +1095,418 @@ class plgVmPaymentPaypal extends vmPSPlugin {
 		return FALSE;
 	}
 
-	/**
-	 * @param $method
-	 */
-	function convert ($method) {
 
-		$method->min_amount = (float)$method->min_amount;
-		$method->max_amount = (float)$method->max_amount;
+	/**
+	 * @param $jplugin_id
+	 * @return bool|mixed
+	 */
+	function plgVmOnStoreInstallPaymentPluginTable($jplugin_id) {
+		if ($jplugin_id != $this->_jid) {
+			return FALSE;
+		}
+		$this->_currentMethod = $this->getPluginMethod(vRequest::getInt('virtuemart_paymentmethod_id'));
+		if ($this->_currentMethod->published) {
+
+			$sandbox = "";
+			if ($this->_currentMethod->sandbox) {
+				$sandbox = 'SANDBOX_';
+				$sandbox_param = 'sandbox_';
+			}
+
+
+			if ($this->_currentMethod->paypalproduct == 'std') {
+				if ($this->_currentMethod->sandbox) {
+					$param = 'sandbox_merchant_email';
+				} else {
+					$param = 'paypal_merchant_email';
+				}
+				if (empty ($this->_currentMethod->$param)) {
+					$text = vmText::sprintf('VMPAYMENT_PAYPAL_PARAMETER_REQUIRED', vmText::_('VMPAYMENT_PAYPAL_' . $sandbox . 'MERCHANT'), $this->_currentMethod->payment_name, $this->_currentMethod->virtuemart_paymentmethod_id);
+					vmWarn($text);
+				}
+			}
+			if ($this->_currentMethod->paypalproduct == 'exp' OR $this->_currentMethod->paypalproduct == 'hosted' OR $this->_currentMethod->paypalproduct == 'api') {
+				$param = $sandbox_param . 'api_login_id';
+				if (empty ($this->_currentMethod->$param)) {
+					$text = vmText::sprintf('VMPAYMENT_PAYPAL_PARAMETER_REQUIRED', vmText::_('VMPAYMENT_PAYPAL_' . $sandbox . 'USERNAME'), $this->_currentMethod->payment_name, $this->_currentMethod->virtuemart_paymentmethod_id);
+					vmWarn($text);
+				}
+				$param = $sandbox_param . 'api_password';
+				if (empty ($this->_currentMethod->$param)) {
+					$text = vmText::sprintf('VMPAYMENT_PAYPAL_PARAMETER_REQUIRED', vmText::_('VMPAYMENT_PAYPAL_' . $sandbox . 'PASSWORD'), $this->_currentMethod->payment_name, $this->_currentMethod->virtuemart_paymentmethod_id);
+					vmWarn($text);
+				}
+
+				if ($this->_currentMethod->authentication == 'signature') {
+					$param = $sandbox_param . 'api_signature';
+					if (empty ($this->_currentMethod->$param)) {
+						$text = vmText::sprintf('VMPAYMENT_PAYPAL_PARAMETER_REQUIRED', vmText::_('VMPAYMENT_PAYPAL_' . $sandbox . 'SIGNATURE'), $this->_currentMethod->payment_name, $this->_currentMethod->virtuemart_paymentmethod_id);
+						vmWarn($text);
+					}
+				} else {
+					$param = $sandbox_param . 'api_certificate';
+					if (empty ($this->_currentMethod->$param)) {
+						$text = vmText::sprintf('VMPAYMENT_PAYPAL_PARAMETER_REQUIRED', vmText::_('VMPAYMENT_PAYPAL_' . $sandbox . 'CERTIFICATE'), $this->_currentMethod->payment_name, $this->_currentMethod->virtuemart_paymentmethod_id);
+						vmWarn($text);
+					}
+				}
+			}
+			if ($this->_currentMethod->paypalproduct == 'hosted') {
+				$param = $sandbox_param . 'payflow_partner';
+				if (empty ($this->_currentMethod->$param)) {
+					$text = vmText::sprintf('VMPAYMENT_PAYPAL_PARAMETER_REQUIRED', vmText::_('VMPAYMENT_PAYPAL_' . $sandbox . 'PAYFLOW_PARTNER'), $this->_currentMethod->payment_name, $this->_currentMethod->virtuemart_paymentmethod_id);
+					vmWarn($text);
+				}
+			}
+			if ($this->_currentMethod->paypalproduct == 'exp' AND empty ($this->_currentMethod->expected_maxamount)) {
+				$text = vmText::sprintf('VMPAYMENT_PAYPAL_PARAMETER_REQUIRED', vmText::_('VMPAYMENT_PAYPAL_EXPECTEDMAXAMOUNT'), $this->_currentMethod->payment_name, $this->_currentMethod->virtuemart_paymentmethod_id);
+				vmWarn($text);
+			}
+
+		}
+
+		return $this->onStoreInstallPluginTable($jplugin_id);
 	}
 
 	/**
-	 * We must reimplement this triggers for joomla 1.7
-	 */
-
-	/**
-	 * Create the table for this plugin if it does not yet exist.
-	 * This functions checks if the called plugin is active one.
-	 * When yes it is calling the standard method to create the tables
-	 *
-	 * @author Valérie Isaksen
-	 *
-	 */
-	function plgVmOnStoreInstallPaymentPluginTable ($jplugin_id) {
-
-		return $this->onStoreInstallPluginTable ($jplugin_id);
-	}
-
-	/**
-	 * This event is fired after the payment method has been selected. It can be used to store
-	 * additional payment info in the cart.
-	 *
-	 * @author Max Milbers
-	 * @author Valérie isaksen
-	 *
-	 * @param VirtueMartCart $cart: the actual cart
-	 * @return null if the payment was not selected, true if the data is valid, error message if the data is not vlaid
-	 *
-	 */
-	public function plgVmOnSelectCheckPayment (VirtueMartCart $cart, &$msg) {
-
-		return $this->OnSelectCheck ($cart);
-	}
-
-	/**
-	 * plgVmDisplayListFEPayment
-	 * This event is fired to display the pluginmethods in the cart (edit shipment/payment) for exampel
-	 *
-	 * @param object  $cart Cart object
-	 * @param integer $selected ID of the method selected
-	 * @return boolean True on succes, false on failures, null when this plugin was not selected.
-	 * On errors, JError::raiseWarning (or JError::raiseError) must be used to set a message.
-	 *
-	 * @author Valerie Isaksen
-	 * @author Max Milbers
-	 */
-	public function plgVmDisplayListFEPayment (VirtueMartCart $cart, $selected = 0, &$htmlIn) {
-
-		return $this->displayListFE ($cart, $selected, $htmlIn);
-	}
-
-	/*
-		 * plgVmonSelectedCalculatePricePayment
-		 * Calculate the price (value, tax_id) of the selected method
-		 * It is called by the calculator
-		 * This function does NOT to be reimplemented. If not reimplemented, then the default values from this function are taken.
-		 * @author Valerie Isaksen
-		 * @cart: VirtueMartCart the current cart
-		 * @cart_prices: array the new cart prices
-		 * @return null if the method was not selected, false if the shiiping rate is not valid any more, true otherwise
-		 *
-		 *
-		 */
-
-	/**
+	 *     * This event is fired after the payment method has been selected.
+	 * It can be used to store additional payment info in the cart.
 	 * @param VirtueMartCart $cart
-	 * @param array          $cart_prices
-	 * @param                $cart_prices_name
+	 * @param $msg
 	 * @return bool|null
 	 */
-	public function plgVmonSelectedCalculatePricePayment (VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
+	public function plgVmOnSelectCheckPayment(VirtueMartCart $cart, &$msg) {
 
-		return $this->onSelectedCalculatePrice ($cart, $cart_prices, $cart_prices_name);
+		if (!$this->selectedThisByMethodId($cart->virtuemart_paymentmethod_id)) {
+			return null; // Another method was selected, do nothing
+		}
+
+		if (!($this->_currentMethod = $this->getVmPluginMethod($cart->virtuemart_paymentmethod_id))) {
+			return FALSE;
+		}
+
+		$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod);
+		$paypalInterface = $this->_loadPayPalInterface();
+		$paypalInterface->setCart($cart);
+		$paypalInterface->setTotal($cart->cartPrices['billTotal']);
+		$paypalInterface->loadCustomerData();
+		$paypalInterface->getExtraPluginInfo($this->_currentMethod);
+
+		if (!$paypalInterface->validate()) {
+			if ($this->_currentMethod->paypalproduct != 'api') {
+				VmInfo('VMPAYMENT_PAYPAL_PAYMENT_NOT_VALID');
+			}
+			return false;
+		}
+
+
+		return true;
+	}
+
+	/*******************/
+	/* Order cancelled */
+	/* May be it is removed in VM 2.1
+	/*******************/
+	public function plgVmOnCancelPayment(&$order, $old_order_status) {
+		return NULL;
+
 	}
 
 	/**
-	 * plgVmOnCheckAutomaticSelectedPayment
-	 * Checks how many plugins are available. If only one, the user will not have the choice. Enter edit_xxx page
-	 * The plugin must check first if it is the correct type
-	 *
-	 * @author Valerie Isaksen
-	 * @param VirtueMartCart cart: the cart object
-	 * @return null if no plugin was found, 0 if more then one plugin was found,  virtuemart_xxx_id if only one plugin is found
-	 *
+	 *  Order status changed
+	 * @param $order
+	 * @param $old_order_status
+	 * @return bool|null
 	 */
-	function plgVmOnCheckAutomaticSelectedPayment (VirtueMartCart $cart, array $cart_prices = array(), &$paymentCounter) {
+	public function plgVmOnUpdateOrderPayment(&$order, $old_order_status) {
 
-		return $this->onCheckAutomaticSelected ($cart, $cart_prices, $paymentCounter);
+		//Load the method
+		if (!($this->_currentMethod = $this->getVmPluginMethod($order->virtuemart_paymentmethod_id))) {
+			return NULL; // Another method was selected, do nothing
+		}
+
+		if (!$this->selectedThisElement($this->_currentMethod -> payment_element)) {
+			return NULL;
+		}
+
+		//Load only when updating status to shipped
+		if ($order->order_status != $this->_currentMethod->status_capture AND $order->order_status != $this->_currentMethod->status_refunded) {
+			//return null;
+		}
+		//Load the payments
+		if (!($payments = $this->_getPaypalInternalData($order->virtuemart_order_id))) {
+			// JError::raiseWarning(500, $db->getErrorMsg());
+			return null;
+		}
+
+		if ($this->_currentMethod->paypalproduct == 'std') {
+			return null;
+		}
+
+		$oModel = VmModel::getModel('orders');
+		$orderModelData = $oModel->getOrder($order->virtuemart_order_id);
+
+		$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod,$orderModelData['details']['BT']->payment_currency_id);
+		$payment = end($payments);
+		if ($this->_currentMethod->payment_action == 'Authorization' and $order->order_status == $this->_currentMethod->status_capture) {
+			$paypalInterface = $this->_loadPayPalInterface();
+			$paypalInterface->setOrder($order);
+			$paypalInterface->setTotal($order->order_total);
+			$paypalInterface->loadCustomerData();
+			if ($paypalInterface->DoCapture($payment)) {
+				$paypalInterface->debugLog(vmText::_('VMPAYMENT_PAYPAL_API_TRANSACTION_CAPTURED'), 'plgVmOnUpdateOrderPayment', 'message', true);
+				$this->_storePaypalInternalData(  $paypalInterface->getResponse(false), $order->virtuemart_order_id, $payment->virtuemart_paymentmethod_id, $order->order_number);
+			}
+
+		} elseif ($order->order_status == $this->_currentMethod->status_refunded OR $order->order_status == $this->_currentMethod->status_canceled) {
+			$paypalInterface = $this->_loadPayPalInterface();
+			$paypalInterface->setOrder($order);
+			$paypalInterface->setTotal($order->order_total);
+			$paypalInterface->loadCustomerData();
+			if ($paypalInterface->RefundTransaction($payment)) {
+				if ($this->_currentMethod->payment_type == '_xclick-subscriptions') {
+					$paypalInterface->debugLog(vmText::_('VMPAYMENT_PAYPAL_SUBSCRIPTION_CANCELLED'), 'plgVmOnUpdateOrderPayment Refund', 'message', true);
+				} else {
+					//Mark the order as refunded
+					// $order->order_status = $method->status_refunded;
+					$paypalInterface->debugLog(vmText::_('VMPAYMENT_PAYPAL_API_TRANSACTION_REFUNDED'), 'plgVmOnUpdateOrderPayment Refund', 'message', true);
+				}
+				$this->_storePaypalInternalData( $paypalInterface->getResponse(false), $order->virtuemart_order_id, $payment->virtuemart_paymentmethod_id, $order->order_number);
+			}
+		}
+
+		return true;
 	}
+
+	function plgVmOnUpdateOrderLinePayment(&$order) {
+		// $xx=1;
+	}
+
+	/*******************/
+	/* Credit Card API */
+	/*******************/
+	public function _displayCVVImages($method) {
+		$cvv_images = $method->cvv_images;
+		$img = '';
+		if ($cvv_images) {
+			$img = $this->displayLogos($cvv_images);
+			$img = str_replace('"', "'", $img);
+		}
+		return $img;
+	}
+
 
 	/**
-	 * This method is fired when showing the order details in the frontend.
-	 * It displays the method-specific data.
-	 *
-	 * @param integer $order_id The order ID
-	 * @return mixed Null for methods that aren't active, text (HTML) otherwise
-	 * @author Max Milbers
-	 * @author Valerie Isaksen
-	 */
-	public function plgVmOnShowOrderFEPayment ($virtuemart_order_id, $virtuemart_paymentmethod_id, &$payment_name) {
-
-		$this->onShowOrderFE ($virtuemart_order_id, $virtuemart_paymentmethod_id, $payment_name);
-	}
-
-	/**
-	 * This event is fired during the checkout process. It can be used to validate the
-	 * method data as entered by the user.
-	 *
-	 * @return boolean True when the data was valid, false otherwise. If the plugin is not activated, it should return null.
-	 * @author Max Milbers
-
-	public function plgVmOnCheckoutCheckDataPayment($psType, VirtueMartCart $cart) {
-	return null;
-	}
-	 */
-
-	/**
-	 * This method is fired when showing when priting an Order
-	 * It displays the the payment method-specific data.
-	 *
-	 * @param integer $_virtuemart_order_id The order ID
-	 * @param integer $method_id  method used for this order
-	 * @return mixed Null when for payment methods that were not selected, text (HTML) otherwise
-	 * @author Valerie Isaksen
-	 */
-	function plgVmonShowOrderPrintPayment ($order_number, $method_id) {
-
-		return $this->onShowOrderPrint ($order_number, $method_id);
-	}
-
-	/**
-	 * Save updated order data to the method specific table
-	 *
-	 * @param array $_formData Form data
-	 * @return mixed, True on success, false on failures (the rest of the save-process will be
-	 * skipped!), or null when this method is not actived.
-	 * @author Oscar van Eijk
-
-	public function plgVmOnUpdateOrderPayment(  $_formData) {
-	return null;
-	}
-	 */
-	/**
-	 * Save updated orderline data to the method specific table
-	 *
-	 * @param array $_formData Form data
-	 * @return mixed, True on success, false on failures (the rest of the save-process will be
-	 * skipped!), or null when this method is not actived.
-	 * @author Oscar van Eijk
-
-	public function plgVmOnUpdateOrderLine(  $_formData) {
-	return null;
-	}
-	 */
-	/**
-	 * plgVmOnEditOrderLineBE
-	 * This method is fired when editing the order line details in the backend.
-	 * It can be used to add line specific package codes
-	 *
-	 * @param integer $_orderId The order ID
-	 * @param integer $_lineId
-	 * @return mixed Null for method that aren't active, text (HTML) otherwise
-	 * @author Oscar van Eijk
-
-	public function plgVmOnEditOrderLineBE(  $_orderId, $_lineId) {
-	return null;
-	}
-	 */
-
-	/**
-	 * This method is fired when showing the order details in the frontend, for every orderline.
-	 * It can be used to display line specific package codes, e.g. with a link to external tracking and
-	 * tracing systems
-	 *
-	 * @param integer $_orderId The order ID
-	 * @param integer $_lineId
-	 * @return mixed Null for method that aren't active, text (HTML) otherwise
-	 * @author Oscar van Eijk
-
-	public function plgVmOnShowOrderLineFE(  $_orderId, $_lineId) {
-	return null;
-	}
-	 */
-	function plgVmDeclarePluginParamsPayment ($name, $id, &$data) {
-
-		return $this->declarePluginParams ('payment', $name, $id, $data);
-	}
-
-	/**
-	 * @param $name
-	 * @param $id
-	 * @param $table
+	 * * List payment methods selection
+	 * @param VirtueMartCart $cart
+	 * @param int $selected
+	 * @param $htmlIn
 	 * @return bool
 	 */
-	function plgVmSetOnTablePluginParamsPayment ($name, $id, &$table) {
 
-		return $this->setOnTablePluginParams ($name, $id, $table);
+	public function plgVmDisplayListFEPayment(VirtueMartCart $cart, $selected = 0, &$htmlIn) {
+
+		if ($this->getPluginMethods($cart->vendorId) === 0) {
+			if (empty($this->_name)) {
+				$app = JFactory::getApplication();
+				$app->enqueueMessage(vmText::_('COM_VIRTUEMART_CART_NO_' . strtoupper($this->_psType)));
+				return false;
+			} else {
+				return false;
+			}
+		}
+		$method_name = $this->_psType . '_name';
+
+		$htmla = array();
+		foreach ($this->methods as $this->_currentMethod) {
+			if ($this->checkConditions($cart, $this->_currentMethod, $cart->cartPrices)) {
+
+				$html = '';
+				$cartPrices=$cart->cartPrices;
+				if (isset($this->_currentMethod->cost_method)) {
+					$cost_method=$this->_currentMethod->cost_method;
+				} else {
+					$cost_method=true;
+				}
+				$methodSalesPrice = $this->setCartPrices($cart, $cartPrices, $this->_currentMethod, $cost_method);
+
+				$this->_currentMethod->payment_currency = $this->getPaymentCurrency($this->_currentMethod);
+				$this->_currentMethod->$method_name = $this->renderPluginName($this->_currentMethod);
+				$html .= $this->getPluginHtml($this->_currentMethod, $selected, $methodSalesPrice);
+
+
+				if ($this->_currentMethod->paypalproduct == 'api') {
+					if (empty($this->_currentMethod->creditcards)) {
+						$this->_currentMethod->creditcards = PaypalHelperPaypal::getPaypalCreditCards();
+					} elseif (!is_array($this->_currentMethod->creditcards)) {
+						$this->_currentMethod->creditcards = (array)$this->_currentMethod->creditcards;
+					}
+					$html .= $this->renderByLayout('creditcardform', array('creditcards' => $this->_currentMethod->creditcards,
+						'virtuemart_paymentmethod_id' => $this->_currentMethod->virtuemart_paymentmethod_id,
+						'method' => $this->_currentMethod,
+						'sandbox' => $this->_currentMethod->sandbox,
+						'customerData' => $this->customerData));
+				}
+				if ($this->_currentMethod->payment_type == '_xclick-auto-billing' && $this->_currentMethod->billing_max_amount_type == 'cust') {
+					$html .= $this->renderByLayout('billingmax', array("method" => $this->_currentMethod, "customerData" => $this->customerData));
+				}
+				if ($this->_currentMethod->payment_type == '_xclick-subscriptions') {
+					$paypalInterface = $this->_loadPayPalInterface();
+					$html .= '<br/><span class="vmpayment_cardinfo">' . $paypalInterface->getRecurringProfileDesc() . '</span>';
+				}
+				if ($this->_currentMethod->payment_type == '_xclick-payment-plan') {
+					$paypalInterface = $this->_loadPayPalInterface();
+					$html .= '<br/><span class="vmpayment_cardinfo">' . $paypalInterface->getPaymentPlanDesc() . '</span>';
+				}
+
+				$htmla[] = $html;
+			}
+		}
+		$htmlIn[] = $htmla;
+		return true;
+
+	}
+
+
+	/**
+	 * Validate payment on checkout
+	 * @param VirtueMartCart $cart
+	 * @return bool|null
+	 */
+	function plgVmOnCheckoutCheckDataPayment(VirtueMartCart $cart) {
+
+		if (!$this->selectedThisByMethodId($cart->virtuemart_paymentmethod_id)) {
+			return NULL; // Another method was selected, do nothing
+		}
+
+		if (!($this->_currentMethod = $this->getVmPluginMethod($cart->virtuemart_paymentmethod_id))) {
+			return FALSE;
+		}
+
+		//If PayPal express, make sure we have a valid token.
+		//If not, redirect to PayPal to get one.
+		$paypalInterface = $this->_loadPayPalInterface();
+
+		$paypalInterface->setCart($cart);
+		$cart->getCartPrices();
+		$paypalInterface->setTotal($cart->cartPrices['billTotal']);
+
+		// Here we only check for token, but should check for payer id ?
+		$paypalInterface->loadCustomerData();
+		$paypalInterface->getExtraPluginInfo($this->_currentMethod);
+		$expressCheckout = vRequest::getVar('expresscheckout', '');
+		if ($expressCheckout == 'cancel') {
+			return true;
+		}
+		if (!$paypalInterface->validate()) {
+			return false;
+		}
+
+		return true;
+		//Validate amount
+		//if ($totalInPaymentCurrency <= 0) {
+		//	vmInfo (vmText::_ ('VMPAYMENT_PAYPAL_PAYMENT_AMOUNT_INCORRECT'));
+		//	return FALSE;
+		//}
+	}
+
+
+	/**
+	 * For Express Checkout
+	 * @param $type
+	 * @param $name
+	 * @param $render
+	 * @return bool|null
+	 */
+
+	function plgVmOnSelfCallFE($type, $name, &$render) {
+		if ($name != $this->_name || $type != 'vmpayment') {
+			return FALSE;
+		}
+		$action = vRequest::getCmd('action');
+		$virtuemart_paymentmethod_id = vRequest::getInt('pm');
+		//Load the method
+		if (!($currentMethod = $this->getVmPluginMethod($virtuemart_paymentmethod_id))) {
+			return NULL; // Another method was selected, do nothing
+		}
+		if (!$this->selectedThisElement($currentMethod->payment_element)) {
+			return FALSE;
+		}
+		if ($action != 'SetExpressCheckout') {
+			return false;
+		}
+
+			if (!class_exists('VirtueMartCart')) {
+				require(VMPATH_SITE . DS . 'helpers' . DS . 'cart.php');
+			}
+			$cart = VirtueMartCart::getCart();
+			//$cart->prepareCartData();
+			$cart->virtuemart_paymentmethod_id = $virtuemart_paymentmethod_id;
+			$cart->setCartIntoSession();
+			$this->_currentMethod = $currentMethod;
+			$paypalInterface = $this->_loadPayPalInterface();
+			$paypalInterface->setCart($cart);
+			$paypalInterface->setTotal($cart->cartPrices['billTotal']);
+			$paypalInterface->loadCustomerData();
+			// will perform $this->getExpressCheckoutDetails();
+			$paypalInterface->getExtraPluginInfo($this->_currentMethod);
+
+			if (!$paypalInterface->validate()) {
+				VmInfo('VMPAYMENT_PAYPAL_PAYMENT_NOT_VALID');
+				return false;
+			} else {
+				$app = JFactory::getApplication();
+				$app->redirect(JRoute::_('index.php?option=com_virtuemart&view=cart&Itemid=' . vRequest::getInt('Itemid'), false));
+			}
+
+
+	}
+
+	//Calculate the price (value, tax_id) of the selected method, It is called by the calculator
+	//This function does NOT to be reimplemented. If not reimplemented, then the default values from this function are taken.
+	public function plgVmOnSelectedCalculatePricePayment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
+		if (!($selectedMethod = $this->getVmPluginMethod($cart->virtuemart_paymentmethod_id))) {
+			return FALSE;
+		}
+		//$this->isExpToken($selectedMethod, $cart) ;
+		return $this->onSelectedCalculatePrice($cart, $cart_prices, $cart_prices_name);
+	}
+
+
+	/* backward compatibility */
+	function getPaypalProduct() {
+		if (isset($this->_currentMethod->paypalproduct) and !empty($this->_currentMethod->paypalproduct)) {
+			return $this->_currentMethod->paypalproduct;
+		} else {
+			return 'std';
+		}
+	}
+
+
+	// Checks how many plugins are available. If only one, the user will not have the choice. Enter edit_xxx page
+	// The plugin must check first if it is the correct type
+	function plgVmOnCheckAutomaticSelectedPayment(VirtueMartCart $cart, array $cart_prices = array(), &$paymentCounter) {
+		return $this->onCheckAutomaticSelected($cart, $cart_prices, $paymentCounter);
+	}
+
+	// This method is fired when showing the order details in the frontend.
+	// It displays the method-specific data.
+	public function plgVmOnShowOrderFEPayment($virtuemart_order_id, $virtuemart_paymentmethod_id, &$payment_name) {
+		$this->onShowOrderFE($virtuemart_order_id, $virtuemart_paymentmethod_id, $payment_name);
+	}
+
+	// This method is fired when showing when priting an Order
+	// It displays the the payment method-specific data.
+	function plgVmonShowOrderPrintPayment($order_number, $method_id) {
+		return $this->onShowOrderPrint($order_number, $method_id);
+	}
+
+	function plgVmDeclarePluginParamsPaymentVM3( &$data) {
+		return $this->declarePluginParams('payment', $data);
+	}
+
+	function plgVmSetOnTablePluginParamsPayment($name, $id, &$table) {
+		return $this->setOnTablePluginParams($name, $id, $table);
 	}
 
 }

@@ -1,6 +1,6 @@
 <?php defined('_JEXEC') or die('Restricted access');
 /**
- * @version $Id: cart_advertisement.php 6510 2012-10-08 11:26:10Z alatak $
+ * @version $Id: cart_advertisement.php 7538 2014-01-06 11:36:43Z Milbo $
  *
  * @author Valérie Isaksen
  * @package VirtueMart
@@ -51,7 +51,7 @@ if ($viewData['country']== "nl") {
 <div class="klarna_AdvertisementBox">
  <div id="klarna_partpayment" style="display: none"></div>
                 <div class="klarna_AdvertBox_bottomMid_readMore">
-                    <a href="#"><?php echo JText::sprintf('VMPAYMENT_KLARNA_ADVERTISEMENT',$viewData['sFee'] ); ?></a>
+                    <a href="#"><?php echo vmText::sprintf('VMPAYMENT_KLARNA_ADVERTISEMENT',$viewData['sFee'] ); ?></a>
                 </div>
 
         <?php

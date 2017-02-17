@@ -21,14 +21,14 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 
 <div class="vendor-details-view">
-	<h1><?php echo JText::_('COM_VIRTUEMART_VENDOR_TOS').$this->vendor->vendor_store_name;
+	<h1><?php echo vmText::_('COM_VIRTUEMART_VENDOR_TOS').$this->vendor->vendor_store_name;
 	if (!empty($this->vendor->images[0])) { ?>
 		<div class="vendor-image">
 		<?php echo $this->vendor->images[0]->displayMediaThumb('',false); ?>
 		</div>
 	<?php
 	}
-?>	</h1></div>
+?>	</h1>
 
 
 	<?php // vendor Description
@@ -49,3 +49,4 @@ defined('_JEXEC') or die('Restricted access');
 	<?php echo $this->linkcontact ?>
 
 	<br class="clear" />
+</div>

@@ -2,7 +2,7 @@
 /**
  *
  * Order detail view
- *
+ * //index.php?option=com_virtuemart&view=invoice&layout=invoice&format=pdf&tmpl=component&order_number=xx&order_pass=p_yy
  * @package    VirtueMart
  * @subpackage Orders
  * @author Max Milbers, Valerie Isaksen
@@ -15,36 +15,29 @@
  * other free or open source software licenses.
  * @version $Id: details.php 5412 2012-02-09 19:27:55Z alatak $
  */
-//index.php?option=com_virtuemart&view=invoice&layout=invoice&format=pdf&tmpl=component&order_number=xx&order_pass=p_yy
-//
-// Check to ensure this file is included in Joomla!
+
 defined('_JEXEC') or die('Restricted access');
-JHTML::stylesheet('vmpanels.css', JURI::root() . 'components/com_virtuemart/assets/css/');
+JHtml::stylesheet('vmpanels.css', JURI::root() . 'components/com_virtuemart/assets/css/');
 if ($this->_layout == "invoice") {
-    $document = JFactory::getDocument();
-    $document->setTitle(JText::_('COM_VIRTUEMART_ORDER_PRINT_PO_NUMBER') . ' ' . $this->orderDetails['details']['BT']->order_number . ' ' . $this->vendor->vendor_store_name);
-//$document->setName( JText::_('COM_VIRTUEMART_ACC_ORDER_INFO').' '.$this->orderDetails['details']['BT']->order_number);
-//$document->setDescription( JText::_('COM_VIRTUEMART_ORDER_PRINT_PO_NUMBER').' '.$this->orderDetails['details']['BT']->order_number);
+	$document = JFactory::getDocument();
+	$document->setTitle(vmText::_('COM_VIRTUEMART_ORDER_PRINT_PO_NUMBER') . ' ' . $this->orderDetails['details']['BT']->order_number . ' ' . $this->vendor->vendor_store_name);
 }
+
+$vendorCompanyName = (!empty($this->vendor->vendorFields["fields"]["company"]["value"])) ? $this->vendor->vendorFields["fields"]["company"]["value"] : $this->vendor->vendor_store_name;
+
+if(!empty($this->vendor->vendor_letter_css)) { ?>
+	<style type="text/css">
+		<?php echo $this->vendor->vendor_letter_css; ?>
+	</style>
+<?php }
+
+$this->vendor->vendor_letter_header_image;
 
 if ($this->headFooter) {
     ?>
+<style><?php echo $this->vendor->vendor_letter_css; ?></style>
 <div class="vendor-details-view">
-    <h1><?php echo $this->vendor->vendor_store_name;
-        if (!empty($this->vendor->images[0])) {
-            ?>
-            <div class="vendor-image">
-                <?php echo $this->vendor->images[0]->displayMediaThumb('', false); ?>
-            </div>
-            <?php
-        }
-        ?>    </h1>
-	<div class="vendor-details-address">
-	<?php //Attention this is removed, please use directly
-		//echo $this->vendorAddress;
-		echo shopFunctions::renderVendorAddress($this->vendor->virtuemart_vendor_id, '<br />');
-		?>
-		</div>
+<?php echo $this->replaceVendorFields($this->vendor->vendor_letter_header_html, $this->vendor); ?>
 </div>
 
 <div class="vendor-description">
@@ -56,7 +49,7 @@ if ($this->headFooter) {
          foreach($userfields['fields'] as $item){
              if(!empty($item['value'])){
                  if($item['name']==='agreed'){
-                     $item['value'] =  ($item['value']===0) ? JText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_NO'):JText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_YES');
+                     $item['value'] =  ($item['value']===0) ? vmText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_NO'):vmText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_YES');
                  }
              ?><!-- span class="titles"><?php echo $item['title'] ?></span -->
                          <span class="values vm2<?php echo '-'.$item['name'] ?>" ><?php echo $this->escape($item['value']) ?></span>
@@ -67,65 +60,48 @@ if ($this->headFooter) {
              }
          }
      }*/
-}
 ?></div> <?php
+}
 
 
 if ($this->print) {
     ?>
-
 <body onload="javascript:print();">
-
-<div class='spaceStyle'>
-    <?php
-// 			echo require(__DIR__.'/mail_html_shopper.php');
-    ?>
-</div>
-<div class='spaceStyle'>
-    <?php
-    echo $this->loadTemplate('order');
-    ?>
-</div>
-
-<div class='spaceStyle'>
-    <?php
-    echo $this->loadTemplate('items');
-    ?>
-</div>
-    <?php    //echo $this->vendor->vendor_legal_info; ?>
-</body>
-<?php
-} else {
-
-    ?>
-
-<?php
-
-    echo $this->loadTemplate('order');
-
-    ?>
-
-
-	<div class='spaceStyle'>
-	<?php
-
-    $tabarray = array();
-
-    $tabarray['items'] = 'COM_VIRTUEMART_ORDER_ITEM';
-    $tabarray['history'] = 'COM_VIRTUEMART_ORDER_HISTORY';
-
-    shopFunctionsF::buildTabs( $this, $tabarray);
-    echo '</div>
-	    <br clear="all"/><br/>';
-}
-
-if ($this->headFooter) {
-    echo $this->vendor->vendor_legal_info;
-}
-
+<?php   }
 ?>
 
+<div class='spaceStyle'>
+    <?php
+    echo $this->loadTemplate('order');
+    ?>
+</div>
 
+<div class='spaceStyle'>
+    <?php
+    if ($this->print) {
+		echo $this->loadTemplate('items');
+    } else {
+        $tabarray = array('items'=>'COM_VIRTUEMART_ORDER_ITEM', 'history'=>'COM_VIRTUEMART_ORDER_HISTORY');
+		shopFunctionsF::buildTabs( $this, $tabarray);
+    }
+    ?>
+</div>
+<br clear="all"/><br/>
+    <?php    
+if ($this->headFooter) {
+    echo $this->replaceVendorFields($this->vendor->vendor_letter_footer_html, $this->vendor);
+}
+
+if ($this->vendor->vendor_letter_add_tos) {?>
+<div class="invoice_tos" <?php if ($this->vendor->vendor_letter_add_tos_newpage) { ?> style="page-break-before: always"<?php } ?>>
+    <?php echo $this->vendor->vendor_terms_of_service; ?>
+</div>
+<?php }
+
+if ($this->print) { ?>
+</body>
+<?php
+} ?>
 
 
 

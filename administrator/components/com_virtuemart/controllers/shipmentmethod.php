@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: shipmentmethod.php 6326 2012-08-08 14:14:28Z alatak $
+* @version $Id: shipmentmethod.php 8953 2015-08-19 10:30:52Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -40,6 +37,7 @@ class VirtuemartControllerShipmentmethod extends VmController {
 	 * @access	public
 	 */
 	function __construct() {
+		VmConfig::loadJLang('com_virtuemart_orders',TRUE);
 		parent::__construct();
 	}
 
@@ -49,10 +47,22 @@ class VirtuemartControllerShipmentmethod extends VmController {
 	 * @author Max Milbers
 	 */
 	function save($data = 0){
-		$data = JRequest::get('post');
-		// TODO disallow shipment_name as HTML
-		$data['shipment_name'] = JRequest::getVar('shipment_name','','post','STRING',JREQUEST_ALLOWHTML);
-		$data['shipment_desc'] = JRequest::getVar('shipment_desc','','post','STRING',JREQUEST_ALLOWHTML);
+
+		$data = vRequest::getPost();
+
+		if(vmAccess::manager('raw')){
+			$data['shipment_name'] = vRequest::get('shipment_name','');
+			$data['shipment_desc'] = vRequest::get('shipment_desc','');
+			if(isset($data['params'])){
+				$data['params'] = vRequest::get('params','');
+			}
+		} else {
+			$data['shipment_name'] = vRequest::getHtml('shipment_name','');
+			$data['shipment_desc'] = vRequest::getHtml('shipment_desc','');
+			if(isset($data['params'])){
+				$data['params'] = vRequest::getHtml('params','');
+			}
+		}
 
 		parent::save($data);
 
@@ -70,15 +80,13 @@ class VirtuemartControllerShipmentmethod extends VmController {
 
 		$model = VmModel::getModel('shipmentmethod');
 		$msgtype = '';
-		//$cids = JRequest::getInt('virtuemart_product_id',0);
-		$cids = JRequest::getVar($this->_cidName, JRequest::getVar('virtuemart_shipment_id',array(),'', 'ARRAY'), '', 'ARRAY');
-		//jimport( 'joomla.utilities.arrayhelper' );
-		JArrayHelper::toInteger($cids);
+
+		$cids = vRequest::getVar($this->_cidName, vRequest::getInt('virtuemart_shipment_id'));
 
 		foreach($cids as $cid){
-			if ($model->createClone($cid)) $msg = JText::_('COM_VIRTUEMART_SHIPMENT_CLONED_SUCCESSFULLY');
+			if ($model->createClone($cid)) $msg = vmText::_('COM_VIRTUEMART_SHIPMENT_CLONED_SUCCESSFULLY');
 			else {
-				$msg = JText::_('COM_VIRTUEMART_SHIPMENT_NOT_CLONED_SUCCESSFULLY');
+				$msg = vmText::_('COM_VIRTUEMART_SHIPMENT_NOT_CLONED_SUCCESSFULLY');
 				$msgtype = 'error';
 			}
 		}

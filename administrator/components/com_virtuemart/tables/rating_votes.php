@@ -19,7 +19,7 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Product review table class
@@ -41,7 +41,7 @@ class TableRating_votes extends VmTable {
 
 	/**
 	* @author Max Milbers
-	* @param $db A database connector object
+	* @param JDataBase $db
 	*/
 	function __construct(&$db) {
 		parent::__construct('#__virtuemart_rating_votes', 'virtuemart_rating_vote_id', $db);
@@ -50,6 +50,20 @@ class TableRating_votes extends VmTable {
 		$this->setLoggable();
 	}
 
+	function check(){
 
+		if($this->created_by>0) {
+			$q = 'SELECT `virtuemart_rating_vote_id` FROM `#__virtuemart_rating_votes` WHERE `virtuemart_product_id`="'.$this->virtuemart_product_id.'" AND `created_by`="'.$this->created_by.'" ';
+			$this->_db->setQuery($q);
+			if($r = $this->_db->loadResult()){
+				vmdebug('__virtuemart_rating_votes check set virtuemart_rating_vote_id',$r);
+				$this->virtuemart_rating_vote_id = $r;
+			}
+		} else if(empty($this->created_by) and !empty($this->customer) and vmAccess::manager('ratings')){
+			$this->created_by = -1;
+		}
+
+		return parent::check();
+	}
 }
 // pure php no closing tag

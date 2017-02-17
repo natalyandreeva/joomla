@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: coupons.php 4455 2011-10-18 20:42:02Z alatak $
+* @version $Id: coupons.php 8955 2015-08-19 12:58:20Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Coupon table class
@@ -32,12 +32,13 @@ class TableCoupons extends VmTable {
 
 	/** @var int Primary key */
 	var $virtuemart_coupon_id			 	= 0;
+	var $virtuemart_vendor_id	= 0;
 	/** @var varchar Coupon name */
 	var $coupon_code         	= '';
 	/** @var string Coupon percentage or total */
 	var $percent_or_total    	= 'percent';
 	/** @var string Coupon type */
-	var $coupon_type		    = 'permanent';
+	var $coupon_type		    = 'gift';
 	/** @var Decimal Coupon value */
 	var $coupon_value 			= '';
 	/** @var datetime Coupon start date */
@@ -46,10 +47,11 @@ class TableCoupons extends VmTable {
 	var $coupon_expiry_date 	= '';
 	/** @var decimal Coupon valid value */
 	var $coupon_value_valid 	= 0;
-
+	/** @var decimal Coupon valid value */
+	var $coupon_used			= 0;
 	/**
 	 * @author RickG, Max Milbers
-	 * @param $db A database connector object
+	 * @param JDataBase $db
 	 */
 	function __construct(&$db)
 	{

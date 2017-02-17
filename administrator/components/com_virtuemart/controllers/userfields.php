@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: userfields.php 5644 2012-03-09 22:36:32Z electrocity $
+* @version $Id: userfields.php 8953 2015-08-19 10:30:52Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -50,7 +47,6 @@ class VirtuemartControllerUserfields extends VmController {
 		$document = JFactory::getDocument();
 		$viewType = $document->getType();
 		$view = $this->getView('userfields', $viewType);
-		$view->loadHelper('paramhelper');
 
 		parent::display();
 	}
@@ -62,6 +58,28 @@ class VirtuemartControllerUserfields extends VmController {
 		// Now display the view.
 		$view->display(null);
 	}
+
+	function save($data = 0) {
+
+		if($data===0) $data = vRequest::getPost();
+
+		if(vmAccess::manager('raw')){
+			$data['description'] = vRequest::get('description','');
+			if(isset($data['params'])){
+				$data['params'] = vRequest::get('params','');
+			}
+		} else {
+			$data['description'] = vRequest::getHtml('description','');
+			if(isset($data['params'])){
+				$data['params'] = vRequest::getHtml('params','');
+			}
+		}
+		$data['name'] = vRequest::getCmd('name');
+		// onSaveCustom plugin;
+		parent::save($data);
+	}
+
+
 
 }
 

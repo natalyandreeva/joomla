@@ -13,12 +13,12 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: edit.php 5804 2012-04-04 18:28:45Z Milbo $
+ * @version $Id: edit.php 8080 2014-06-29 07:31:28Z alatak $
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 AdminUIHelper::imitateTabs('start', 'COM_VIRTUEMART_ORDERSTATUS_DETAILS');
 ?>
 
@@ -27,7 +27,7 @@ AdminUIHelper::imitateTabs('start', 'COM_VIRTUEMART_ORDERSTATUS_DETAILS');
 
     <div class="col50">
 	<fieldset>
-	    <legend><?php echo JText::_('COM_VIRTUEMART_ORDERSTATUS_DETAILS'); ?></legend>
+	    <legend><?php echo vmText::_('COM_VIRTUEMART_ORDERSTATUS_DETAILS'); ?></legend>
 	    <?php
 	    $editcoreStatus = (in_array($this->orderStatus->order_status_code, $this->lists['vmCoreStatusCode']));
 	    $orderStatusCodeTip = ($editcoreStatus) ? 'COM_VIRTUEMART_ORDER_STATUS_CODE_CORE' : 'COM_VIRTUEMART_ORDER_STATUS_CODE_TIP';
@@ -40,7 +40,7 @@ AdminUIHelper::imitateTabs('start', 'COM_VIRTUEMART_ORDERSTATUS_DETAILS');
 	    <table class="admintable">
 		<?php
 		$lang = JFactory::getLanguage();
-		$text = $lang->hasKey($this->orderStatus->order_status_name) ? ' (' . JText::_($this->orderStatus->order_status_name) . ')' : ' ';
+		$text = $lang->hasKey($this->orderStatus->order_status_name) ? ' (' . vmText::_($this->orderStatus->order_status_name) . ')' : ' ';
 
 		echo VmHTML::row('input', 'COM_VIRTUEMART_ORDER_STATUS_NAME', 'order_status_name', $this->orderStatus->order_status_name, 'class="inputbox"', '', 50, 50, $text);
 		?>

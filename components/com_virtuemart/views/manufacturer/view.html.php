@@ -20,7 +20,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_SITE.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmView'))require(VMPATH_SITE.DS.'helpers'.DS.'vmview.php');
 
 /**
  * HTML View class for maintaining the list of manufacturers
@@ -36,12 +36,12 @@ class VirtuemartViewManufacturer extends VmView {
 		$document = JFactory::getDocument();
 		$mainframe = JFactory::getApplication();
 		$pathway = $mainframe->getPathway();
-		/* Set the helper */
-		$this->addHelperPath(JPATH_VM_ADMINISTRATOR.DS.'helpers');
-		$this->loadHelper('image');
 
-		$virtuemart_manufacturer_id = JRequest::getInt('virtuemart_manufacturer_id', 0);
-		$mf_category_id = JRequest::getInt('mf_category_id', 0);
+		if (!class_exists('VmImage'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'image.php');
+
+		$virtuemart_manufacturer_id = vRequest::getInt('virtuemart_manufacturer_id', 0);
+		$mf_category_id = vRequest::getInt('mf_category_id', 0);
 
 		// get necessary models
 		$model = VmModel::getModel('manufacturer');
@@ -51,18 +51,51 @@ class VirtuemartViewManufacturer extends VmView {
 			$model->addImages($manufacturer,1);
 
 			$manufacturerImage = $manufacturer->images[0]->displayMediaThumb('class="manufacturer-image"',false);
+			if (VmConfig::get('enable_content_plugin', 0)) {
+				if(!class_exists('shopFunctionsF'))require(VMPATH_SITE.DS.'helpers'.DS.'shopfunctionsf.php');
+				shopFunctionsF::triggerContentPlugin($manufacturer, 'manufacturer','mf_desc');
+			}
 
-			$document->setTitle(JText::_('COM_VIRTUEMART_MANUFACTURER_DETAILS').' '.strip_tags($manufacturer->mf_name));
-
+			$document->setTitle(vmText::_('COM_VIRTUEMART_MANUFACTURER_DETAILS').' '.strip_tags($manufacturer->mf_name));
+			//added so that the canonical points to page with visible products thx to P2Peter
+			// remove joomla canonical before adding it
+			foreach ( $document->_links as $k => $array ) {
+				if ( $array['relation'] == 'canonical' ) {
+					unset($document->_links[$k]);
+					break;
+				}
+			}
+			$document->addHeadLink( JUri::getInstance()->toString(array('scheme', 'host', 'port')).JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_manufacturer_id='.$virtuemart_manufacturer_id, FALSE) , 'canonical', 'rel', '' );
 			$this->assignRef('manufacturerImage', $manufacturerImage);
-// 			$this->assignRef('manufacturerProductsURL', $manufacturerProductsURL);
 			$this->assignRef('manufacturer',	$manufacturer);
 			$pathway->addItem(strip_tags($manufacturer->mf_name));
 
 			$this->setLayout('details');
-// 			vmdebug('$manufacturer',$manufacturer);
+
+			if ($manufacturer->metadesc) {
+				$document->setDescription( strip_tags(html_entity_decode($manufacturer->metadesc,ENT_QUOTES)) );
+			} else {
+				$document->setDescription( strip_tags(html_entity_decode($manufacturer->mf_name,ENT_QUOTES))  );
+			}
+
+			if ($manufacturer->metakey) {
+				$document->setMetaData('keywords', $manufacturer->metakey);
+			}
+
+			if ($manufacturer->metarobot) {
+				$document->setMetaData('robots', $manufacturer->metarobot);
+			}
+
+			$app = JFactory::getApplication();
+			if ($app->getCfg('MetaTitle') == '1') {
+				$document->setMetaData('title', $manufacturer->mf_name);  //Maybe better product_name
+			}
+			if ($app->getCfg('MetaAuthor') == '1') {
+				$document->setMetaData('author', $manufacturer->metaauthor);
+			}
+
 		} else {
-			$document->setTitle(JText::_('COM_VIRTUEMART_MANUFACTURER_PAGE')) ;
+			$document->setTitle(vmText::_('COM_VIRTUEMART_MANUFACTURER_PAGE')) ;
 			$manufacturers = $model->getManufacturers(true, true,  true);
 			$model->addImages($manufacturers,1);
 			$this->assignRef('manufacturers',	$manufacturers);

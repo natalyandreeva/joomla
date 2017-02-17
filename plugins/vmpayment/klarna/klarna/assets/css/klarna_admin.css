@@ -4,7 +4,7 @@
 div.klarna_update_box {
     background-color: #BADDF0;
     border: 1px solid #389FD3;
-    font-family: Arial,Verdana;
+    font-family: Arial, Verdana;
     font-size: 11px;
     height: 100px;
     margin: 10px;
@@ -58,11 +58,12 @@ span.klarna_update_header {
 }
 
 span.klarna_update_text {
-    float:left;
-    position:relative;
+    float: left;
+    position: relative;
     font-size: 14px;
     margin-left: 40px;
 }
+
 /**************************************************/
 /*                              Country Settings  */
 /**************************************************/
@@ -73,10 +74,10 @@ fieldset.hide {
 fieldset.klarna_country_settings {
 }
 
-fieldset.klarna_country_settings span.klarna_field  {
+fieldset.klarna_country_settings span.klarna_field {
     padding-left: 30px;
     width: 100px;
-    float:left;
+    float: left;
 }
 
 span.klarna_settings_title {
@@ -98,35 +99,41 @@ div#klarna_settings_boxes {
     width: 626px !important;
     min-height: 0px !important;
 }
+
 span.update_pclasses {
     float: left;
     padding: 15px 0 0 10px;
     position: relative;
 }
-div#pclasses  {
+
+div#pclasses {
     display: none;
 }
 
 legend#pclass_field {
     cursor: pointer;
 }
+
 #pclass_field .expand_arrow {
-  background: url("../images/expand_arrow.png") no-repeat scroll 0 4px transparent;
-  float: left;
-  height: 16px;
-  margin-right: 4px;
-  width: 16px;
+    background: url("../images/expand_arrow.png") no-repeat scroll 0 4px transparent;
+    float: left;
+    height: 16px;
+    margin-right: 4px;
+    width: 16px;
 }
+
 #pclass_field .collapse_arrow {
-  background: url("../images/collapse_arrow.png") no-repeat scroll 0 4px transparent;
-  float: left;
-  height: 16px;
-  margin-right: 4px;
-  width: 16px;
+    background: url("../images/collapse_arrow.png") no-repeat scroll 0 4px transparent;
+    float: left;
+    height: 16px;
+    margin-right: 4px;
+    width: 16px;
 }
-#PClassesSuccessResult img{
-	float:none;
+
+#PClassesSuccessResult img {
+    float: none;
 }
+
 .button_klarna {
     background-color: #EEEEEE;
     border-color: #CCCCCC #333333 #333333 #CCCCCC;
@@ -140,29 +147,37 @@ span.no_pclasses {
     text-align: center;
     font-size: 16px;
 }
-span.no_pclasses a{
+
+span.no_pclasses a {
     font-weight: bold;
 }
-span.no_pclasses a:hover{
+
+span.no_pclasses a:hover {
     text-decoration: none;
     font-style: italic;
 }
+
 td.pclass_number {
     text-align: right;
 }
+
 td.pclass_flag {
     text-align: center;
 }
+
 thead.klarna_pclasses_header {
     font-weight: bold;
 }
+
 table.klarna_pclasses {
     padding: 5px;
     width: 100%;
 }
+
 td.pclass_description {
     width: 200px;
 }
+
 td.pclass_id {
     padding-right: 3px;
 }
@@ -190,7 +205,7 @@ div#live_or_beta {
 }
 
 span.klarna_orderstatus_box {
-    float:right;
+    float: right;
     padding-right: 15px;
 }
 
@@ -205,17 +220,19 @@ div#testmode {
 }
 
 span.klarna_mode_span {
-    float:left;
+    float: left;
 }
 
 div.klarna_mode_radio_group {
-    float:right;
+    float: right;
     position: relative;
     top: 10px;
 }
+
 .klarna_mode_label {
     cursor: pointer;
 }
+
 span.klarna_mode_input {
     float: right;
     text-align: right;
@@ -256,6 +273,7 @@ span#klarna_header {
     font-size: 16px;
     color: #0B55C4;
 }
+
 fieldset#order_status {
     width: 626px !important;
     text-align: center;
@@ -265,8 +283,8 @@ fieldset#order_status {
 /*                          Activated Countries   */
 /**************************************************/
 span.inactive:hover {
-    background:#ffffff; /*BG color is a must for IE6*/
-    text-decoration:none;
+    background: #ffffff; /*BG color is a must for IE6*/
+    text-decoration: none;
 }
 
 img.inactive {
@@ -327,21 +345,21 @@ fieldset#klarna_countries span.klarna_flag {
 }
 
 span.inactive:hover span.disabled {
-    display:inline;
-    position:absolute;
-    background:#ffffff;
-    border:3px ridge #0B55C4;
-    color:#0B55C4;
+    display: inline;
+    position: absolute;
+    background: #ffffff;
+    border: 3px ridge #0B55C4;
+    color: #0B55C4;
     opacity: 1.0;
     filter: alpha(opacity=100);
 }
 
 span.active:hover span.enabled {
-    display:inline;
-    position:absolute;
-    background:#ffffff;
-    border:3px ridge #0B55C4;
-    color:#0B55C4;
+    display: inline;
+    position: absolute;
+    background: #ffffff;
+    border: 3px ridge #0B55C4;
+    color: #0B55C4;
     opacity: 1.0;
     filter: alpha(opacity=100);
 }
@@ -355,7 +373,7 @@ span.active:hover span.enabled {
 }
 
 div.clear {
-        clear:both;
-        width: 100%;
-        height: 1px;
+    clear: both;
+    width: 100%;
+    height: 1px;
 }

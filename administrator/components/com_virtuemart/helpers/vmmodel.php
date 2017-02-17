@@ -6,7 +6,7 @@
  * @package	VirtueMart
  * @subpackage Helpers
  * @author Max Milbers
- * @copyright Copyright (c) 2011 VirtueMart Team. All rights reserved.
+ * @copyright Copyright (c) 2011 - 2014 VirtueMart Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
  * VirtueMart is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
@@ -21,12 +21,54 @@ defined('_JEXEC') or die();
 
 define('USE_SQL_CALC_FOUND_ROWS' , true);
 
-if(!class_exists('JModel')) require JPATH_VM_LIBRARIES.DS.'joomla'.DS.'application'.DS.'component'.DS.'model.php';
+if(!class_exists('vObject')) require(VMPATH_ADMIN .DS. 'helpers' .DS. 'vobject.php');
 
-class VmModel extends JModel {
+class VmModel extends vObject{
+
+	/**
+	 * Indicates if the internal state has been set
+	 *
+	 * @var    boolean
+	 * @since  11.1
+	 */
+	protected $__state_set = null;
+	/**
+	 * The model (base) name
+	 *
+	 * @var    string
+	 * @note   Replaces _name variable in 11.1
+	 * @since  11.1
+	 */
+	protected $name;
+
+	/**
+	 * The URL option for the component.
+	 *
+	 * @var    string
+	 * @since  11.1
+	 */
+	protected $option = null;
+
+	/**
+	 * A state object
+	 *
+	 * @var    string
+	 * @note   Replaces _state variable in 11.1
+	 * @since  11.1
+	 */
+	protected $state;
+
+	/**
+	 * The event to trigger when cleaning cache.
+	 *
+	 * @var      string
+	 * @since    11.1
+	 */
+	protected $event_clean_cache = null;
 
 	var $_id 			= 0;
 	var $_data			= null;
+	private static $_cache = array();
 	var $_query 		= null;
 
 	var $_total			= null;
@@ -43,23 +85,432 @@ class VmModel extends JModel {
 	var $_noLimit = false;
 
 	public function __construct($cidName='cid', $config=array()){
-		parent::__construct($config);
+		// Guess the option from the class name (Option)Model(View).
+		if (empty($this->option))
+		{
+			$r = null;
+
+			if (!preg_match('/(.*)Model/i', get_class($this), $r))
+			{
+				throw new Exception(vmText::_('JLIB_APPLICATION_ERROR_MODEL_GET_NAME'), 500);
+			}
+
+			$this->option = 'com_' . strtolower($r[1]);
+		}
+
+		// Set the view name
+		if (empty($this->name))
+		{
+			if (array_key_exists('name', $config))
+			{
+				$this->name = $config['name'];
+			}
+			else
+			{
+				$this->name = $this->getName();
+			}
+		}
+
+		// Set the model state
+		if (array_key_exists('state', $config))
+		{
+			$this->state = $config['state'];
+		}
+		else
+		{
+			$this->state = new JObject;
+		}
+
+		// Set the model dbo
+		if (array_key_exists('dbo', $config))
+		{
+			$this->_db = $config['dbo'];
+		}
+		else
+		{
+			$this->_db = JFactory::getDbo();
+		}
+
+		// Set the default view search path
+		if (array_key_exists('table_path', $config))
+		{
+			$this->addTablePath($config['table_path']);
+		}
+		elseif (defined('VMPATH_ADMIN'))
+		{
+			$this->addTablePath(VMPATH_ADMIN . '/tables');
+		}
+
+		// Set the internal state marker - used to ignore setting state from the request
+		if (!empty($config['ignore_request']))
+		{
+			$this->__state_set = true;
+		}
+
+		// Set the clean cache event
+		if (isset($config['event_clean_cache']))
+		{
+			$this->event_clean_cache = $config['event_clean_cache'];
+		}
+		elseif (empty($this->event_clean_cache))
+		{
+			$this->event_clean_cache = 'onContentCleanCache';
+		}
 
 		$this->_cidName = $cidName;
 
 		// Get the task
-		$task = JRequest::getWord('task','');
-		if($task!=='add'){
+		$task = vRequest::getCmd('task','');
+		if($task!=='add' and !empty($this->_cidName)){
 			// Get the id or array of ids.
-			$idArray = JRequest::getVar($this->_cidName,  0, '', 'array');
-			if(empty($idArray[0])) $idArray[0] = 0;
-			$this->setId((int)$idArray[0]);
-		}
+			$idArray = vRequest::getVar($this->_cidName,  0);
+			if($idArray){
+				if(is_array($idArray) and isset($idArray[0])){
+					$this->setId((int)$idArray[0]);
+				} else{
+					$this->setId((int)$idArray);
+				}
+			}
 
+		}
+		$this->_db = JFactory::getDbo();
 		$this->setToggleName('published');
 	}
 
 	static private $_vmmodels = array();
+
+
+
+	/**
+	 * Method to get the model name
+	 *
+	 * The model name. By default parsed using the classname or it can be set
+	 * by passing a $config['name'] in the class constructor
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 * @return  string  The name of the model
+	 *
+	 * @since   12.2
+	 * @throws  Exception
+	 */
+	public function getName()
+	{
+		if (empty($this->name))
+		{
+			$r = null;
+			if (!preg_match('/Model(.*)/i', get_class($this), $r))
+			{
+				throw new Exception(vmText::_('JLIB_APPLICATION_ERROR_MODEL_GET_NAME'), 500);
+			}
+			$this->name = strtolower($r[1]);
+		}
+
+		return $this->name;
+	}
+
+	/**
+	 * Adds to the stack of model table paths in LIFO order.
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   mixed  $path  The directory as a string or directories as an array to add.
+	 *
+	 * @return  void
+	 *
+	 * @since   12.2
+	 */
+	public static function addTablePath($path)
+	{
+		VmTable::addIncludePath($path);
+	}
+
+	/**
+	 * Create the filename for a resource
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string  $type   The resource type to create the filename for.
+	 * @param   array   $parts  An associative array of filename information.
+	 *
+	 * @return  string  The filename
+	 *
+	 * @since   11.1
+	 */
+	protected static function _createFileName($type, $parts = array())
+	{
+		$filename = '';
+
+		switch ($type)
+		{
+			case 'model':
+				$filename = strtolower($parts['name']) . '.php';
+				break;
+
+		}
+		return $filename;
+	}
+
+	/**
+	 * Method to set model state variables
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string  $property  The name of the property.
+	 * @param   mixed   $value     The value of the property to set or null.
+	 *
+	 * @return  mixed  The previous value of the property or null if not set.
+	 *
+	 * @since   12.2
+	 */
+	public function setState($property, $value = null)
+	{
+		return $this->state->set($property, $value);
+	}
+
+	/**
+	 * Method to get model state variables
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string  $property  Optional parameter name
+	 * @param   mixed   $default   Optional default value
+	 *
+	 * @return  object  The property where specified, the state object where omitted
+	 *
+	 * @since   11.1
+	 */
+	public function getState($property = null, $default = null)
+	{
+		if (!$this->__state_set)
+		{
+			// Protected method to auto-populate the model state.
+			$this->populateState();
+
+			// Set the model state set flag to true.
+			$this->__state_set = true;
+		}
+
+		return $property === null ? $this->state : $this->state->get($property, $default);
+	}
+
+	/**
+	 * Method to auto-populate the model state.
+	 *
+	 * This method should only be called once per instantiation and is designed
+	 * to be called on the first call to the getState() method unless the model
+	 * configuration flag to ignore the request is set.
+	 *
+	 * @return  void
+	 *
+	 * @note    Calling getState in this method will result in recursion.
+	 * @since   11.1
+	 */
+	protected function populateState()
+	{
+	}
+
+	/**
+	 * Add a directory where JModel should search for models. You may
+	 * either pass a string or an array of directories.
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   mixed   $path    A path or array[sting] of paths to search.
+	 * @param   string  $prefix  A prefix for models.
+	 *
+	 * @return  array  An array with directory elements. If prefix is equal to '', all directories are returned.
+	 *
+	 * @since   11.1
+	 */
+	public static function addIncludePath($path = '', $prefix = '')
+	{
+		static $paths;
+
+		if (!isset($paths))
+		{
+			$paths = array();
+		}
+
+		if (!isset($paths[$prefix]))
+		{
+			$paths[$prefix] = array();
+		}
+
+		if (!isset($paths['']))
+		{
+			$paths[''] = array();
+		}
+
+		if (!empty($path))
+		{
+			//jimport('joomla.filesystem.path');
+
+			if (!in_array($path, $paths[$prefix]))
+			{
+				array_unshift($paths[$prefix], vRequest::filterPath($path));
+			}
+
+			if (!in_array($path, $paths['']))
+			{
+				array_unshift($paths[''], vRequest::filterPath($path));
+			}
+		}
+
+		return $paths[$prefix];
+	}
+
+	/**
+	 * Method to get a table object, load it if necessary.
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string  $name     The table name. Optional.
+	 * @param   string  $prefix   The class prefix. Optional.
+	 * @param   array   $options  Configuration array for model. Optional.
+	 *
+	 * @return  JTable  A JTable object
+	 *
+	 * @since   11.1
+	 */
+	public function getTable($name = '', $prefix = 'Table', $options = array())
+	{
+		if (empty($name))
+		{
+			$name = $this->getName();
+		}
+
+		if ($table = $this->_createTable($name, $prefix, $options))
+		{
+			return $table;
+		}
+
+		JError::raiseError(0, vmText::sprintf('JLIB_APPLICATION_ERROR_TABLE_NAME_NOT_SUPPORTED', $name));
+
+		return null;
+	}
+
+
+	/**
+	 * Method to load and return a model object.
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string  $name    The name of the view
+	 * @param   string  $prefix  The class prefix. Optional.
+	 * @param   array   $config  Configuration settings to pass to JTable::getInstance
+	 *
+	 * @return  mixed  Model object or boolean false if failed
+	 *
+	 * @since   11.1
+	 * @see     JTable::getInstance
+	 */
+	protected function _createTable($name, $prefix = 'Table', $config = array())
+	{
+		// Clean the model name
+		$name = preg_replace('/[^A-Z0-9_]/i', '', $name);
+		$prefix = preg_replace('/[^A-Z0-9_]/i', '', $prefix);
+
+		// Make sure we are returning a DBO object
+		if (!array_key_exists('dbo', $config))
+		{
+			$config['dbo'] = JFactory::getDbo();
+		}
+
+		return VmTable::getInstance($name, $prefix, $config);
+	}
+
+	/**
+	 * Returns a Model object, always creating it
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string  $type    The model type to instantiate
+	 * @param   string  $prefix  Prefix for the model class name. Optional.
+	 * @param   array   $config  Configuration array for model. Optional.
+	 *
+	 * @return  mixed   A model object or false on failure
+	 *
+	 * @since   11.1
+	 */
+	public static function getInstance($type, $prefix = '', $config = array())
+	{
+		$type = preg_replace('/[^A-Z0-9_\.-]/i', '', $type);
+		$modelClass = $prefix . ucfirst($type);
+
+		if (!class_exists($modelClass))
+		{
+			$path = JPath::find(self::addIncludePath(null, $prefix), self::_createFileName('model', array('name' => $type)));
+			if (!$path)
+			{
+				$path = JPath::find(self::addIncludePath(null, ''), self::_createFileName('model', array('name' => $type)));
+			}
+			if ($path)
+			{
+				require_once $path;
+
+				if (!class_exists($modelClass))
+				{
+					vmWarn(vmText::sprintf('JLIB_APPLICATION_ERROR_MODELCLASS_NOT_FOUND', $modelClass));
+					return false;
+				}
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		return new $modelClass($config);
+	}
+
+	/**
+	 * Gets an array of objects from the results of database query.
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string   $query       The query.
+	 * @param   integer  $limitstart  Offset.
+	 * @param   integer  $limit       The number of records.
+	 *
+	 * @return  array  An array of results.
+	 *
+	 * @since   11.1
+	 */
+	protected function _getList($query, $limitstart = 0, $limit = 0)
+	{
+		$this->_db->setQuery($query, $limitstart, $limit);
+		$result = $this->_db->loadObjectList();
+
+		return $result;
+	}
+
+	/**
+	 * Returns a record count for the query
+	 *
+	 * @copyright   Copyright (C) 2005 - 2013 Open Source Matters, Inc. All rights reserved.
+	 * @license     GNU General Public License version 2 or later; see LICENSE
+	 *
+	 * @param   string  $query  The query.
+	 *
+	 * @return  integer  Number of rows for query
+	 *
+	 * @since   11.1
+	 */
+	protected function _getListCount($query)
+	{
+		$this->_db->setQuery($query);
+		$this->_db->execute();
+
+		return $this->_db->getNumRows();
+	}
 
 	/**
 	 *
@@ -69,7 +520,7 @@ class VmModel extends JModel {
 	static function getModel($name=false){
 
 		if (!$name){
-			$name = JRequest::getCmd('view','');
+			$name = vRequest::getCmd('view','');
 // 			vmdebug('Get standard model of the view');
 		}
 		$name = strtolower($name);
@@ -79,13 +530,13 @@ class VmModel extends JModel {
 		if(empty(self::$_vmmodels[strtolower($className)])){
 			if( !class_exists($className) ){
 
-				$modelPath = JPATH_VM_ADMINISTRATOR.DS."models".DS.$name.".php";
+				$modelPath = VMPATH_ADMIN.DS."models".DS.$name.".php";
 
 				if( file_exists($modelPath) ){
 					require( $modelPath );
 				}
 				else{
-					JError::raiseWarning( 0, 'Model '. $name .' not found.' );
+					vmWarn( 'Model '. $name .' not found.' );
 					echo 'File for Model '. $name .' not found.';
 					return false;
 				}
@@ -115,14 +566,16 @@ class VmModel extends JModel {
 	 * Resets the id and data
 	 *
 	 * @author Max Milbers
+	 *
 	 */
 	function setId($id){
 
-		if(is_array($id) && count($id)!==0) $id = $id[0];
+		if(is_array($id) && count($id)!=0){
+			reset($id);
+			$id = current($id);
+		}
 		if($this->_id!=$id){
 			$this->_id = (int)$id;
-			//			$idName = $this->_idName;
-			//			$this->$idName = $this->_id;
 			$this->_data = null;
 		}
 		return $this->_id;
@@ -156,7 +609,9 @@ class VmModel extends JModel {
 
 	function removevalidOrderingFieldName($name){
 		$key=array_search($name, $this->_validOrderingFieldName);
-		unset($this->_validOrderingFieldName[$key]) ;
+		if($key!==false){
+			unset($this->_validOrderingFieldName[$key]) ;
+		}
 	}
 
 	var $_tablePreFix = '';
@@ -204,16 +659,29 @@ class VmModel extends JModel {
 
 	function checkFilterOrder($toCheck){
 
+		if(empty($toCheck)) return $this->_selectedOrdering;
+
 		if(!in_array($toCheck, $this->_validOrderingFieldName)){
 
-			vmdebug('checkValidOrderingField:'.get_class($this).' programmer choosed invalid ordering '.$toCheck.', use '.$this->_selectedOrdering);
-			$toCheck = $this->_selectedOrdering;
-			$app = JFactory::getApplication();
-			$view = JRequest::getWord('view','virtuemart');
-			$app->setUserState( 'com_virtuemart.'.$view.'.filter_order',$this->_selectedOrdering);
+			$break = false;
+			foreach($this->_validOrderingFieldName as $name){
+				if(!empty($name) and strpos($name,$toCheck)!==FALSE){
+					$this->_selectedOrdering = $name;
+					$break = true;
+					break;
+				}
+			}
+			if(!$break){
+				$app = JFactory::getApplication();
+				$view = vRequest::getCmd('view');
+				if (empty($view)) $view = 'virtuemart';
+				$app->setUserState( 'com_virtuemart.'.$view.'.filter_order',$this->_selectedOrdering);
+			}
+		} else {
+			$this->_selectedOrdering = $toCheck;
 		}
-		$this->_selectedOrdering = $toCheck;
-		return $toCheck;
+
+		return $this->_selectedOrdering;
 	}
 
 	var $_validFilterDir = array('ASC','DESC');
@@ -222,14 +690,12 @@ class VmModel extends JModel {
 		$filter_order_Dir = strtoupper($toCheck);
 
 		if(empty($filter_order_Dir) or !in_array($filter_order_Dir, $this->_validFilterDir)){
-// 			vmdebug('checkFilterDir: programmer choosed invalid ordering direction '.$filter_order_Dir,$this->_validFilterDir);
-// 			vmTrace('checkFilterDir');
 			$filter_order_Dir = $this->_selectedOrderingDir;
-			$view = JRequest::getWord('view','virtuemart');
+			$view = vRequest::getCmd('view');
+			if (empty($view)) $view = 'virtuemart';
 			$app = JFactory::getApplication();
 			$app->setUserState( 'com_virtuemart.'.$view.'.filter_order_Dir',$filter_order_Dir);
 		}
-// 		vmdebug('checkFilterDir '.$filter_order_Dir);
 
 		$this->_selectedOrderingDir = $filter_order_Dir;
 		return $this->_selectedOrderingDir;
@@ -243,31 +709,39 @@ class VmModel extends JModel {
 	 */
 	public function getPagination($perRow = 5) {
 
-			if(empty($this->_limit) ){
-				$this->setPaginationLimits();
-			}
+		if(!class_exists('VmPagination')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmpagination.php');
+		if(empty($this->_limit) ){
+			$this->setPaginationLimits();
+		}
 
-			$this->_pagination = new VmPagination($this->_total , $this->_limitStart, $this->_limit , $perRow );
+		$this->_pagination = new VmPagination($this->_total , $this->_limitStart, $this->_limit , $perRow );
 
-// 		}
-// 		vmdebug('$this->pagination $total '.$this->_total,$this->_pagination);vmTrace('getPagination');
 		return $this->_pagination;
 	}
 
 	public function setPaginationLimits(){
 
 		$app = JFactory::getApplication();
-		$view = JRequest::getWord('view',$this->_maintablename);
+		$view = vRequest::getCmd('view');
+		if (empty($view)) $view = $this->_maintablename;
 
 		$limit = (int)$app->getUserStateFromRequest('com_virtuemart.'.$view.'.limit', 'limit');
 		if(empty($limit)){
-			$limit = VmConfig::get ('list_limit', 20);
+			if($app->isSite()){
+				$limit = VmConfig::get ('llimit_init_FE',24);
+			} else {
+				$limit = VmConfig::get ('llimit_init_BE',30);
+			}
+			if(empty($limit)){
+				$limit = 30;
+			}
 		}
+
 		$this->setState('limit', $limit);
 		$this->setState('com_virtuemart.'.$view.'.limit',$limit);
 		$this->_limit = $limit;
 
-		$limitStart = $app->getUserStateFromRequest('com_virtuemart.'.$view.'.limitstart', 'limitstart',  JRequest::getInt('limitstart',0), 'int');
+		$limitStart = $app->getUserStateFromRequest('com_virtuemart.'.$view.'.limitstart', 'limitstart',  vRequest::getInt('limitstart',0,'GET'), 'int');
 
 		//There is a strange error in the frontend giving back 9 instead of 10, or 24 instead of 25
 		//This functions assures that the steps of limitstart fit with the limit
@@ -288,15 +762,15 @@ class VmModel extends JModel {
 	public function getTotal() {
 
 		if (empty($this->_total)) {
-			$query = 'SELECT `'.$this->_db->getEscaped($this->_idName).'` FROM `'.$this->_db->getEscaped($this->_maintable).'`';;
-			$this->_db->setQuery( $query );
-			if(!$this->_db->query()){
+			$db = JFactory::getDbo();
+			$query = 'SELECT `'.$this->_db->escape($this->_idName).'` FROM `'.$this->_db->escape($this->_maintable).'`';;
+			$db->setQuery( $query );
+			if(!$db->execute()){
 				if(empty($this->_maintable)) vmError('Model '.get_class( $this ).' has no maintable set');
 				$this->_total = 0;
 			} else {
-				$this->_total = $this->_db->getNumRows();
+				$this->_total = $db->getNumRows();
 			}
-			//			$this->_total = $this->_getListCount($query);
 		}
 
 		return $this->_total;
@@ -323,14 +797,16 @@ class VmModel extends JModel {
 	 * @param string $filter_order_Dir
 	 */
 
-	public function exeSortSearchListQuery($object, $select, $joinedTables, $whereString = '', $groupBy = '', $orderBy = '', $filter_order_Dir = '', $nbrReturnProducts = false){
+	public function exeSortSearchListQuery($object, $select, $joinedTables, $whereString = '', $groupBy = '', $orderBy = '', $filter_order_Dir = '', $nbrReturnProducts = false ){
 
-		// 		vmSetStartTime('exe');
-		// 		if(USE_SQL_CALC_FOUND_ROWS){
-
+		$db = JFactory::getDbo();
 		//and the where conditions
-		$joinedTables .= $whereString .$groupBy .$orderBy .$filter_order_Dir ;
-		// 			$joinedTables .= $whereString .$groupBy .$orderBy;
+		if(empty($filter_order_Dir)){
+			$joinedTables .="\n".$whereString."\n".$groupBy."\n".$orderBy ;
+		} else {
+			$joinedTables .="\n".$whereString."\n".$groupBy."\n".$orderBy.' '.$filter_order_Dir ;
+		}
+		//vmdebug('my $limitStart $joinedTables ',$joinedTables,$filter_order_Dir );
 
 		if($nbrReturnProducts){
 			$limitStart = 0;
@@ -353,30 +829,28 @@ class VmModel extends JModel {
 		}
 
 		if($this->_noLimit or empty($limit)){
-// 			vmdebug('exeSortSearchListQuery '.get_class($this).' no limit');
-			$this->_db->setQuery($q);
+			$db->setQuery($q);
 		} else {
-			$this->_db->setQuery($q,$limitStart,$limit);
-// 			vmdebug('exeSortSearchListQuery '.get_class($this).' with limit');
+			$db->setQuery($q,$limitStart,$limit);
 		}
-// 		vmdebug('exeSortSearchListQuery '.$orderBy .$filter_order_Dir);
 
 		if($object == 2){
-			 $this->ids = $this->_db->loadResultArray();
+			 $this->ids = $db->loadColumn();
 		} else if($object == 1 ){
-			 $this->ids = $this->_db->loadAssocList();
+			 $this->ids = $db->loadAssocList();
 		} else {
-			 $this->ids = $this->_db->loadObjectList();
+			 $this->ids = $db->loadObjectList();
 		}
-		if($err=$this->_db->getErrorMsg()){
+		if($err=$db->getErrorMsg()){
 			vmError('exeSortSearchListQuery '.$err);
 		}
- 		//vmdebug('my $limitStart '.$limitStart.'  $limit '.$limit.' q ',$this->_db->getQuery() );
+		//vmdebug('my $limitStart '.$limitStart.'  $limit '.$limit.' q ' );
+ 		//vmdebug('my $limitStart '.$limitStart.'  $limit '.$limit.' q '.str_replace('#__',$db->getPrefix(),$db->getQuery()) );
 
 		if($this->_withCount){
 
-			$this->_db->setQuery('SELECT FOUND_ROWS()');
-			$count = $this->_db->loadResult();
+			$db->setQuery('SELECT FOUND_ROWS()');
+			$count = $db->loadResult();
 
 			if($count == false){
 				$count = 0;
@@ -387,35 +861,35 @@ class VmModel extends JModel {
 					$limit = 1.0;
 				}
 				$limitStart = floor($count/$limit);
-				$this->_db->setQuery($q,$limitStart,$limit);
+				$db->setQuery($q,$limitStart,$limit);
 				if($object == 2){
-					$this->ids = $this->_db->loadResultArray();
+					$this->ids = $db->loadColumn();
 				} else if($object == 1 ){
-					$this->ids = $this->_db->loadAssocList();
+					$this->ids = $db->loadAssocList();
 				} else {
-					$this->ids = $this->_db->loadObjectList();
+					$this->ids = $db->loadObjectList();
 				}
 			}
-// 			$this->getPagination(true);
-
 		} else {
 			$this->_withCount = true;
 		}
 
-		//print_r( $this->_db->_sql );
-		// 			vmdebug('my $list',$list);
 		if(empty($this->ids)){
-			$errors = $this->_db->getErrorMsg();
+			$errors = $db->getErrorMsg();
 			if( !empty( $errors)){
-				vmdebug('exeSortSearchListQuery error in class '.get_class($this).' sql:',$this->_db->getErrorMsg());
+				vmdebug('exeSortSearchListQuery error in class '.get_class($this).' sql:',$db->getErrorMsg());
 			}
 			if($object == 2 or $object == 1){
 				$this->ids = array();
 			}
 		}
-		// 			vmTime('exeSortSearchListQuery SQL_CALC_FOUND_ROWS','exe');
+
 		return $this->ids;
 
+	}
+
+	public function emptyCache(){
+		$this->_cache = array();
 	}
 
 	/**
@@ -424,20 +898,22 @@ class VmModel extends JModel {
 	 *
 	 */
 
-	public function getData(){
+	public function getData($id = 0){
 
-		if (empty($this->_data)) {
-			$this->_data = $this->getTable($this->_maintablename);
-			$this->_data->load($this->_id);
+		if($id!=0) $this->_id = (int)$id;
+
+		if (empty($this->_cache[$this->_id])) {
+			$this->_cache[$this->_id] = $this->getTable($this->_maintablename);
+			$this->_cache[$this->_id]->load($this->_id);
 
 			//just an idea
-			if(isset($this->_data->virtuemart_vendor_id) && empty($this->_data->virtuemart_vendor_id)){
-				if(!class_exists('VirtueMartModelVendor')) require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'vendor.php');
-				$this->_data->virtuemart_vendor_id = VirtueMartModelVendor::getLoggedVendor();
+			if(isset($this->_cache[$this->_id]->virtuemart_vendor_id) && empty($this->_data->virtuemart_vendor_id)){
+				if(!class_exists('VirtueMartModelVendor')) require(VMPATH_ADMIN.DS.'models'.DS.'vendor.php');
+				$this->_cache[$this->_id]->virtuemart_vendor_id = VirtueMartModelVendor::getLoggedVendor();
 			}
 		}
 
-		return $this->_data;
+		return $this->_cache[$this->_id];
 	}
 
 
@@ -445,18 +921,13 @@ class VmModel extends JModel {
 
 		$table = $this->getTable($this->_maintablename);
 
-		$table->bindChecknStore($data);
-
-		$errors = $table->getErrors();
-		foreach($errors as $error){
-			vmError( get_class( $this ).'::store '.$error);
-		}
-
-		if(is_object($data)){
+		if($table->bindChecknStore($data)){
 			$_idName = $this->_idName;
-			return $data->$_idName;
+			$this->_id = $table->$_idName;
+			$this->_cache[$this->_id] = $table;
+			return $this->_id;
 		} else {
-			return $data[$this->_idName];
+			return false;
 		}
 
 	}
@@ -472,7 +943,7 @@ class VmModel extends JModel {
 		$table = $this->getTable($this->_maintablename);
 		foreach($ids as $id) {
 			if (!$table->delete((int)$id)) {
-				vmError(get_class( $this ).'::remove '.$id.' '.$table->getError());
+				vmError(get_class( $this ).'::remove '.$id);
 				return false;
 			}
 		}
@@ -483,6 +954,7 @@ class VmModel extends JModel {
 	public function setToggleName($togglesName){
 		$this->_togglesName[] = $togglesName ;
 	}
+
 	/**
 	 * toggle (0/1) a field
 	 * or invert by $val for multi IDS;
@@ -491,33 +963,35 @@ class VmModel extends JModel {
 	 * @param string $postName the name of id Post  (Primary Key in table Class constructor)
 	 */
 
-	function toggle($field,$val = NULL, $cidname = 0,$tablename = 0  ) {
+	function toggle($field,$val = NULL, $cidname = 0,$tablename = 0, $view = false  ) {
+
+		if($view and !vmAccess::manager($view.'.edit.state')){
+			return false;
+		}
 		$ok = true;
 
 		if (!in_array($field, $this->_togglesName)) {
+			vmdebug('vmModel function toggle, field '.$field.' is not in white list');
 			return false ;
 		}
 		if($tablename === 0) $tablename = $this->_maintablename;
 		if($cidname === 0) $cidname = $this->_cidName;
 
 		$table = $this->getTable($tablename);
-		//if(empty($cidName)) $cidName = $this->_cidName;
+		$ids = vRequest::getInt( $cidname, vRequest::getInt('cid', array() ) );
 
-		$ids = JRequest::getVar( $cidname, JRequest::getVar('cid',array(0)), 'post', 'array' );
-		vmdebug('toggle $cidname: '.$cidname,$ids);
 		foreach($ids as $id){
 			$table->load( (int)$id );
 
 			if (!$table->toggle($field, $val)) {
-				//			if (!$table->store()) {
-				vmError(get_class( $this ).'::toggle '.$table->getError() .' '.$id);
+				vmError(get_class( $this ).'::toggle  '.$id);
 				$ok = false;
 			}
 		}
 
 		return $ok;
-
 	}
+
 	/**
 	 * Original From Joomla Method to move a weblink
 	 * @ Author Kohl Patrick
@@ -530,12 +1004,12 @@ class VmModel extends JModel {
 	{
 		$table = $this->getTable($this->_maintablename);
 		if (!$table->load($this->_id)) {
-			vmError('VmModel move '.$this->_db->getErrorMsg());
+			vmError('VmModel move '.$table->getDbo()->getErrorMsg());
 			return false;
 		}
 
 		if (!$table->move( $direction, $filter )) {
-			vmError('VmModel move '.$this->_db->getErrorMsg());
+			vmError('VmModel move '.$table->getDbo()->getErrorMsg());
 			return false;
 		}
 
@@ -565,7 +1039,7 @@ class VmModel extends JModel {
 			{
 				$table->ordering = $order[$i];
 				if (!$table->store()) {
-					vmError('VmModel saveorder '.$this->_db->getErrorMsg());
+					vmError('VmModel saveorder '.$table->getDbo()->getErrorMsg());
 					return false;
 				}
 			}
@@ -595,128 +1069,15 @@ class VmModel extends JModel {
 	public function addImages($obj,$limit=0){
 
 		$mediaModel = VmModel::getModel('Media');
-
 		$mediaModel->attachImages($obj,$this->_maintablename,'image',$limit);
 
 	}
 
 	public function resetErrors(){
-
 		$this->_errors = array();
 	}
 
 }
 
-jimport('joomla.html.pagination');
-
-class VmPagination extends JPagination {
-
-	private $_perRow = 5;
-
-	function __construct($total, $limitstart, $limit, $perRow=5){
-		if($perRow!==0){
-			$this->_perRow = $perRow;
-		}
-		parent::__construct($total, $limitstart, $limit);
-	}
-
-	/** Creates a dropdown box for selecting how many records to show per page.
-	 * Modification of Joomla Core libraries/html/pagination.php getLimitBox function
-	 * The function uses as sequence a generic function or a sequence configured in the vmconfig
-	 *
-	 * use in a view.html.php $vmModel->setPerRow($perRow); to activate it
-	 *
-	 * @author Joe Motacek (Cleanshooter)
-	 * @author Max Milbers
-	 * @return  string   The HTML for the limit # input box.
-	 * @since   11.1
-	 */
-
-	function getLimitBox()
-	{
-		$app = JFactory::getApplication();
-
-		// Initialize variables
-		$limits = array ();
-
-		// Make the option list
-		//for 3 = 3,6,12,24,60,90 rows, 4 rows, 6 rows
-		$sequence = VmConfig::get('pagination_sequence',0);
-
-		$selected = $this->_viewall ? 0 : $this->limit;
-		// Build the select list
-		if ($app->isAdmin()) {
-// 			$limits[] = JHTML::_('select.option', '0', JText::_('COM_VIRTUEMART_ALL'));
-			if(!empty($sequence)){
-				$sequenceArray = explode(',', $sequence);
-				foreach($sequenceArray as $items){
-					$limits[]=JHtml::_('select.option', $items);
-				}
-
-			} else {
-				if($this->_perRow===1) $this->_perRow = 5;
-				$iterationAmount = 4;
-				for ($i = 1; $i <= $iterationAmount; $i ++) {
-					$limits[] = JHtml::_('select.option', $i*$this->_perRow);
-				}
-
-				$limits[] = JHTML::_('select.option', $this->_perRow * 10);
-				$limits[] = JHTML::_('select.option', $this->_perRow * 20);
-				$limits[] = JHTML::_('select.option', $this->_perRow * 40);
-				$limits[] = JHTML::_('select.option', $this->_perRow * 80);
-	// 			vmdebug('getLimitBox',$this->_perRow);
-			}
-
-			$namespace = '';
-			if (JVM_VERSION!==1) {
-				$namespace = 'Joomla.';
-			}
-
-			$html = JHTML::_('select.genericlist',  $limits, 'limit', 'class="inputbox" size="1" onchange="'.$namespace.'submitform();"', 'value', 'text', $selected);
-		} else {
-
-			$getArray = (JRequest::get( 'get' ));
-			$link ='';
-			unset ($getArray['limit']);
-
-			// foreach ($getArray as $key => $value ) $link .= '&'.$key.'='.$value;
-			foreach ($getArray as $key => $value ){
-				if (is_array($value)){
-					foreach ($value as $k => $v ){
-						$link .= '&'.$key.'['.$k.']'.'='.$v;
-					}
-				} else {
-					$link .= '&'.$key.'='.$value;
-				}
-			}
-			$link[0] = "?";
-			$link = 'index.php'.$link ;
-			// $limits[] = JHTML::_('select.option',JRoute::_( $link.'&limit=0'), JText::_('all'));
-
-			if(!empty($sequence)){
-				$sequenceArray = explode(',', $sequence);
-				foreach($sequenceArray as $items){
-					$limits[]=JHtml::_('select.option', JRoute::_( $link.'&limit='. $items), $items);
-				}
-
-			} else {
-				if($this->_perRow===1) $this->_perRow = 5;
-				$iterationAmount = 4;
-				for ($i = 1; $i <= $iterationAmount; $i ++) {
-					$limits[] = JHtml::_('select.option',JRoute::_( $link.'&limit='. $i*$this->_perRow) ,$i*$this->_perRow );
-				}
-
-				$limits[] = JHTML::_('select.option',JRoute::_( $link.'&limit='. $this->_perRow * 10) , $this->_perRow * 10 );
-				$limits[] = JHTML::_('select.option',JRoute::_( $link.'&limit='. $this->_perRow * 20) , $this->_perRow * 20 );
-	// 			vmdebug('getLimitBox',$this->_perRow);
-			}
-			$selected= JRoute::_( $link.'&limit='. $selected) ;
-			$js = 'onchange="window.top.location.href=this.options[this.selectedIndex].value"';
-
-			$html = JHTML::_('select.genericlist',  $limits, '', 'class="inputbox" size="1" '.$js , 'value', 'text', $selected);
-		}
-		return $html;
-	}
 
 
-}

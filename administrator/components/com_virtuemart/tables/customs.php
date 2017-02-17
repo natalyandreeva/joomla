@@ -19,7 +19,7 @@
 // Check to ensure this custom is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Custom table class
@@ -49,7 +49,7 @@ class TableCustoms extends VmTable {
     /** @var string custom Meta or alt  */
 	var $custom_value	= '';
     /** @var string custom Meta or alt  */
-	var $custom_field_desc	= '';
+	var $custom_desc	= '';
 
 	/** @var string parameter of the customplugin*/
 	var $custom_params				= 0;
@@ -61,33 +61,38 @@ class TableCustoms extends VmTable {
 
 	/** @var int(1)  1= Is this a list of value ? */
 	var $is_list		= 0;
-
+	var $is_input		= 0;
 	/** @var int(1)  1= hidden field info */
 	var $is_hidden		= 0;
 
 	/** @var int(1)  1= cart attributes and price added to cart */
 	var $is_cart_attribute		= 0;
-
+	var $searchable = 0;
 	var $layout_pos = '';
 
 	/** @var int custom published or not */
 	var $published		= 1;
 	/** @var int listed Order */
 	var $ordering	= 0;
+	/** @var int show title or not */
+	var $show_title		= 1;
 
 
 	/**
 	 * @author  Patrick Kohl
-	 * @param $db A database connector object
+	 * @param JDataBase $db
 	 */
 	function __construct(&$db) {
 		parent::__construct('#__virtuemart_customs', 'virtuemart_custom_id', $db);
+
+		$this->_cidName = 'virtuemart_custom_id';
 
 		$this->setUniqueName('custom_title');
 		$this->setObligatoryKeys('field_type');
 
 		$this->setLoggable();
 		$this->setOrderable('ordering',false);
+		$this->setParameterable('custom_params',array());
 	}
 
 	/*
@@ -99,7 +104,7 @@ class TableCustoms extends VmTable {
 		$this->_db->setQuery('DELETE X,C FROM `#__virtuemart_customs` AS C
 			LEFT JOIN  `#__virtuemart_product_customfields` AS X ON  X.`virtuemart_custom_id` = C.`virtuemart_custom_id`
 			WHERE C.`virtuemart_custom_id`=' . $id);
-		if ($this->_db->query() === false) {
+		if ($this->_db->execute() === false) {
 			vmError($this->_db->getError());
 			return false;
 		}

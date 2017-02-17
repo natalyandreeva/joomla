@@ -28,5 +28,4 @@ function vm2tabs(pages) {
 jQuery(document).ready(function() {
 
 	vm2tabs(jQuery("#ui-tabs .tabs"));
-
 });

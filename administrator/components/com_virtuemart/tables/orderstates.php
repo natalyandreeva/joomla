@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: orderstates.php 6475 2012-09-21 11:54:21Z Milbo $
+* @version $Id: orderstates.php 9017 2015-10-14 10:44:34Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Order status table class
@@ -63,7 +63,6 @@ class TableOrderstates extends VmTable {
 		$this->setObligatoryKeys('order_status_name');
 		$this->setObligatoryKeys('order_stock_handle');
 		$this->setLoggable();
-
 	}
 
 	/**
@@ -82,7 +81,7 @@ class TableOrderstates extends VmTable {
 		if(is_array($row)){
 			if($row[0]>0){
 				if($row[1] != $this->virtuemart_orderstate_id){
-					vmError(JText::_('COM_VIRTUEMART_ORDER_STATUS_CODE_EXISTS'));
+					vmError(vmText::_('COM_VIRTUEMART_ORDER_STATUS_CODE_EXISTS'));
 					return false;
 				}
 			}

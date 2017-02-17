@@ -13,15 +13,15 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: view.html.php 5601 2012-03-04 18:22:24Z Milbo $
+ * @version $Id: view.html.php 8724 2015-02-18 14:03:29Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
-jimport('joomla.html.pane');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
+
 /**
  * HTML View class for maintaining the list of manufacturers
  *
@@ -29,14 +29,15 @@ jimport('joomla.html.pane');
  * @subpackage Manufacturer
  * @author Patrick Kohl
  */
-class VirtuemartViewManufacturer extends VmView {
+class VirtuemartViewManufacturer extends VmViewAdmin {
 
 	function display($tpl = null) {
 
 		// Load the helper(s)
 
 
-		$this->loadHelper('html');
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
 
 		// get necessary models
@@ -46,30 +47,26 @@ class VirtuemartViewManufacturer extends VmView {
 
 		$this->SetViewTitle();
 
-		$layoutName = JRequest::getWord('layout', 'default');
+		$layoutName = vRequest::getCmd('layout', 'default');
 		if ($layoutName == 'edit') {
 
-			$manufacturer = $model->getManufacturer();
+			$this->manufacturer = $model->getManufacturer();
 
-			$isNew = ($manufacturer->virtuemart_manufacturer_id < 1);
+			$isNew = ($this->manufacturer->virtuemart_manufacturer_id < 1);
 
-			$model->addImages($manufacturer);
-			$this->assignRef('manufacturer',	$manufacturer);
+			$model->addImages($this->manufacturer);
 
 			/* Process the images */
 			$mediaModel = VmModel::getModel('media');
-			$mediaModel -> setId($manufacturer->virtuemart_media_id);
+			$mediaModel -> setId($this->manufacturer->virtuemart_media_id);
 			$image = $mediaModel->getFile('manufacturer','image');
 
-			$manufacturerCategories = $categoryModel->getManufacturerCategories(false,true);
-			$this->assignRef('manufacturerCategories',	$manufacturerCategories);
+			$this->manufacturerCategories = $categoryModel->getManufacturerCategories(false,true);
 
-			$this->addStandardEditViewCommands($manufacturer->virtuemart_manufacturer_id);
+			$this->addStandardEditViewCommands($this->manufacturer->virtuemart_manufacturer_id);
 
-			if(!class_exists('VirtueMartModelVendor')) require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'vendor.php');
-			$virtuemart_vendor_id = VirtueMartModelVendor::getLoggedVendor();
-			$this->assignRef('virtuemart_vendor_id', $virtuemart_vendor_id);
-
+			if(!class_exists('VirtueMartModelVendor')) require(VMPATH_ADMIN.DS.'models'.DS.'vendor.php');
+			$this->virtuemart_vendor_id = VirtueMartModelVendor::getLoggedVendor();
 
 		}
 		else {
@@ -81,14 +78,11 @@ class VirtuemartViewManufacturer extends VmView {
 			$this->addStandardDefaultViewCommands();
 			$this->addStandardDefaultViewLists($model,'mf_name');
 
-			$manufacturers = $model->getManufacturers();
-			$this->assignRef('manufacturers',	$manufacturers);
-
-			$pagination = $model->getPagination();
-			$this->assignRef('pagination', $pagination);
+			$this->manufacturers = $model->getManufacturers();
+			$this->pagination = $model->getPagination();
 
 			$virtuemart_manufacturercategories_id	= $mainframe->getUserStateFromRequest( 'com_virtuemart.virtuemart_manufacturercategories_id', 'virtuemart_manufacturercategories_id', 0, 'int' );
-			$this->lists['virtuemart_manufacturercategories_id'] =  JHTML::_('select.genericlist',   $categoryFilter, 'virtuemart_manufacturercategories_id', 'class="inputbox" onchange="this.form.submit()"', 'value', 'text', $virtuemart_manufacturercategories_id );
+			$this->lists['virtuemart_manufacturercategories_id'] =  JHtml::_('select.genericlist',   $categoryFilter, 'virtuemart_manufacturercategories_id', 'class="inputbox" onchange="this.form.submit()"', 'value', 'text', $virtuemart_manufacturercategories_id );
 
 		}
 

@@ -22,7 +22,7 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 vmJsApi::cssSite();
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_REVIEW_DETAILS');
 ?>
 
@@ -30,11 +30,11 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_REVIEW_DETAILS');
 
 <div class="col50">
 <fieldset>
-<legend><?php echo JText::_('COM_VIRTUEMART_REVIEW_DETAILS'); ?></legend>
-<table class="admintable" summary="<?php echo JText::_('COM_VIRTUEMART_RATING_EDIT_TITLE');?>">
+<legend><?php echo vmText::_('COM_VIRTUEMART_REVIEW_DETAILS'); ?></legend>
+<table class="admintable" summary="<?php echo vmText::_('COM_VIRTUEMART_RATING_EDIT_TITLE');?>">
 	<tr>
 		<td width="24%" align="left" valign="top">
-			<?php echo JText::_('COM_VIRTUEMART_RATING_TITLE'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_RATING_TITLE'); ?>
 		</td>
 		<td valign="top"><fieldset class="radio">
 		<!-- Rating stars -->
@@ -42,19 +42,33 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_REVIEW_DETAILS');
 		$rating_options = array();
 		for ($i=0;$i<=$this->max_rating;$i++) {
 
-            $title = (JText::_("COM_VIRTUEMART_RATING_TITLE").' : '. $i . '/' . $this->max_rating) ;
+            $title = (vmText::_("COM_VIRTUEMART_RATING_TITLE").' : '. $i . '/' . $this->max_rating) ;
 			$stars  = '<span class="floatleft vmiconFE vm2-stars'.$i.'" title="'.$title.'"></span>';
-			$rating_options[] = JHTML::_('select.option',$i,$stars);
+			$rating_options[] = JHtml::_('select.option',$i,$stars);
 
 		}
-		echo JHTML::_('select.radiolist', $rating_options, 'vote', 'id="vote" class="inputbox"', 'value', 'text', $this->rating->vote);
+		vmdebug('my $this->rating ',$this->rating);
+		echo JHtml::_('select.radiolist', $rating_options, 'vote', 'id="vote" class="inputbox"', 'value', 'text', $this->rating->vote);
 		?>
 		</fieldset></td>
 	</tr>
-		<!-- Review comment -->
 	<tr>
 		<td width="24%" align="left" valign="top">
-			<?php echo JTEXT::_('COM_VIRTUEMART_REVIEW'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_USER_ALIAS'); ?>
+		</td>
+		<td width="76%" align="left">
+			<input type="text" value="<?php echo $this->rating->customer; ?>" size="32" class="inputbox" name="customer" maxlength="128"  />
+		</td>
+		<td width="24%" align="left" valign="top">
+			<?php echo vmText::_('COM_VIRTUEMART_USER_ID'); ?>
+		</td>
+		<td width="76%" align="left">
+			<input type="text" value="<?php echo $this->rating->created_by; ?>" size="32" class="inputbox" name="created_by" maxlength="128"  />
+		</td>
+	</tr>
+	<tr>
+		<td width="24%" align="left" valign="top">
+			<?php echo vmText::_('COM_VIRTUEMART_REVIEW'); ?>
         	</td>
 		<td width="76%" align="left">
 			<textarea onblur="refresh_counter();" onfocus="refresh_counter();" onkeypress="refresh_counter();" rows="20" cols="60" name="comment"><?php echo $this->rating->comment; ?></textarea>
@@ -64,7 +78,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_REVIEW_DETAILS');
 		<!-- Show number of typed in characters -->
 		<td width="24%" align="left" valign="top"> &nbsp; </td>
 		<td width="76%" align="left">
-	        <div align="left"><i><?php echo JText::_('COM_VIRTUEMART_REVIEW_COUNT') ?></i>
+	        <div align="left"><i><?php echo vmText::_('COM_VIRTUEMART_REVIEW_COUNT') ?></i>
                 	<input type="text" value="150" size="4" class="inputbox readonly" name="counter" maxlength="4" readonly="readonly" />
             	</div>
 		</td>
@@ -73,7 +87,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_REVIEW_DETAILS');
 <!-- todo?? To be used with HTML editor (with some more restrictions)
 	<tr>
 		<td width="24%" align="left" valign="top">
-			<?php echo JTEXT::_('COM_VIRTUEMART_REVIEW'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_REVIEW'); ?>
         	</td>
 		<td width="76%" align="left">
 	<?php
@@ -86,10 +100,10 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_REVIEW_DETAILS');
 	<tr>
 		<!-- published status -->
 		<td>
-			<?php echo JText::_('COM_VIRTUEMART_PUBLISHED'); ?>
+			<?php echo vmText::_('COM_VIRTUEMART_PUBLISHED'); ?>
 		</td>
 		<td><fieldset class="radio">
-			<?php echo JHTML::_('select.booleanlist', 'published', '', $this->rating->published); ?>
+			<?php echo JHtml::_('select.booleanlist', 'published', '', $this->rating->published); ?>
 		</fieldset></td>
 	</tr>
 </table>
@@ -98,8 +112,8 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_REVIEW_DETAILS');
 <!-- Hidden Fields -->
 	<?php echo $this->addStandardHiddenToForm(); ?>
 <input type="hidden" name="virtuemart_rating_review_id" value="<?php echo $this->rating->virtuemart_rating_review_id; ?>" />
+<input type="hidden" name="virtuemart_rating_vote_id" value="<?php echo $this->rating->virtuemart_rating_vote_id; ?>" />
 <input type="hidden" name="virtuemart_product_id" value="<?php echo $this->rating->virtuemart_product_id; ?>" />
-<input type="hidden" name="created_by" value="<?php echo $this->rating->created_by; ?>" />
 
 </form>
 
@@ -117,13 +131,11 @@ function submitbutton(pressbutton) {
 
 	 if (pressbutton == 'cancel') {
 		submitform( pressbutton );
-		return;
 	}
 	else {
-		if (document.adminForm.counter.value > <?php echo VmConfig::get('reviews_maximum_comment_length'); ?>) alert('<?php echo addslashes( JText::sprintf('COM_VIRTUEMART_REVIEW_ERR_COMMENT2_JS',VmConfig::get('reviews_maximum_comment_length')) ); ?>');
-		else if (document.adminForm.counter.value < <?php echo VmConfig::get('reviews_minimum_comment_length'); ?>) alert('<?php echo addslashes( JText::sprintf('COM_VIRTUEMART_REVIEW_ERR_COMMENT1_JS',VmConfig::get('reviews_minimum_comment_length')) ); ?>');
+		if (document.adminForm.counter.value > <?php echo VmConfig::get('reviews_maximum_comment_length'); ?>) alert('<?php echo addslashes( vmText::sprintf('COM_VIRTUEMART_REVIEW_ERR_COMMENT2_JS',VmConfig::get('reviews_maximum_comment_length')) ); ?>');
+		else if (document.adminForm.counter.value < <?php echo VmConfig::get('reviews_minimum_comment_length'); ?>) alert('<?php echo addslashes( vmText::sprintf('COM_VIRTUEMART_REVIEW_ERR_COMMENT1_JS',VmConfig::get('reviews_minimum_comment_length')) ); ?>');
 		else submitform( pressbutton );
-		return;
 	}
 }
 </script>

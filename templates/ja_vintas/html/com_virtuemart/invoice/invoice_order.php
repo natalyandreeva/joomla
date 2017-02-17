@@ -66,7 +66,7 @@ defined('_JEXEC') or die('Restricted access');
 
      <tr>
 	<td class="orders-key"><strong><?php echo JText::_('COM_VIRTUEMART_ORDER_PRINT_TOTAL') ?></strong></td>
-	<td class="orders-key" align="left"><strong><?php echo $this->currency->priceDisplay($this->orderDetails['details']['BT']->order_total); ?></strong></td>
+	<td class="orders-key" align="left"><strong><?php echo $this->currency->priceDisplay($this->orderDetails['details']['BT']->order_total,$this->currency); ?></strong></td>
     </tr>
 
     <tr>

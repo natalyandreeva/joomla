@@ -6,8 +6,9 @@
 * @package	VirtueMart
 * @subpackage User
 * @author Oscar van Eijk
+* @author Max Milbers
 * @link http://www.virtuemart.net
-* @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
+* @copyright Copyright (c) 2004 - 2014 VirtueMart Team. All rights reserved.
 * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
 * VirtueMart is free software. This version may have been modified pursuant
 * to the GNU General Public License, and as distributed it includes or
@@ -27,7 +28,7 @@ jimport('joomla.application.component.controller');
  *
  * @package		VirtueMart
  */
-class VirtueMartControllerVendor extends JController
+class VirtueMartControllerVendor extends JControllerLegacy
 {
 
 	/**
@@ -36,34 +37,40 @@ class VirtueMartControllerVendor extends JController
 	*/
 	public function mailAskquestion () {
 
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		if(!class_exists('shopFunctionsF')) require(JPATH_VM_SITE.DS.'helpers'.DS.'shopfunctionsf.php');
-		$this->addModelPath(JPATH_VM_ADMINISTRATOR.DS.'models');
+		if(!class_exists('shopFunctionsF')) require(VMPATH_SITE.DS.'helpers'.DS.'shopfunctionsf.php');
+
 		$model = VmModel::getModel('vendor');
 		$mainframe = JFactory::getApplication();
 		$vars = array();
 		$min = VmConfig::get('asks_minimum_comment_length', 50)+1;
 		$max = VmConfig::get('asks_maximum_comment_length', 2000)-1 ;
-		$commentSize = mb_strlen( JRequest::getString('comment') );
-		$validMail = filter_var(JRequest::getVar('email'), FILTER_VALIDATE_EMAIL);
+		$commentSize = vRequest::getString ('comment');
+		if (function_exists('mb_strlen')) {
+			$commentSize =  mb_strlen($commentSize);
+		} else {
+			$commentSize =  strlen($commentSize);
+		}
 
-		$virtuemart_vendor_id = JRequest::getInt('virtuemart_vendor_id',1);
+		$validMail = filter_var(vRequest::getVar('email'), FILTER_VALIDATE_EMAIL);
 
-		if(!class_exists('VirtueMartModelVendor')) require(JPATH_VM_ADMINISTRATOR.DS.'models'.DS.'vendor.php');
+		$virtuemart_vendor_id = vRequest::getInt('virtuemart_vendor_id',1);
+
+		if(!class_exists('VirtueMartModelVendor')) require(VMPATH_ADMIN.DS.'models'.DS.'vendor.php');
 		$userId = VirtueMartModelVendor::getUserIdByVendorId($virtuemart_vendor_id);
 
 		//$vendorUser = JFactory::getUser($userId);
 
 		if ( $commentSize<$min || $commentSize>$max || !$validMail ) {
-			$this->setRedirect(JRoute::_ ( 'index.php?option=com_virtuemart&view=vendor&task=contact&virtuemart_vendor_id=' . $virtuemart_vendor_id ),JText::_('COM_VIRTUEMART_COMMENT_NOT_VALID_JS'));
+			$this->setRedirect(JRoute::_ ( 'index.php?option=com_virtuemart&view=vendor&task=contact&virtuemart_vendor_id=' . $virtuemart_vendor_id , FALSE),vmText::_('COM_VIRTUEMART_COMMENT_NOT_VALID_JS'));
 			return ;
 		}
 
 		$user = JFactory::getUser();
 
-		$fromMail = JRequest::getVar('email');	//is sanitized then
-		$fromName = JRequest::getVar('name','');//is sanitized then
+		$fromMail = vRequest::getVar('email');	//is sanitized then
+		$fromName = vRequest::getVar('name','');//is sanitized then
 		$fromMail = str_replace(array('\'','"',',','%','*','/','\\','?','^','`','{','}','|','~'),array(''),$fromMail);
 		$fromName = str_replace(array('\'','"',',','%','*','/','\\','?','^','`','{','}','|','~'),array(''),$fromName);
 		if (!empty($user->id)) {
@@ -86,7 +93,7 @@ class VirtueMartControllerVendor extends JController
 		else {
 			$string = 'COM_VIRTUEMART_MAIL_NOT_SEND_SUCCESSFULLY';
 		}
-		$mainframe->enqueueMessage(JText::_($string));
+		$mainframe->enqueueMessage(vmText::_($string));
 
 		// Display it all
 		$view = $this->getView('vendor', 'html');

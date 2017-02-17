@@ -20,7 +20,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 if (!class_exists('VmTable'))
-    require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmtable.php');
+    require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmtable.php');
 
 /**
  * Shipment  table class
@@ -49,6 +49,8 @@ class TableShipmentmethods extends VmTable {
     /** @var string Element of shipmentmethod */
     var $shipment_element = '';
 
+    var $currency_id = 0;
+
     /** @var string parameter of the shipmentmethod */
     var $shipment_params = 0;
 
@@ -60,7 +62,7 @@ class TableShipmentmethods extends VmTable {
 
     /**
      * @author Max Milbers
-     * @param $db A database connector object
+     * @param JDataBase $db
      */
     function __construct(&$db) {
 	parent::__construct('#__virtuemart_shipmentmethods', 'virtuemart_shipmentmethod_id', $db);

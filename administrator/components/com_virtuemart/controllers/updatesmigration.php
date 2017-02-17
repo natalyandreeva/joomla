@@ -14,16 +14,13 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: updatesmigration.php 6044 2012-05-22 20:33:45Z Milbo $
+ * @version $Id: updatesmigration.php 9244 2016-06-22 22:21:23Z Milbo $
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
 if(!class_exists('VmController'))
-require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmcontroller.php');
+require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmcontroller.php');
 
 /**
  * updatesMigration Controller
@@ -52,10 +49,10 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 * @author Max Milbers
 	 */
 	private function checkPermissionForTools(){
+		vRequest::vmCheckToken();
 		//Hardcore Block, we may do that better later
-		if(!class_exists('Permissions'))
-		require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'permissions.php');
-		if(!Permissions::getInstance()->check('admin')){
+		$user = JFactory::getUser();
+		if(!vmAccess::manager('core') ){
 			$msg = 'Forget IT';
 			$this->setRedirect('index.php?option=com_virtuemart', $msg);
 		}
@@ -80,8 +77,8 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 */
 	function checkForLatestVersion(){
 		$model = $this->getModel('updatesMigration');
-		JRequest::setVar('latestverison', $model->getLatestVersion());
-		JRequest::setVar('view', 'updatesMigration');
+		vRequest::setVar('latestverison', $model->getLatestVersion());
+		vRequest::setVar('view', 'updatesMigration');
 
 		parent::display();
 	}
@@ -89,15 +86,11 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	/**
 	 * Install sample data into the database
 	 *
-	 * @author RickG
 	 * @author Max Milbers
 	 */
 	function installSampleData(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
-// 		$this->checkPermissionForTools();
+		$this->checkPermissionForTools();
 
 		$model = $this->getModel('updatesMigration');
 
@@ -107,39 +100,18 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	}
 
 	/**
-	 * Install sample data into the database
-	 *
-	 * @author RickG
-	 * @author Max Milbers
-	 *
-	function userSync(){
-
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
-		$this->checkPermissionForTools();
-
-		$model = $this->getModel('updatesMigration');
-		$msg = $model->integrateJoomlaUsers();
-
-		$this->setRedirect($this->redirectPath, $msg);
-	}
-
-	/**
 	 * Sets the storeowner to the currently logged in user
-	 * He needs to have admin rights todo so
+	 * He needs admin rights
 	 *
 	 * @author Max Milbers
 	 */
 	function setStoreOwner(){
 
-		$data = JRequest::get('get');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		$model = $this->getModel('updatesMigration');
 
-		$storeOwnerId =JRequest::getInt('storeOwnerId');
+		$storeOwnerId =vRequest::getInt('storeOwnerId');
 		$msg = $model->setStoreOwner($storeOwnerId);
 
 		$this->setRedirect($this->redirectPath, $msg);
@@ -153,9 +125,6 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 */
 	function restoreSystemDefaults(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		if(VmConfig::get('dangeroustools', false)){
@@ -163,36 +132,149 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 			$model = $this->getModel('updatesMigration');
 			$model->restoreSystemDefaults();
 
-			$msg = JText::_('COM_VIRTUEMART_SYSTEM_DEFAULTS_RESTORED');
+			$msg = vmText::_('COM_VIRTUEMART_SYSTEM_DEFAULTS_RESTORED');
 			$msg .= ' User id of the main vendor is ' . $model->setStoreOwner();
 			$this->setDangerousToolsOff();
-		}else {
+		} else {
 			$msg = $this->_getMsgDangerousTools();
 		}
 
 		$this->setRedirect($this->redirectPath, $msg);
 	}
 
+	public function fixCustomsParams(){
+		$this->checkPermissionForTools();
+		$q = 'SELECT `virtuemart_customfield_id` FROM `#__virtuemart_product_customfields` LEFT JOIN `#__virtuemart_customs` USING (`virtuemart_custom_id`) ';
+		$q = 'SELECT `virtuemart_customfield_id`,`customfield_params` FROM `#__virtuemart_product_customfields` ';
+		$q .= ' WHERE `customfield_params`!="" ';
+		$db = JFactory::getDbo();
+		$db->setQuery($q);
+
+		$rows = $db->loadAssocList();
+
+		foreach($rows as $fields){
+			$store = '';
+			if(empty($fields['customfield_params'])) continue;
+
+			$json = @json_decode($fields['customfield_params']);
+
+			if($json){
+
+				$vars = get_object_vars($json);
+
+				foreach($vars as $key=>$value){
+					if(!empty($key)){
+						$store .= $key . '=' . vmJsApi::safe_json_encode($value) . '|';
+					}
+
+				}
+
+				if(!empty($store)){
+					$q = 'UPDATE `#__virtuemart_product_customfields` SET `customfield_params` = "'.$db->escape($store).'" WHERE `virtuemart_customfield_id` = "'.$fields['virtuemart_customfield_id'].'" ';
+					$db->setQuery($q);
+					$db->execute();
+
+				}
+
+			}
+
+		}
+		$msg = 'Executed';
+		$this->setredirect($this->redirectPath, $msg);
+	}
+
+	/**
+	 * Quite unsophisticated, but it does it jobs if there are not too much products/customfields.
+	 *
+	 */
+	public function deleteInheritedCustoms () {
+
+		$msg = '';
+		$this->checkPermissionForTools();
+		if(VmConfig::get('dangeroustools', false)){
+
+			$db = JFactory::getDbo();
+
+			/*$q = 'SELECT customfield_id ';
+			$q .= 'FROM `#__virtuemart_product_customfields` as pc WHERE
+					LEFT JOIN `#__virtuemart_products` as c using (`virtuemart_product_id`) ';
+			$q .= 'WHERE c.product_parent_id =';*/
+			$q = ' SELECT `product_parent_id` FROM `#__virtuemart_products`
+					INNER JOIN `#__virtuemart_product_customfields` as pc using (`virtuemart_product_id`)
+					WHERE `product_parent_id` != "0" GROUP BY `product_parent_id` ';
+			$db->setQuery($q);
+			$childs = $db->loadColumn();
+
+			$toDelete = array();
+			foreach($childs as $child_id){
+
+				$q = ' SELECT pc.virtuemart_customfield_id,pc.virtuemart_custom_id,pc.customfield_value,pc.customfield_price,pc.customfield_params
+					FROM `#__virtuemart_product_customfields` as pc
+					LEFT JOIN `#__virtuemart_products` as c using (`virtuemart_product_id`) ';
+				$q .= ' WHERE c.virtuemart_product_id = "'.$child_id.'" ';
+				$db->setQuery($q);
+				$pcfs = $db->loadAssocList();
+				vmdebug('load PCFS '.$q);
+				if($pcfs){
+					vmdebug('There are PCFS');
+					$q = ' SELECT pc.virtuemart_customfield_id,pc.virtuemart_custom_id,pc.customfield_value,pc.customfield_price,pc.customfield_params
+					FROM `#__virtuemart_product_customfields` as pc
+					LEFT JOIN `#__virtuemart_products` as c using (`virtuemart_product_id`) ';
+					$q .= ' WHERE c.product_parent_id = "'.$child_id.'" ';
+
+					$db->setQuery($q);
+					$cfs = $db->loadAssocList();
+
+					foreach($cfs as $cf){
+						foreach($pcfs as $pcf){
+							if($cf['virtuemart_custom_id'] == $pcf['virtuemart_custom_id']){
+									vmdebug('virtuemart_custom_id same');
+								if($cf['customfield_value'] == $pcf['customfield_value'] and
+								$cf['customfield_price'] == $pcf['customfield_price'] and
+								$cf['customfield_params'] == $pcf['customfield_params']){
+									$toDelete[] = $cf['virtuemart_customfield_id'];
+								}
+							}
+						}
+					}
+				}
+
+			}
+
+			if(count($toDelete)>0){
+				$toDelete = array_unique($toDelete,SORT_NUMERIC);
+				$toDeleteString = implode(',',$toDelete);
+				$q = 'DELETE FROM `#__virtuemart_product_customfields` WHERE virtuemart_customfield_id IN ('.$toDeleteString.') ';
+				$db->setQuery($q);
+				$db->execute();
+			}
+
+			/*$q = 'SELECT `virtuemart_customfield_id`
+					FROM `#__virtuemart_product_customfields` as pc
+					LEFT JOIN `#__virtuemart_products` as c using (`virtuemart_product_id`)';
+			$q .= ' WHERE c.product_parent_id != "0" AND ';*/
+		} else {
+			$msg = $this->_getMsgDangerousTools();
+		}
+		$this->setredirect($this->redirectPath, $msg);
+	}
+
 	/**
 	 * Remove all the Virtuemart tables from the database.
 	 *
-	 * @author RickG
 	 * @author Max Milbers
 	 */
 	function deleteVmTables(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
-		$msg = JText::_('COM_VIRTUEMART_SYSTEM_VMTABLES_DELETED');
+		$msg = vmText::_('COM_VIRTUEMART_SYSTEM_VMTABLES_DELETED');
 		if(VmConfig::get('dangeroustools', false)){
 			$model = $this->getModel('updatesMigration');
 
 			if(!$model->removeAllVMTables()){
 				$this->setDangerousToolsOff();
-				$this->setRedirect('index.php?option=com_virtuemart', $model->getError());
+				$this->setRedirect('index.php?option=com_virtuemart');
 			}
 		}else {
 			$msg = $this->_getMsgDangerousTools();
@@ -208,18 +290,15 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 */
 	function deleteVmData(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
-		$msg = JText::_('COM_VIRTUEMART_SYSTEM_VMDATA_DELETED');
+		$msg = vmText::_('COM_VIRTUEMART_SYSTEM_VMDATA_DELETED');
 		if(VmConfig::get('dangeroustools', false)){
 			$model = $this->getModel('updatesMigration');
 
 			if(!$model->removeAllVMData()){
 				$this->setDangerousToolsOff();
-				$this->setRedirect('index.php?option=com_virtuemart', $model->getError());
+				$this->setRedirect('index.php?option=com_virtuemart');
 			}
 		}else {
 			$msg = $this->_getMsgDangerousTools();
@@ -230,12 +309,9 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 
 	function deleteAll(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
-		$msg = JText::_('COM_VIRTUEMART_SYSTEM_ALLVMDATA_DELETED');
+		$msg = vmText::_('COM_VIRTUEMART_SYSTEM_ALLVMDATA_DELETED');
 		if(VmConfig::get('dangeroustools', false)){
 
 			$this->installer->populateVmDatabase("delete_essential.sql");
@@ -250,12 +326,9 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 
 	function deleteRestorable(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
-		$msg = JText::_('COM_VIRTUEMART_SYSTEM_RESTVMDATA_DELETED');
+		$msg = vmText::_('COM_VIRTUEMART_SYSTEM_RESTVMDATA_DELETED');
 		if(VmConfig::get('dangeroustools', false)){
 			$this->installer->populateVmDatabase("delete_restoreable.sql");
 			$this->setDangerousToolsOff();
@@ -275,9 +348,6 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 
 	function refreshCompleteInstall($sample=false){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		if(VmConfig::get('dangeroustools', true)){
@@ -286,21 +356,17 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 
 			$model->restoreSystemTablesCompletly();
 
-			//$model->integrateJoomlaUsers();
-			$id = $model->determineStoreOwner();
-			$sid = $model->setStoreOwner($id);
-			$model->setUserToPermissionGroup($id);
+			$sid = $model->setStoreOwner();
 
-			if($sample)$model->installSampleData($id);
-
-// 			$model = $this->getModel('config');
-// 			$model -> deleteConfig();
-
-// 			$errors = $model->getErrors();
+			$sampletxt = '';
+			if($sample){
+				$model->installSampleData($sid);
+				$sampletxt = ' and sampledata installed';
+			}
 
 			$msg = '';
 			if(empty($errors)){
-				$msg = 'System succesfull restored and sampledata installed, user id of the mainvendor is ' . $sid;
+				$msg = 'System succesfull restored'.$sampletxt.', user id of the mainvendor is ' . $sid;
 			} else {
 				foreach($errors as $error){
 					$msg .= ( $error) . '<br />';
@@ -315,17 +381,122 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 		$this->setRedirect($this->redirectPath, $msg);
 	}
 
+	function installCompleteSamples(){
+		$this->installComplete(true);
+	}
+
+	function installComplete($sample=false){
+
+		$this->checkPermissionForTools();
+
+		if(VmConfig::get('dangeroustools', true)){
+
+			if(!class_exists('com_virtuemartInstallerScript')) require(VMPATH_ADMIN . DS . 'install' . DS . 'script.virtuemart.php');
+			$updater = new com_virtuemartInstallerScript();
+			$updater->install(true);
+
+			$model = $this->getModel('updatesMigration');
+			$sid = $model->setStoreOwner();
+
+			$msg = 'System and sampledata succesfull installed, user id of the mainvendor is ' . $sid;
+
+			if(!class_exists('com_virtuemart_allinoneInstallerScript')) require(VMPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_virtuemart_allinone' . DS . 'script.vmallinone.php');
+			$updater = new com_virtuemart_allinoneInstallerScript(false);
+			$updater->vmInstall(true);
+
+			if($sample) $model->installSampleData($sid);
+
+			if(!class_exists('VmConfig')) require_once(VMPATH_ADMIN .'/models/config.php');
+			VirtueMartModelConfig::installVMconfigTable();
+
+			//Now lets set some joomla variables
+			//Caching should be enabled, set to files and for 15 minutes
+			if(JVM_VERSION>2){
+				if (!class_exists( 'ConfigModelCms' )) require(VMPATH_ROOT.DS.'components'.DS.'com_config'.DS.'model'.DS.'cms.php');
+				if (!class_exists( 'ConfigModelForm' )) require(VMPATH_ROOT.DS.'components'.DS.'com_config'.DS.'model'.DS.'form.php');
+				if (!class_exists( 'ConfigModelApplication' )) require(VMPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_config'.DS.'model'.DS.'application.php');
+			} else {
+				if (!class_exists( 'ConfigModelApplication' )) require(VMPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_config'.DS.'models'.DS.'application.php');
+			}
+
+			$jConfModel = new ConfigModelApplication();
+			$jConfig = $jConfModel->getData();
+
+			$jConfig['caching'] = 0;
+			$jConfig['lifetime'] = 60;
+			$jConfig['list_limit'] = 25;
+			$jConfig['MetaDesc'] = 'VirtueMart works with Joomla! - the dynamic portal engine and content management system';
+			$jConfig['MetaKeys'] = 'virtuemart, vm2, joomla, Joomla';
+
+			$app = JFactory::getApplication();
+			$return = $jConfModel->save($jConfig);
+
+			// Check the return value.
+			if ($return === false) {
+				// Save the data in the session.
+				$app->setUserState('com_config.config.global.data', $jConfig);
+				vmError(vmText::sprintf('JERROR_SAVE_FAILED', 'installComplete'));
+				//return false;
+			} else {
+				// Set the success message.
+				//vmInfo('COM_CONFIG_SAVE_SUCCESS');
+			}
+		}else {
+			$msg = $this->_getMsgDangerousTools();
+		}
+
+		$this->setRedirect('index.php?option=com_virtuemart&view=updatesmigration&layout=insfinished', $msg);
+	}
+
+	/**
+	 * This is executing the update table commands to adjust tables to the latest layout
+	 * @author Max Milbers
+	 */
 	function updateDatabase(){
-
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
-// 		$this->checkPermissionForTools();
-
-		if(!class_exists('com_virtuemartInstallerScript')) require(JPATH_VM_ADMINISTRATOR . DS . 'install' . DS . 'script.virtuemart.php');
+		vRequest::vmCheckToken();
+		if(!class_exists('com_virtuemartInstallerScript')) require(VMPATH_ADMIN . DS . 'install' . DS . 'script.virtuemart.php');
 		$updater = new com_virtuemartInstallerScript();
 		$updater->update(false);
 		$this->setRedirect($this->redirectPath, 'Database updated');
+	}
+
+	function optimizeDatabase(){
+		vRequest::vmCheckToken();
+		$db = JFactory::getDbo();
+		$q = $db->getQuery(true);
+		$q = 'OPTIMIZE TABLE' . $db->quoteName('#__virtuemart_products');
+		$db->setQuery($q);
+		$db->execute();
+		$q = $db->getQuery(true);
+		$q = 'OPTIMIZE TABLE' . $db->quoteName('#__virtuemart_product_categories');
+		$db->setQuery($q);
+		$db->execute();
+		$q = 'OPTIMIZE TABLE' . $db->quoteName('#__virtuemart_categories');
+		$db->setQuery($q);
+		$db->execute();
+		$this->setRedirect($this->redirectPath, 'Database updated');
+	}
+
+	/**
+	 * This is executing the update table commands to adjust joomla tables to the latest layout
+	 * @author Max Milbers
+	 */
+	function updateDatabaseJoomla(){
+		vRequest::vmCheckToken();
+		if(JVM_VERSION<3){
+			$p = VMPATH_ADMIN.DS.'install'.DS.'joomla2.sql';
+		} else {
+			$p = '';
+		}
+		//$p = VMPATH_ROOT.DS.'installation'.DS.'sql'.DS.'mysql'.DS.'joomla.sql';
+		$msg = 'You are using joomla 3, or File '.$p.' not found';
+		if(file_exists($p)){
+			if(!class_exists('GenericTableUpdater')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'tableupdater.php');
+			$updater = new GenericTableUpdater();
+			$updater->updateMyVmTables($p,'_');
+			$msg = 'Joomla Database updated';
+		}
+		$this->setRedirect($this->redirectPath, $msg);
 	}
 
 	/**
@@ -335,9 +506,6 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 */
 	function renewConfig(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		//if(VmConfig::get('dangeroustools', true)){
@@ -355,10 +523,8 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 */
 	function setDangerousToolsOff(){
 
-		$db = JFactory::getDBO();
-		$q = 'SHOW TABLES LIKE "%virtuemart_configs%"'; //=>jos_virtuemart_shipment_plg_weight_countries
-		$db->setQuery($q);//vmdebug('$db',$db->loadResult());
-		$res = $db->loadResult();
+		if(!class_exists('VirtueMartModelConfig')) require(VMPATH_ADMIN .'/models/config.php');
+		$res  = VirtueMartModelConfig::checkConfigTableExists();
 		if(!empty($res)){
 			$model = $this->getModel('config');
 			$model->setDangerousToolsOff();
@@ -372,34 +538,30 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 * @author Max Milbers
 	 */
 	function _getMsgDangerousTools(){
-		$uri = JFactory::getURI();
-		$link = $uri->root() . 'administrator/index.php?option=com_virtuemart&view=config';
-		$msg = JText::sprintf('COM_VIRTUEMART_SYSTEM_DANGEROUS_TOOL_DISABLED', JText::_('COM_VIRTUEMART_ADMIN_CFG_DANGEROUS_TOOLS'), $link);
+		VmConfig::loadJLang('com_virtuemart_config');
+		$link = JURI::root() . 'administrator/index.php?option=com_virtuemart&view=config';
+		$msg = vmText::sprintf('COM_VIRTUEMART_SYSTEM_DANGEROUS_TOOL_DISABLED', vmText::_('COM_VIRTUEMART_ADMIN_CFG_DANGEROUS_TOOLS'), $link);
 		return $msg;
 	}
 
 	function portMedia(){
 
-		$data = JRequest::get('get');
-		JRequest::setVar($data['token'], '1', 'post');
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		$this->storeMigrationOptionsInSession();
-		if(!class_exists('Migrator')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'migrator.php');
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
 		$migrator = new Migrator();
 		$result = $migrator->portMedia();
 
 		$this->setRedirect($this->redirectPath, $result);
 	}
 
-	function migrateGeneralFromVmOne(){		$data = JRequest::get('get');
+	function migrateGeneralFromVmOne(){
 
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		$this->storeMigrationOptionsInSession();
-		if(!class_exists('Migrator')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'migrator.php');
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
 		$migrator = new Migrator();
 		$result = $migrator->migrateGeneral();
 		if($result){
@@ -413,11 +575,10 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 
 	function migrateUsersFromVmOne(){
 
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		$this->storeMigrationOptionsInSession();
-		if(!class_exists('Migrator')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'migrator.php');
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
 		$migrator = new Migrator();
 		$result = $migrator->migrateUsers();
 		if($result){
@@ -432,11 +593,10 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 
 	function migrateProductsFromVmOne(){
 
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		$this->storeMigrationOptionsInSession();
-		if(!class_exists('Migrator')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'migrator.php');
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
 		$migrator = new Migrator();
 		$result = $migrator->migrateProducts();
 		if($result){
@@ -450,11 +610,10 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 
 	function migrateOrdersFromVmOne(){
 
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		$this->storeMigrationOptionsInSession();
-		if(!class_exists('Migrator')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'migrator.php');
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
 		$migrator = new Migrator();
 		$result = $migrator->migrateOrders();
 		if($result){
@@ -473,7 +632,6 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 	 */
 	function migrateAllInOne(){
 
-		JRequest::checkToken() or jexit('Invalid Token, in ' . JRequest::getWord('task'));
 		$this->checkPermissionForTools();
 
 		if(!VmConfig::get('dangeroustools', true)){
@@ -483,54 +641,85 @@ class VirtuemartControllerUpdatesMigration extends VmController{
 		}
 
 		$this->storeMigrationOptionsInSession();
-		if(!class_exists('Migrator')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'migrator.php');
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
 		$migrator = new Migrator();
 		$result = $migrator->migrateAllInOne();
-		$msg = 'Migration finished';
+		if($result){
+			$msg = 'Migration finished';
+		} else {
+			$msg = 'Migration was interrupted by max_execution time, please restart';
+		}
 		$this->setRedirect($this->redirectPath, $msg);
 	}
 
-	function storeMigrationOptionsInSession(){
+	function portVmAttributes(){
 
+		$this->checkPermissionForTools();
+
+		if(!VmConfig::get('dangeroustools', true)){
+			$msg = $this->_getMsgDangerousTools();
+			$this->setRedirect($this->redirectPath, $msg);
+			return false;
+		}
+
+		$this->storeMigrationOptionsInSession();
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
+		$migrator = new Migrator();
+		$result = $migrator->portVm1Attributes();
+		if($result){
+			$msg = 'Migration Vm2 attributes finished';
+		} else {
+			$msg = 'Migration was interrupted by max_execution time, please restart';
+		}
+		$this->setRedirect($this->redirectPath, $msg);
+	}
+
+	function portVmRelatedProducts(){
+
+		$this->checkPermissionForTools();
+
+		if(!VmConfig::get('dangeroustools', true)){
+			$msg = $this->_getMsgDangerousTools();
+			$this->setRedirect($this->redirectPath, $msg);
+			return false;
+		}
+
+		$this->storeMigrationOptionsInSession();
+		if(!class_exists('Migrator')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'migrator.php');
+		$migrator = new Migrator();
+		$result = $migrator->portVm1RelatedProducts();
+		if($result){
+			$msg = 'Migration Vm2 related products finished';
+		} else {
+			$msg = 'Migration was interrupted by max_execution time, please restart';
+		}
+		$this->setRedirect($this->redirectPath, $msg);
+	}
+
+
+	function storeMigrationOptionsInSession(){
 
 		$session = JFactory::getSession();
 
-		$session->set('migration_task', JRequest::getString('task',''), 'vm');
-		$session->set('migration_default_category_browse', JRequest::getString('migration_default_category_browse',''), 'vm');
-		$session->set('migration_default_category_fly', JRequest::getString('migration_default_category_fly',''), 'vm');
+		$session->set('migration_task', vRequest::getString('task',''), 'vm');
+		$session->set('migration_default_category_browse', vRequest::getString('migration_default_category_browse',''), 'vm');
+		$session->set('migration_default_category_fly', vRequest::getString('migration_default_category_fly',''), 'vm');
 	}
 
-	/**
-	 * This is executing the update table commands to adjust tables to the latest layout
-	 *
-	 * @author Max Milbers
-	 */
-	function updateTable(){
 
-		$db = JFactory::getDBO();
-		$query = 'SHOW TABLES LIKE "%virtuemart_adminmenuentries"';
+	function resetThumbs(){
 
-		$db->setQuery($query);
-		$result = $db->loadResult();
+		$this->checkPermissionForTools();
 
-		$update = false;
-		if (!empty($result) ) {
-			$update = true;
-// 			vmdebug('is an update',$result);
+		if(!VmConfig::get('dangeroustools', true)){
+			$msg = $this->_getMsgDangerousTools();
+			$this->setRedirect($this->redirectPath, $msg);
+			return false;
 		}
 
-		$this->setRedirect($this->redirectPath, 'is an update '.$update);
-/*		$db = JFactory::getDBO();
-		$query = 'SHOW COLUMNS FROM `#__virtuemart_products` ';
-		$db->setQuery($query);
-		$columns = $db->loadResultArray(0);
-
-		if(!in_array('product_ordered',$columns)){
-			echo 'is in array';
-			$query = 'ALTER TABLE `#__virtuemart_products` ADD product_ordered int(11)';
-			$db->setQuery($query);
-			$db->query();
-		}*/
+		$model = VmModel::getModel('updatesMigration');
+		$result = $model->resetThumbs();
+		$this->setRedirect($this->redirectPath, $result);
 	}
 }
 

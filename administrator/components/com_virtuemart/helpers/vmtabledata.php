@@ -20,7 +20,7 @@
 defined('_JEXEC') or die();
 
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 class VmTableData extends VmTable {
 
@@ -41,8 +41,8 @@ class VmTableData extends VmTable {
 		$tblKey = $this->_tbl_key;
 		$pKey = $this->_pkey;
 
-
 		if($tblKey == $pKey){
+			//vmdebug('VmTableData '.get_class($this). ' need not to be a vmtabledata $tblKey == $pKey');
 			$res = false;
 			if(!empty($this->$tblKey)){
 				$_qry = 'SELECT `'.$this->_tbl_key.'` '
@@ -72,15 +72,24 @@ class VmTableData extends VmTable {
 			}
 		}
 
-		// 		vmdebug('$_qry',$_qry,$pKey,$tblKey, $this->$tblKey);
-		//		vmError($_qry,'$_qry');
+
+		//reset Params
+		if(isset($this->_tmpParams) and is_array($this->_tmpParams)){
+			foreach($this->_tmpParams as $k => $v){
+				$this->$k = $v;
+			}
+		}
+		$this->_tmpParams = false;
 
 		if (!$returnCode) {
 			vmError(get_class($this) . '::store failed - ' . $this->_db->getErrorMsg());
 			return false;
 		}
-		else
-		return true;
+		else {
+
+			return true;
+		}
+
 	}
 
 

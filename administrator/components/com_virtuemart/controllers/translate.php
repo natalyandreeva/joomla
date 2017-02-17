@@ -19,10 +19,8 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
 
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -55,12 +53,12 @@ class VirtuemartControllerTranslate extends VmController {
 		$json['fields'] = 'error' ;
 		$json['msg'] = 'Invalid Token';
 		$json['structure'] = 'empty' ;
-		if (!JRequest::checkToken( 'get' )) {
+		if (!vRequest::vmCheckToken(-1)) {
 			echo json_encode($json) ;
 			jexit(  );
 		}
 
-		$lang = JRequest::getvar('lg');
+		$lang = vRequest::getvar('lg');
 		$langs = VmConfig::get('active_languages',array()) ;
 		$language=JFactory::getLanguage();
 
@@ -75,9 +73,10 @@ class VirtuemartControllerTranslate extends VmController {
 		// if ($language->getDefault() == $lang ) $dblang ='';
 
 		$dblang= strtr($lang,'-','_');
-		$id = JRequest::getInt('id',0);
+		VmConfig::$vmlang = $dblang;
+		$id = vRequest::getInt('id',0);
 
-		$viewKey = JRequest::getWord('editView');
+		$viewKey = vRequest::getCmd('editView');
 		// TODO temp trick for vendor
 		if ($viewKey == 'vendor') $id = 1 ;
 
@@ -90,16 +89,29 @@ class VirtuemartControllerTranslate extends VmController {
 		}
 		$tableName = '#__virtuemart_'.$tables[$viewKey].'_'.$dblang;
 
+		$m = VmModel::getModel('coupon');
+		$table = $m->getTable($tables[$viewKey]);
 
-		$db =JFactory::getDBO();
+		//Todo create method to load lang fields only
+		$table->load($id);
+		$vs = $table->loadFieldValues();
+		$lf = $table->getTranslatableFields();
 
-		$q='select * FROM `'.$tableName.'` where `virtuemart_'.$viewKey.'_id` ='.$id;
-		$db->setQuery($q);
-		if ($json['fields'] = $db->loadAssoc()) {
+		$json['fields'] = array();
+		foreach($lf as $v){
+			if(isset($vs[$v])){
+				$json['fields'][$v] = $vs[$v];
+			}
+		}
+
+		//if ($json['fields'] = $db->loadAssoc()) {
+		if ($table->getLoaded()) {
 			$json['structure'] = 'filled' ;
-			$json['msg'] = jText::_('COM_VIRTUEMART_SELECTED_LANG').':'.$lang;
+			$json['msg'] = vmText::_('COM_VIRTUEMART_SELECTED_LANG').':'.$lang;
 
 		} else {
+			$db =JFactory::getDBO();
+
 			$json['structure'] = 'empty' ;
 			$db->setQuery('SHOW COLUMNS FROM '.$tableName);
 			$tableDescribe = $db->loadAssocList();
@@ -107,9 +119,9 @@ class VirtuemartControllerTranslate extends VmController {
 			$fields=array();
 			foreach ($tableDescribe as $key =>$val) $fields[$val['Field']] = $val['Field'] ;
 			$json['fields'] = $fields;
-			$json['msg'] = JText::sprintf('COM_VIRTUEMART_LANG_IS_EMPTY',$lang ,jText::_('COM_VIRTUEMART_'.strtoupper( $viewKey)) ) ;
+			$json['msg'] = vmText::sprintf('COM_VIRTUEMART_LANG_IS_EMPTY',$lang ,vmText::_('COM_VIRTUEMART_'.strtoupper( $viewKey)) ) ;
 		}
-		echo json_encode($json);
+		echo vmJsApi::safe_json_encode($json);
 		jExit();
 
 	}

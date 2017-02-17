@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: edit.php 6326 2012-08-08 14:14:28Z alatak $
+* @version $Id: edit.php 8887 2015-06-25 13:05:26Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_COUNTRY_DETAILS');
 ?>
 
@@ -28,28 +28,28 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_COUNTRY_DETAILS');
 
 <div class="col50">
 	<fieldset>
-	<legend><?php echo JText::_('COM_VIRTUEMART_COUNTRY_DETAILS'); ?></legend>
+	<legend><?php echo vmText::_('COM_VIRTUEMART_COUNTRY_DETAILS'); ?></legend>
 	<table class="admintable">
 		<?php
 		$lang = JFactory::getLanguage();
 		$prefix="COM_VIRTUEMART_COUNTRY_";
-		$country_string = $lang->hasKey($prefix.$this->country->country_3_code) ? ' (' . JText::_($prefix.$this->country->country_3_code) . ')' : ' ';
+		$country_string = $lang->hasKey($prefix.$this->country->country_3_code) ? ' (' . vmText::_($prefix.$this->country->country_3_code) . ')' : ' ';
         ?>
-		<?php echo VmHTML::row('input','COM_VIRTUEMART_COUNTRY_REFERENCE_NAME','country_name',$this->country->country_name, 'class="inputbox"', '', 50, 50, $country_string); ?>
+		<?php echo VmHTML::row('input','COM_VIRTUEMART_COUNTRY_REFERENCE_NAME','country_name',$this->country->country_name,'class="required"', '', 50, 50, $country_string); ?>
 
-		<?php echo VmHTML::row('booleanlist','COM_VIRTUEMART_PUBLISH','published',$this->country->published); ?>
+		<?php echo VmHTML::row('booleanlist','COM_VIRTUEMART_PUBLISHED','published',$this->country->published); ?>
 <?php /* TODO not implemented		<tr>
 			<td width="110" class="key">
 				<label for="title">
-					<?php echo JText::_('COM_VIRTUEMART_WORLDZONE'); ?>:
+					<?php echo vmText::_('COM_VIRTUEMART_WORLDZONE'); ?>:
 				</label>
 			</td>
 			<td>
-				<?php echo JHTML::_('Select.genericlist', $this->worldZones, 'virtuemart_worldzone_id', '', 'virtuemart_worldzone_id', 'zone_name', $this->country->virtuemart_worldzone_id); ?>
+				<?php echo JHtml::_('Select.genericlist', $this->worldZones, 'virtuemart_worldzone_id', '', 'virtuemart_worldzone_id', 'zone_name', $this->country->virtuemart_worldzone_id); ?>
 			</td>
 		</tr>*/ ?>
-		<?php echo VmHTML::row('input','COM_VIRTUEMART_COUNTRY_3_CODE','country_3_code',$this->country->country_3_code); ?>
-		<?php echo VmHTML::row('input','COM_VIRTUEMART_COUNTRY_2_CODE','country_2_code',$this->country->country_2_code); ?>
+		<?php echo VmHTML::row('input','COM_VIRTUEMART_COUNTRY_3_CODE','country_3_code',$this->country->country_3_code,'class="required"'); ?>
+		<?php echo VmHTML::row('input','COM_VIRTUEMART_COUNTRY_2_CODE','country_2_code',$this->country->country_2_code,'class="required"'); ?>
 	</table>
 	</fieldset>
 </div>

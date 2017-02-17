@@ -14,7 +14,7 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: default_showcategory.php 6107 2012-06-14 17:09:49Z alatak $
+ * @version $Id: default_showcategory.php 9227 2016-05-27 10:55:25Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
@@ -57,16 +57,16 @@ defined ( '_JEXEC' ) or die ( 'Restricted access' );
 			    }
 
 			    // Category Link
-			    $caturl = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_category_id=' . $category->virtuemart_category_id);
+			    $caturl = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_category_id=' . $category->virtuemart_category_id, FALSE);
 
 			    // Show Category
 			    ?>
 			    <div class="category floatleft<?php echo $category_cellwidth . $show_vertical_separator ?>">
 				<div class="spacer">
 				    <h2>
-					<a href="<?php echo $caturl ?>" title="<?php echo $category->category_name ?>">
-					    <?php echo $category->category_name ?>
-					    <br />
+					<a href="<?php echo $caturl ?>" title="<?php echo vmText::_($category->category_name) ?>">
+					    <?php echo vmText::_($category->category_name) ?>
+					    <br>
 					    <?php
 					    // if ($category->ids) {
 					    echo $category->images[0]->displayMediaThumb("", false);

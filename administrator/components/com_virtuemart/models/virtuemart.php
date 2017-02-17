@@ -13,21 +13,18 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: virtuemart.php 6350 2012-08-14 17:18:08Z Milbo $
+* @version $Id: virtuemart.php 8508 2014-10-22 18:57:14Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
-
-// Load the model framework
-if(!class_exists('JModel')) require JPATH_VM_LIBRARIES.DS.'joomla'.DS.'application'.DS.'component'.DS.'model.php';
 
 /**
  * Model for Macola
  *
  * @package		VirtueMart
  */
-class VirtueMartModelVirtueMart extends JModel {
+class VirtueMartModelVirtueMart extends VmModel {
 
 
 
@@ -113,12 +110,14 @@ class VirtueMartModelVirtueMart extends JModel {
 		$query .= 'JOIN `#__virtuemart_vmusers` as uv ON u.id = uv.virtuemart_user_id ';
 		$query .= 'JOIN `#__virtuemart_userinfos` as ui ON u.id = ui.virtuemart_user_id ';
 		$query .= 'JOIN `#__virtuemart_orders` as uo ON u.id = uo.virtuemart_user_id ';
-		$query .= 'WHERE `perms` <> "admin" ';
-        $query .= 'AND `perms` <> "storeadmin" ';
-        $query .= 'AND INSTR(`usertype`, "administrator") = 0 AND INSTR(`usertype`, "Administrator") = 0 ';
-        $query .= ' ORDER BY uo.`created_on` DESC';
-        return $this->_getList($query, 0, $nbrCusts);
-    }
+
+		//todo write a replacement
+		//$query .= 'WHERE `perms` <> "admin" ';
+		//$query .= 'AND `perms` <> "storeadmin" ';
+		//$query .= 'AND INSTR(`usertype`, "administrator") = 0 AND INSTR(`usertype`, "Administrator") = 0 ';
+		$query .= ' ORDER BY uo.`created_on` DESC';
+		return $this->_getList($query, 0, $nbrCusts);
+	}
 }
 
 //pure php no tag

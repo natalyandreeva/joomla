@@ -19,14 +19,14 @@ defined ( '_JEXEC' ) or die ( 'Restricted access' );
 * @version $Id: about.php 2641 2010-11-09 19:25:13Z milbo $
 */
 
-jimport('joomla.application.component.controller');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 /**
  * VirtueMart default administrator controller
  *
  * @package		VirtueMart
  */
-class VirtuemartControllerAbout extends JController
+class VirtuemartControllerAbout extends VmController
 {
 
 }

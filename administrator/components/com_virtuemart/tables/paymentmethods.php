@@ -14,12 +14,12 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: paymentmethods.php 5366 2012-02-02 17:40:47Z Milbo $
+ * @version $Id: paymentmethods.php 9196 2016-03-20 15:10:12Z Milbo $
  */
 defined('_JEXEC') or die();
 
 if (!class_exists('VmTable'))
-    require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmtable.php');
+    require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmtable.php');
 
 /**
  * Calculator table class
@@ -51,6 +51,8 @@ class TablePaymentmethods extends VmTable {
     /** @var string parameter of the paymentmethod */
     var $payment_params = 0;
 
+    var $currency_id = 0;
+
     /** @var string ordering */
     var $ordering = '';
 
@@ -62,7 +64,7 @@ class TablePaymentmethods extends VmTable {
 
     /**
      * @author Max Milbers
-     * @param $db A database connector object
+     * @param JDataBase $db
      */
     function __construct(&$db) {
 	parent::__construct('#__virtuemart_paymentmethods', 'virtuemart_paymentmethod_id', $db);

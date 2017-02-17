@@ -13,14 +13,14 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: view.html.php 6373 2012-08-24 10:41:03Z Milbo $
+ * @version $Id: view.html.php 9041 2015-11-05 11:59:38Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * HTML View class for maintaining the list of shopper groups
@@ -29,44 +29,39 @@ if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmvie
  * @subpackage ShopperGroup
  * @author Markus �hler
  */
-class VirtuemartViewShopperGroup extends VmView {
+class VirtuemartViewShopperGroup extends VmViewAdmin {
 
 	function display($tpl = null) {
+
 		// Load the helper(s)
-
-
-		if (!class_exists('VmHTML')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'html.php');
-
-// 		$this->assignRef('perms', Permissions::getInstance());
+		if (!class_exists('VmHTML')) require(VMPATH_ADMIN.DS.'helpers'.DS.'html.php');
 
 		$model = VmModel::getModel();
 
 		$layoutName = $this->getLayout();
 
-		$task = JRequest::getWord('task',$layoutName);
+		$task = vRequest::getCmd('task',$layoutName);
 		$this->assignRef('task', $task);
 
 		if ($layoutName == 'edit') {
+			//For shoppergroup specific price display
+			VmConfig::loadJLang('com_virtuemart_config');
+			VmConfig::loadJLang('com_virtuemart_shoppers',true);
 			$shoppergroup = $model->getShopperGroup();
 			$this->SetViewTitle('SHOPPERGROUP',$shoppergroup->shopper_group_name);
 
-
-			$vendors = ShopFunctions::renderVendorList($shoppergroup->virtuemart_vendor_id);
-			$this->assignRef('vendorList',	$vendors);
+			if($this->showVendors()){
+				$this->vendorList = ShopFunctions::renderVendorList($shoppergroup->virtuemart_vendor_id);
+			}
 
 			$this->assignRef('shoppergroup',	$shoppergroup);
 
 			$this->addStandardEditViewCommands();
 
-
 		} else {
 			$this->SetViewTitle();
 
-			JToolBarHelper::makeDefault();
-
-
-			$this->loadHelper('permissions');
-			$showVendors = Permissions::getInstance()->check('admin');
+			$showVendors = $this->showVendors();
 			$this->assignRef('showVendors',$showVendors);
 
 			$this->addStandardDefaultViewCommands();

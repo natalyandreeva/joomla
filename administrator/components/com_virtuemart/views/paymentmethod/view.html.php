@@ -14,14 +14,14 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: view.html.php 5601 2012-03-04 18:22:24Z Milbo $
+ * @version $Id: view.html.php 9215 2016-05-02 12:53:58Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * Description
@@ -30,36 +30,29 @@ if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmvie
  * @author valérie isaksen
  */
 if (!class_exists('VirtueMartModelCurrency'))
-require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'currency.php');
+require(VMPATH_ADMIN . DS . 'models' . DS . 'currency.php');
 
-class VirtuemartViewPaymentMethod extends VmView {
+class VirtuemartViewPaymentMethod extends VmViewAdmin {
 
 	function display($tpl = null) {
 
 		// Load the helper(s)
-		$this->addHelperPath(JPATH_VM_ADMINISTRATOR.DS.'helpers');
+		$this->addHelperPath(VMPATH_ADMIN.DS.'helpers');
 
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
-		$this->loadHelper('permissions');
+		if (!class_exists ('vmPSPlugin')) {
+			require(VMPATH_PLUGINLIBS . DS . 'vmpsplugin.php');
+		}
 
-		$this->loadHelper('html');
-
-		$this->addHelperPath(JPATH_VM_PLUGINS);
-		$this->loadHelper('vmplugin');
-
-
-		$this->assignRef('perms', Permissions::getInstance());
-
+		$this->user = JFactory::getUser();
 		$model = VmModel::getModel('paymentmethod');
 
-		//@todo should be depended by loggedVendor
-		//		$vendorId=1;
-		//		$this->assignRef('vendorId', $vendorId);
 		// TODO logo
 		$this->SetViewTitle();
 
-
-		$layoutName = JRequest::getWord('layout', 'default');
+		$layoutName = vRequest::getCmd('layout', 'default');
 
 		$vendorModel = VmModel::getModel('vendor');
 
@@ -72,122 +65,88 @@ class VirtuemartViewPaymentMethod extends VmView {
 		if ($layoutName == 'edit') {
 
 			// Load the helper(s)
-			$this->loadHelper('image');
-			// $this->loadHelper('html');
-			$this->loadHelper('parameterparser');
-			// jimport('joomla.html.pane');
+			if (!class_exists('VmImage'))
+				require(VMPATH_ADMIN . DS . 'helpers' . DS . 'image.php');
+
+			VmConfig::loadJLang('plg_vmpsplugin', false);
+
+			JForm::addFieldPath(VMPATH_ADMIN . DS . 'fields');
 
 			$payment = $model->getPayment();
+
+			// Get the payment XML.
+			$formFile	= vRequest::filterPath( VMPATH_ROOT .DS. 'plugins'. DS. 'vmpayment' .DS. $payment->payment_element .DS. $payment->payment_element . '.xml');
+			if (file_exists($formFile)){
+
+				$payment->form = JForm::getInstance($payment->payment_element, $formFile, array(),false, '//vmconfig | //config[not(//vmconfig)]');
+				$payment->params = new stdClass();
+				$varsToPush = vmPlugin::getVarsToPushFromForm($payment->form);
+				VmTable::bindParameterableToSubField($payment,$varsToPush);
+				$payment->form->bind($payment->getProperties());
+
+			} else {
+				$payment->form = null;
+			}
+
 			$this->assignRef('payment',	$payment);
-			$this->assignRef('vmPPaymentList', self::renderInstalledPaymentPlugins($payment->payment_jplugin_id));
-			//			$this->assignRef('PaymentTypeList',self::renderPaymentRadioList($paym->payment_type));
+			$this->vmPPaymentList = self::renderInstalledPaymentPlugins($payment->payment_jplugin_id);
+			$this->shopperGroupList = ShopFunctions::renderShopperGroupList($payment->virtuemart_shoppergroup_ids, true);
 
-			//			$this->assignRef('creditCardList',self::renderCreditCardRadioList($paym->payment_creditcards));
-			//			echo 'humpf <pre>'.print_r($paym).'</pre>' ;
-			//$this->assignRef('creditCardList',ShopFunctions::renderCreditCardList($paym->payment_creditcards,true));
-			$this->assignRef('shopperGroupList', ShopFunctions::renderShopperGroupList($payment->virtuemart_shoppergroup_ids, true));
-
-			if(Vmconfig::get('multix','none')!=='none'){
+			if($this->showVendors()){
 				$vendorList= ShopFunctions::renderVendorList($payment->virtuemart_vendor_id);
 				$this->assignRef('vendorList', $vendorList);
 			}
 
+			$currency_model = VmModel::getModel ('currency');
+			$currencies = $currency_model->getCurrencies ();
+
+			$currency = VirtueMartModelVendor::getVendorCurrency ($payment->virtuemart_vendor_id);
+			$this->assignRef('vendor_currency', $currency->currency_symbol);
+
+			if(empty($payment->currency_id)) $payment->currency_id = $currency->virtuemart_currency_id;
+			$attrs['class'] = 'vm-chzn-select vm-drop';
+			$this->currencyList = JHtml::_ ('select.genericlist', $currencies, 'currency_id', $attrs, 'virtuemart_currency_id', 'currency_name', $payment->currency_id);
+
 			$this->addStandardEditViewCommands( $payment->virtuemart_paymentmethod_id);
 		} else {
+			JToolBarHelper::custom('clonepayment', 'copy', 'copy', vmText::_('COM_VIRTUEMART_PAYMENT_CLONE'), true);
+
 			$this->addStandardDefaultViewCommands();
 			$this->addStandardDefaultViewLists($model);
 
-			$payments = $model->getPayments();
-			$this->assignRef('payments',	$payments);
+			$this->payments = $model->getPayments();
+			VmConfig::loadJLang('com_virtuemart_shoppers',TRUE);
 
-			$pagination = $model->getPagination();
-			$this->assignRef('pagination', $pagination);
+			foreach ($this->payments as &$data){
+				// Write the first 5 shoppergroups in the list
+				$data->paymShoppersList = shopfunctions::renderGuiList($data->virtuemart_shoppergroup_ids,'shoppergroups','shopper_group_name','payment' );
+			}
+
+			$this->pagination = $model->getPagination();
 
 		}
 
 		parent::display($tpl);
 	}
 
-
-	/**
-	 * Builds a list to choose the Payment type
-	 *
-	 * @copyright 	Copyright (c) 2009 VirtueMart Team. All rights reserved.
-	 * @author 		Max Milbers
-	 * @param 	$selected 	the selected values, may be single data or array
-	 * @return 	$list 		list of the Entrypoints
-	 * @deprecated
-	 */
-
-	function renderPaymentTypesList($selected){
-
-		$list = array(
-		'0' => array('payment_type' => 'C', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_CREDIT')),
-		'1' => array('payment_type' => 'Y', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_USE_PP')),
-		'2' => array('payment_type' => 'B', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_BANK_DEBIT')),
-		'3' => array('payment_type' => 'N', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_AO')),
-		'4' => array('payment_type' => 'P', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_FORMBASED'))
-		);
-
-		$listHTML = JHTML::_('Select.genericlist', $list, 'payment_type', '', 'payment_type', 'payment_type_name', $selected );
-		return $listHTML;
-	}
-	/*
-	 *
-	* @deprecated
-	*/
-	function renderPaymentRadioList($selected){
-
-		$list = array(
-		'0' => array('payment_type' => 'C', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_CREDIT')),
-		'1' => array('payment_type' => 'Y', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_USE_PP')),
-		'2' => array('payment_type' => 'B', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_BANK_DEBIT')),
-		'3' => array('payment_type' => 'N', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_AO')),
-		'4' => array('payment_type' => 'P', 'payment_type_name' => JText::_('COM_VIRTUEMART_PAYMENT_FORM_FORMBASED'))
-		);
-
-		$listHTML='';
-		foreach($list as $item){
-			if($item['payment_type']==$selected) $checked='checked="checked"'; else $checked='';
-			if($item['payment_type']=='Y' || $item['payment_type']=='C') $id = 'pam_type_CC_on'; else $id='pam_type_CC_off';
-			$listHTML .= '<input id="'.$id.'" type="radio" name="payment_type" value="'.$item['payment_type'].'" '.$checked.'>'.$item['payment_type_name'].' <br />';
-		}
-
-		return $listHTML;
-	}
-
 	function renderInstalledPaymentPlugins($selected){
 
-		if ( JVM_VERSION===1) {
-			$table = '#__plugins';
-			$ext_id = 'id';
-			$enable = 'published';
-		} else {
-			$table = '#__extensions';
-			$ext_id = 'extension_id';
-			$enable = 'enabled';
-		}
-
 		$db = JFactory::getDBO();
-		//Todo speed optimize that, on the other hand this function is NOT often used and then only by the vendors
-		//		$q = 'SELECT * FROM #__plugins as pl JOIN `#__virtuemart_payment_method` AS pm ON `pl`.`id`=`pm`.`payment_jplugin_id` WHERE `folder` = "vmpayment" AND `published`="1" ';
-		//		$q = 'SELECT * FROM #__plugins as pl,#__virtuemart_payment_method as pm  WHERE `folder` = "vmpayment" AND `published`="1" AND pl.id=pm.payment_jplugin_id';
-		$q = 'SELECT * FROM `'.$table.'` WHERE `folder` = "vmpayment" AND `'.$enable.'`="1" ';
+
+		$q = 'SELECT * FROM `#__extensions` WHERE `folder` = "vmpayment" and `state`="0"  ORDER BY `ordering`,`name` ASC';
 		$db->setQuery($q);
-		$result = $db->loadAssocList($ext_id);
+		$result = $db->loadAssocList('extension_id');
 		if(empty($result)){
 			$app = JFactory::getApplication();
-			$app -> enqueueMessage(JText::_('COM_VIRTUEMART_NO_PAYMENT_PLUGINS_INSTALLED'));
+			$app -> enqueueMessage(vmText::_('COM_VIRTUEMART_NO_PAYMENT_PLUGINS_INSTALLED'));
 		}
-		$listHTML='<select id="payment_jplugin_id" name="payment_jplugin_id">';
-		if(!class_exists('JParameter')) require(JPATH_VM_LIBRARIES.DS.'joomla'.DS.'html'.DS.'parameter.php' );
+
+		$listHTML='<select id="payment_jplugin_id" name="payment_jplugin_id" style= "width: 300px;">';
+
 		foreach($result as $paym){
-			$params = new JParameter($paym['params']);
-			if($paym[$ext_id]==$selected) $checked='selected="selected"'; else $checked='';
+			if($paym['extension_id']==$selected) $checked='selected="selected"'; else $checked='';
 			// Get plugin info
-			$pType = $params->getValue('pType');
-			if($pType=='Y' || $pType=='C') $id = 'pam_type_CC_on'; else $id='pam_type_CC_off';
-			$listHTML .= '<option id="'.$id.'" '.$checked.' value="'.$paym[$ext_id].'">'.JText::_($paym['name']).'</option>';
+			$listHTML .= '<option '.$checked.' value="'.$paym['extension_id'].'">'.vmText::_($paym['name']).'</option>';
 
 		}
 		$listHTML .= '</select>';

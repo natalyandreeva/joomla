@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: calc.php 6442 2012-09-13 13:04:33Z Milbo $
+* @version $Id: calc.php 8615 2014-12-04 13:56:26Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 /**
  * Calculator Controller
@@ -52,11 +49,13 @@ class VirtuemartControllerCalc extends VmController {
 	 */
 	function save($data = 0){
 
-		$data = JRequest::get('post');
+		$data = vRequest::getRequest();
 
-		$data['calc_name'] = JRequest::getVar('calc_name','','post','STRING',JREQUEST_ALLOWHTML);
-		$data['calc_descr'] = JRequest::getVar('calc_descr','','post','STRING',JREQUEST_ALLOWHTML);
-
+		$data['calc_name'] = vRequest::getHtml('calc_name','');
+		$data['calc_descr'] = vRequest::getHtml('calc_descr','');
+		if(isset($data['params'])){
+			$data['params'] = vRequest::getHtml('params','');
+		}
 		parent::save($data);
 	}
 
@@ -69,26 +68,22 @@ class VirtuemartControllerCalc extends VmController {
 	public function orderUp()
 	{
 		// Check token
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
 		$id = 0;
-		$cid	= JRequest::getVar( 'cid', array(), 'post', 'array' );
-		JArrayHelper::toInteger($cid);
+		$cid	= vRequest::getInt( 'cid', array() );
 
 		if (isset($cid[0]) && $cid[0]) {
 			$id = $cid[0];
 		} else {
-			$this->setRedirect( 'index.php?option=com_virtuemart&view=calc', JText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
+			$this->setRedirect( 'index.php?option=com_virtuemart&view=calc', vmText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
 			return false;
 		}
 
-		//getting the model
 		$model = VmModel::getModel('calc');
 
 		if ($model->orderCalc($id, -1)) {
-			$msg = JText::_('COM_VIRTUEMART_ITEM_MOVED_UP');
-		} else {
-			$msg = $model->getError();
+			$msg = vmText::_('COM_VIRTUEMART_ITEM_MOVED_UP');
 		}
 
 		$this->setRedirect( 'index.php?option=com_virtuemart&view=calc', $msg );
@@ -103,26 +98,23 @@ class VirtuemartControllerCalc extends VmController {
 	public function orderDown()
 	{
 		// Check token
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
 		$id = 0;
-		$cid	= JRequest::getVar( 'cid', array(), 'post', 'array' );
-		JArrayHelper::toInteger($cid);
+		$cid	= vRequest::getInt( 'cid', array() );
 
 		if (isset($cid[0]) && $cid[0]) {
 			$id = $cid[0];
 		} else {
-			$this->setRedirect( 'index.php?option=com_virtuemart&view=calc', JText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
+			$this->setRedirect( 'index.php?option=com_virtuemart&view=calc', vmText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
 			return false;
 		}
 
 		//getting the model
 		$model = VmModel::getModel('calc');
-
+		$msg = '';
 		if ($model->orderCalc($id, 1)) {
-			$msg = JText::_('COM_VIRTUEMART_ITEM_MOVED_DOWN');
-		} else {
-			$msg = $model->getError();
+			$msg = vmText::_('COM_VIRTUEMART_ITEM_MOVED_DOWN');
 		}
 
 		$this->setRedirect( 'index.php?option=com_virtuemart&view=calc', $msg );
@@ -135,20 +127,17 @@ class VirtuemartControllerCalc extends VmController {
 	public function saveOrder()
 	{
 		// Check for request forgeries
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$cid	= JRequest::getVar( 'cid', array(), 'post', 'array' );
-		JArrayHelper::toInteger($cid);
+		$cid	= vRequest::getInt( 'cid', array() );
 
 		$model = VmModel::getModel('calc');
 
-		$order	= JRequest::getVar('order', array(), 'post', 'array');
-		JArrayHelper::toInteger($order);
+		$order	= vRequest::getInt('order');
 
+		$msg = '';
 		if ($model->setOrder($cid,$order)) {
-			$msg = JText::_('COM_VIRTUEMART_NEW_ORDERING_SAVED');
-		} else {
-			$msg = $model->getError();
+			$msg = vmText::_('COM_VIRTUEMART_NEW_ORDERING_SAVED');
 		}
 		$this->setRedirect('index.php?option=com_virtuemart&view=calc', $msg );
 	}

@@ -1,6 +1,6 @@
 <?php  defined('_JEXEC') or die();
 /**
- * @version $Id: orderdone.php 6369 2012-08-22 14:33:46Z alatak $
+ * @version $Id: orderdone.php 7538 2014-01-06 11:36:43Z Milbo $
  *
  * @author Valérie Isaksen
  * @package VirtueMart
@@ -34,7 +34,7 @@
 	   <?php echo $viewData['payment_name']; ?>
 	</span>
         <span id="klarna_invno_wrapper">
-            <span id="klarna_invno_text"><?php echo JText::sprintf('VMPAYMENT_KLARNA_INVOICE_NUMBER_TEXT'); ?></span>
+            <span id="klarna_invno_text"><?php echo vmText::sprintf('VMPAYMENT_KLARNA_INVOICE_NUMBER_TEXT'); ?></span>
             <span id="klarna_invno"><?php echo  $viewData['klarna_invoiceno']; ?></span>
         </span>
 

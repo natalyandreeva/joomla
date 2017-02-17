@@ -13,21 +13,23 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 6053 2012-06-05 12:36:21Z Milbo $
+* @version $Id: default.php 8532 2014-10-27 14:47:41Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 
-AdminUIHelper::startAdminArea (); 
+AdminUIHelper::startAdminArea ($this);
 
-JToolBarHelper::title(JText::_('COM_VIRTUEMART')." ".JText::_('COM_VIRTUEMART_CONTROL_PANEL'), 'head vm_store_48');
+JToolBarHelper::title(vmText::_('COM_VIRTUEMART')." ".vmText::_('COM_VIRTUEMART_CONTROL_PANEL'), 'head vm_store_48');
 
+$tabs =  array('controlpanel' => 'COM_VIRTUEMART_CONTROL_PANEL' );
+if($this->manager('report')){
+	$tabs['statisticspage'] = 'COM_VIRTUEMART_STATISTIC_STATISTICS';
+}
 
 // Loading Templates in Tabs
-AdminUIHelper::buildTabs ( $this, array (	'controlpanel' 	=> 	'COM_VIRTUEMART_CONTROL_PANEL',
-									'statisticspage'=> 	'COM_VIRTUEMART_STATISTIC_STATISTICS'
-									 ) );
+AdminUIHelper::buildTabs ( $this,$tabs );
 
 AdminUIHelper::endAdminArea ();

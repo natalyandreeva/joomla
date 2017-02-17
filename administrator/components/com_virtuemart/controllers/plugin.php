@@ -18,14 +18,14 @@ defined('_JEXEC') or die();
 */
 defined('_JEXEC') or die('Restricted access');
 
-jimport('joomla.application.component.controller');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 /**
  * VirtueMart default administrator controller
  *
  * @package		VirtueMart
  */
-class VirtuemartControllerPlugin extends JController
+class VirtuemartControllerPlugin extends VmController
 {
 	/**
 	 * Method to render the plugin datas
@@ -37,16 +37,14 @@ class VirtuemartControllerPlugin extends JController
 	function Plugin()
 	{
 
-		if(!class_exists('Permissions'))
-		require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'permissions.php');
-		if(!Permissions::getInstance()->check('admin')){
+		if(!vmAccess::manager()){
 			return false;
 		}
 
-		$type = JRequest::getWord('type', 'vmcustom');
+		$type = vRequest::getCmd('type', 'vmcustom');
 		$typeWhiteList = array('vmshopper','vmcustom','vmcalculation','vmpayment','vmshipment', 'vmuserfield');
 		if(!in_array($type,$typeWhiteList)) return false;
-		$name = JRequest::getWord('name','');
+		$name = vRequest::getString('name','');
 
 		JPluginHelper::importPlugin($type, $name);
 		$dispatcher = JDispatcher::getInstance();
@@ -58,17 +56,17 @@ class VirtuemartControllerPlugin extends JController
 		if ($render ) {
 			// Get the document object.
 			$document =JFactory::getDocument();
-			if (JRequest::getWord('cache', 'no')) {
+			if (vRequest::getCmd('cache', 'no')) {
 				JResponse::setHeader('Cache-Control','no-cache, must-revalidate');
 				JResponse::setHeader('Expires','Mon, 6 Jul 2000 10:00:00 GMT');
 			}
-			$format = JRequest::getWord('format', 'json');
+			$format = vRequest::getCmd('format', 'json');
 			if ($format == 'json') {
 				$document->setMimeEncoding('application/json');
 				// Change the suggested filename.
 
 				JResponse::setHeader('Content-Disposition','attachment;filename="'.$type.'".json"');
-				echo json_encode($render);
+				echo vmJsApi::safe_json_encode($render);
 			}
 			else echo $render;
 		}

@@ -22,9 +22,14 @@ defined('_JEXEC') or die('Restricted access');
 ?>
 
 <div class="vendor-details-view">
-	<div class="page-heading">
-		<h2 class="vm-page-title"><?php echo $this->vendor->vendor_store_name;?></h2>
-	</div>
+	<h1><?php echo $this->vendor->vendor_store_name;
+	if (!empty($this->vendor->images[0])) { ?>
+		<div class="vendor-image">
+		<?php echo $this->vendor->images[0]->displayMediaThumb('',false); ?>
+		</div>
+	<?php
+	}
+?>	</h1>
 
 <?php
 
@@ -64,7 +69,7 @@ defined('_JEXEC') or die('Restricted access');
 	');
 ?>
 
-		<p><?php echo JText::_('COM_VIRTUEMART_VENDOR_ASK_QUESTION')  ?></p>
+		<h3><?php echo JText::_('COM_VIRTUEMART_VENDOR_ASK_QUESTION')  ?></h3>
 
 		<div class="clear"></div>
 
@@ -85,12 +90,12 @@ defined('_JEXEC') or die('Restricted access');
 					<textarea title="<?php echo $ask_comment ?>" class="validate[required,minSize[<?php echo $min ?>],maxSize[<?php echo $max ?>]] field" id="comment" name="comment" cols="30" rows="10"></textarea>
 				</label>
 				<div class="submit">
-					<div class="character-count">
-						<?php echo JText::_('COM_VIRTUEMART_ASK_COUNT')  ?>
-						<input type="text" value="0" size="4" class="counter" ID="counter" name="counter" maxlength="4" readonly="readonly" />
-					</div>
-
 					<input class="highlight-button" type="submit" name="submit_ask" title="<?php echo JText::_('COM_VIRTUEMART_ASK_SUBMIT')  ?>" value="<?php echo JText::_('COM_VIRTUEMART_ASK_SUBMIT')  ?>" />
+
+					<div class="width50 floatright right paddingtop">
+						<?php echo JText::_('COM_VIRTUEMART_ASK_COUNT')  ?>
+						<input type="text" value="0" size="4" class="counter" id="counter" name="counter" maxlength="4" readonly="readonly" />
+					</div>
 				</div>
 
 				<input type="hidden" name="view" value="vendor" />
@@ -104,7 +109,10 @@ defined('_JEXEC') or die('Restricted access');
 
 
 	<br class="clear" />
-	<?php echo $this->linkdetails ?>&nbsp;|&nbsp;
+	<?php echo $this->linkdetails ?>
+
+	<br class="clear" />
+
 	<?php echo $this->linktos ?>
 
 	<br class="clear" />

@@ -7,7 +7,7 @@
 * @subpackage Calculation tool
 * @author Max Milbers
 * @link http://www.virtuemart.net
-* @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
+* @copyright Copyright (c) 2011- 2014 VirtueMart Team. All rights reserved.
 * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
 * VirtueMart is free software. This version may have been modified pursuant
 * to the GNU General Public License, and as distributed it includes or
@@ -17,7 +17,7 @@
 */
 defined('_JEXEC') or die();
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 /**
  * Calculator table class
  * The class is is used to manage the calculation in the shop.
@@ -59,19 +59,14 @@ class TableCalcs extends VmTable
 	/** @var Affects the rule all products of all Vendors? */
 	var $shared				= 0;//this must be forbidden to set for normal vendors, that means only setable Administrator permissions or vendorId=1
     /** @var int published or unpublished */
-	var $ordering	=0;
-
+	var $ordering	= 0;
     var $published 		        = 0;
 
 
-	/**
-	 * @author Max Milbers
-	 * @param $db A database connector object
-	 */
 	function __construct(&$db){
 		parent::__construct('#__virtuemart_calcs', 'virtuemart_calc_id', $db);
 
-		$this->setUniqueName('calc_name');
+		$this->setObligatoryKeys('calc_name');
 		$this->setObligatoryKeys('calc_kind');
 		$this->setLoggable();
 

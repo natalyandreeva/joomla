@@ -13,25 +13,24 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: edit.php 5225 2012-01-06 01:50:19Z electrocity $
+* @version $Id: edit.php 8539 2014-10-30 15:52:48Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_MANUFACTURER_CATEGORY_DETAILS');
 ?>
 
 <form action="index.php" method="post" name="adminForm" id="adminForm">
 
-<?php echo $this->langList; ?>
 <div class="col50">
 	<fieldset>
-	<legend><?php echo JText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_DETAILS'); ?></legend>
+	<legend><?php echo vmText::_('COM_VIRTUEMART_MANUFACTURER_CATEGORY_DETAILS'); ?></legend>
 	<table class="admintable">
 		<?php echo VmHTML::row('input','COM_VIRTUEMART_MANUFACTURER_CATEGORY_NAME','mf_category_name',$this->manufacturerCategory->mf_category_name); ?>
-		<?php echo VmHTML::row('booleanlist','COM_VIRTUEMART_PUBLISH','published',$this->manufacturerCategory->published); ?>
+		<?php echo VmHTML::row('booleanlist','COM_VIRTUEMART_PUBLISHED','published',$this->manufacturerCategory->published); ?>
 		<?php echo VmHTML::row('textarea','COM_VIRTUEMART_MANUFACTURER_CATEGORY_DESCRIPTION','mf_category_desc',$this->manufacturerCategory->mf_category_desc); ?>
 
 	</table>

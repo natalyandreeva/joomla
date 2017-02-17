@@ -4,31 +4,34 @@
  * Show the product details page
  *
  * @package	VirtueMart
- * @subpackage
  * @author Max Milbers, Valerie Isaksen
-
  * @link http://www.virtuemart.net
- * @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
+ * @copyright Copyright (c) 2004 - 2014 VirtueMart Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
- * VirtueMart is free software. This version may have been modified pursuant
- * to the GNU General Public License, and as distributed it includes or
- * is derivative of works licensed under the GNU General Public License or
- * other free or open source software licenses.
- * @version $Id: default_manufacturer.php 5409 2012-02-09 13:52:54Z alatak $
+ * @version $Id: default_manufacturer.php 8794 2015-03-12 18:31:55Z Milbo $
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 ?>
 <div class="manufacturer">
-    <?php
-    $link = JRoute::_('index.php?option=com_virtuemart&view=manufacturer&virtuemart_manufacturer_id=' . $this->product->virtuemart_manufacturer_id . '&tmpl=component');
-    $text = $this->product->mf_name;
+	<?php
+	$i = 1;
 
-    /* Avoid JavaScript on PDF Output */
-    if (strtolower(JRequest::getWord('output')) == "pdf") {
-	echo JHTML::_('link', $link, $text);
-    } else {
+	$mans = array();
+	// Gebe die Hersteller aus
+	foreach($this->product->manufacturers as $manufacturers_details) {
+
+		//Link to products
+		$link = JRoute::_('index.php?option=com_virtuemart&view=manufacturer&virtuemart_manufacturer_id=' . $manufacturers_details->virtuemart_manufacturer_id. '&tmpl=component', FALSE);
+		$name = $manufacturers_details->mf_name;
+
+		// Avoid JavaScript on PDF Output
+		if (!$this->writeJs) {
+			$mans[] = JHtml::_('link', $link, $name);
+		} else {
+			$mans[] = '<a class="manuModal" rel="{handler: \'iframe\', size: {x: 700, y: 850}}" href="'.$link .'">'.$name.'</a>';
+		}
+	}
+	echo implode(', ',$mans);
 	?>
-        <span class="bold"><?php echo JText::_('COM_VIRTUEMART_PRODUCT_DETAILS_MANUFACTURER_LBL') ?></span><a class="modal" rel="{handler: 'iframe', size: {x: 700, y: 550}}" href="<?php echo $link ?>"><?php echo $text ?></a>
-    <?PHP } ?>
 </div>

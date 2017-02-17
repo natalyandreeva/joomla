@@ -6,7 +6,7 @@
  *
  * @package	VirtueMart
  * @subpackage User
- * @author Oscar van Eijk
+ * @author Oscar van Eijk, Eugen Stranz
  * @link http://www.virtuemart.net
  * @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
@@ -14,95 +14,79 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: edit_address_userfields.php 6142 2012-06-20 15:58:22Z alatak $
+ * @version $Id: edit_address_userfields.php 6349 2012-08-14 16:56:24Z Milbo $
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
+// Status Of Delimiter
+$closeDelimiter = false;
+$openTable = true;
+$hiddenFields = '';
 
+// Output: Userfields
+foreach($this->userFields['fields'] as $field) {
 
-$typefields = array('corefield', 'billto');
-$corefields = VirtueMartModelUserfields::getCoreFields();
-foreach ($typefields as $typefield) {
-    $_k = 0;
-    $_set = false;
-    $_table = false;
-    $_hiddenFields = '';
+	if($field['type'] == 'delimiter') {
 
-//             for ($_i = 0, $_n = count($this->userFields['fields']); $_i < $_n; $_i++) {
-    for ($_i = 0, $_n = count($this->userFields['fields']); $_i < $_n; $_i++) {
-	// Do this at the start of the loop, since we're using 'continue' below!
-	if ($_i == 0) {
-	    $_field = current($this->userFields['fields']);
+		// For Every New Delimiter
+		// We need to close the previous
+		// table and delimiter
+		if($closeDelimiter) { ?>
+			</table>
+		</fieldset>
+		<?php
+		} ?>
+
+		<fieldset>
+			<span class="userfields_info"><?php echo $field['title'] ?></span>
+
+		<?php
+		$closeDelimiter = true;
+		$openTable = true;
+
+	} elseif ($field['hidden'] == true) {
+
+		// We collect all hidden fields
+		// and output them at the end
+		$hiddenFields .= $field['formcode'] . "\n";
+
 	} else {
-	    $_field = next($this->userFields['fields']);
-	}
 
-	if ($_field['hidden'] == true) {
-	    $_hiddenFields .= $_field['formcode'] . "\n";
-	    continue;
-	}
-	if ($_field['type'] == 'delimiter') {
-	    if ($_set) {
-		// We're in Fieldset. Close this one and start a new
-		if ($_table) {
-		    echo '	</table>' . "\n";
-		    $_table = false;
-		}
-		echo '</fieldset>' . "\n";
-	    }
-	    $_set = true;
-	    echo '<fieldset>' . "\n";
-	    echo '	<legend>' . "\n";
-	    echo '		' . $_field['title'];
-	    echo '	</legend>' . "\n";
-	    continue;
-	}
+		// If we have a new delimiter
+		// we have to start a new table
+		if($openTable) {
+			$openTable = false;
+			?>
 
+			<table  class="adminForm user-details">
 
-
-	if (($typefield == 'corefield' && (in_array($_field['name'], $corefields) && $_field['name'] != 'email' && $_field['name'] != 'agreed') )
-		or ($typefield == 'billto' && !(in_array($_field['name'], $corefields) && $_field['name'] != 'email' && $_field['name'] != 'agreed') )) {
-	    if (!$_table) {
-		// A table hasn't been opened as well. We need one here,
-		if ( $typefield == 'corefield') {
-		    echo '<span class="userfields_info">' . $this->corefield_title . '</span>';
-		} else {
-		    echo '<span class="userfields_info">' . $this->vmfield_title . '</span>';
+		<?php
 		}
 
-
-		echo '	<table  class="adminForm user-details">' . "\n";
-		$_table = true;
-	    }
-	    echo '		<tr>' . "\n";
-	    echo '			<td class="key">' . "\n";
-	    echo '				<label class="' . $_field['name'] . '" for="' . $_field['name'] . '_field">' . "\n";
-	    echo '					' . $_field['title'] . ($_field['required'] ? ' *' : '') . "\n";
-	    echo '				</label>' . "\n";
-	    echo '			</td>' . "\n";
-	    echo '			<td>' . "\n";
-	    echo '				' . $_field['formcode'] . "\n";
-	    echo '			</td>' . "\n";
-	    echo '		</tr>' . "\n";
+		// Output: Userfields
+		?>
+				<tr>
+					<td class="key" title="<?php echo $field['description'] ?>" >
+						<label class="<?php echo $field['name'] ?>" for="<?php echo $field['name'] ?>_field">
+							<?php echo $field['title'] . ($field['required'] ? ' *' : '') ?>
+						</label>
+					</td>
+					<td>
+						<?php echo $field['formcode'] ?>
+					</td>
+				</tr>
+	<?php
 	}
-    }
-
-    if ($_table) {
-	echo '	</table>' . "\n";
-    }
-    if ($_set) {
-	echo '</fieldset>' . "\n";
-    }
-    $_k = 0;
-    $_set = false;
-    $_table = false;
-    $_hiddenFields = '';
-    if(is_array($this->userFields['fields'])) {
-		reset($this->userFields['fields']);
-    }
 
 }
 
-echo $_hiddenFields;
+// At the end we have to close the current
+// table and delimiter ?>
 
+			</table>
+		</fieldset>
+
+<?php // Output: Hidden Fields
+echo $hiddenFields
+?>

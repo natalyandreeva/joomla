@@ -1,14 +1,13 @@
 /*
  * Facebox (for jQuery)
- * version: 1.2 (05/05/2008)
+ * version: 1.3
  * @requires jQuery v1.2 or later
- *
- * Examples at http://famspam.com/facebox/
+ * @homepage https://github.com/defunkt/facebox
  *
  * Licensed under the MIT:
  *   http://www.opensource.org/licenses/mit-license.php
  *
- * Copyright 2007, 2008 Chris Wanstrath [ chris@ozmm.org ]
+ * Copyright Forever Chris Wanstrath, Kyle Neath
  *
  * Usage:
  *
@@ -68,13 +67,11 @@
  */
 (function($) {
   $.facebox = function(data, klass) {
-    $.facebox.loading()
+    $.facebox.loading(data.settings || [])
 
     if (data.ajax) fillFaceboxFromAjax(data.ajax, klass)
-	else if (data.iframe) fillFaceboxFromHref(data.iframe,klass, data.rev)
     else if (data.image) fillFaceboxFromImage(data.image, klass)
-    else if (data.div) fillFaceboxFromHref(data.div, klass, data.rev)
-    else if (data.text) fillFaceboxFromText(data.text, klass)
+    else if (data.div) fillFaceboxFromHref(data.div, klass)
     else if ($.isFunction(data)) data.call($)
     else $.facebox.reveal(data, klass)
   }
@@ -87,8 +84,8 @@
     settings: {
       opacity      : 0.2,
       overlay      : true,
-      loadingImage : 'components/com_virtuemart/assets/images/facebox/loading.gif',
-      closeImage   : 'components/com_virtuemart/assets/images/facebox/closelabel.png',
+      loadingImage : Virtuemart.vmSiteurl+'/components/com_virtuemart/assets/images/vm-preloader.gif',
+      closeImage   : Virtuemart.vmSiteurl+'/components/com_virtuemart/assets/images/fancybox/fancy_close.png',
       imageTypes   : [ 'png', 'jpg', 'jpeg', 'gif' ],
       faceboxHtml  : '\
     <div id="facebox" style="display:none;"> \
@@ -105,18 +102,14 @@
       if ($('#facebox .loading').length == 1) return true
       showOverlay()
 
-      $('#facebox .content').empty()
-      $('#facebox .body').children().hide().end().
-        append('<div class="loading"><img src="'+$.facebox.settings.loadingImage+'"/></div>')
+      $('#facebox .content').empty().
+          append('<div class="loading"><img src="'+$.facebox.settings.loadingImage+'"/></div>')
 
-      // $('#facebox').css({
-        // top: 100 , //	getPageScroll()[1] + (getPageHeight() / 10),
-        // left:	$(window).width() / 2 - 205
-      // }).show()
-		$('#facebox').css({
-		  top:    getPageScroll()[1] + ($(window).height() / 10),
-		  left:   ($(window).width() - $('#facebox').width()) / 2
-		}).show()
+      $('#facebox').show().css({
+        top:	getPageScroll()[1] + (getPageHeight() / 10),
+        left:	$(window).width() / 2 - ($('#facebox .popup').outerWidth() / 2)
+      })
+
       $(document).bind('keydown.facebox', function(e) {
         if (e.keyCode == 27) $.facebox.close()
         return true
@@ -127,10 +120,9 @@
     reveal: function(data, klass) {
       $(document).trigger('beforeReveal.facebox')
       if (klass) $('#facebox .content').addClass(klass)
-      $('#facebox .content').append(data)
-      $('#facebox .loading').remove()
-      $('#facebox .body').children().fadeIn('normal')
-      $('#facebox').css('left', $(window).width() / 2 - ($('#facebox .popup').width() / 2))
+      $('#facebox .content').empty().append(data)
+      $('#facebox .popup').children().fadeIn('normal')
+      $('#facebox').css('left', $(window).width() / 2 - ($('#facebox .popup').outerWidth() / 2))
       $(document).trigger('reveal.facebox').trigger('afterReveal.facebox')
     },
 
@@ -157,7 +149,7 @@
       var klass = this.rel.match(/facebox\[?\.(\w+)\]?/)
       if (klass) klass = klass[1]
 
-      fillFaceboxFromHref(this.href, klass, this.rev)
+      fillFaceboxFromHref(this.href, klass)
       return false
     }
 
@@ -177,7 +169,7 @@
     makeCompatible()
 
     var imageTypes = $.facebox.settings.imageTypes.join('|')
-    $.facebox.settings.imageTypesRegexp = new RegExp('\.(' + imageTypes + ')$', 'i')
+    $.facebox.settings.imageTypesRegexp = new RegExp('\\.(' + imageTypes + ')(\\?.*)?$', 'i')
 
     if (settings) $.extend($.facebox.settings, settings)
     $('body').append($.facebox.settings.faceboxHtml)
@@ -191,8 +183,11 @@
       preload.slice(-1).src = $(this).css('background-image').replace(/url\((.+)\)/, '$1')
     })
 
-    $('#facebox .close').click($.facebox.close)
-    $('#facebox .close_image').attr('src', $.facebox.settings.closeImage)
+    $('#facebox .close')
+        .click($.facebox.close)
+        .append('<img src="'
+        + $.facebox.settings.closeImage
+        + '" class="close_image" title="close">')
   }
 
   // getPageScroll() by quirksmode.com
@@ -239,27 +234,22 @@
   //     div: #id
   //   image: blah.extension
   //    ajax: anything else
-  function fillFaceboxFromHref(href, klass, rev ) {
+  function fillFaceboxFromHref(href, klass) {
     // div
     if (href.match(/#/)) {
       var url    = window.location.href.split('#')[0]
       var target = href.replace(url,'')
       if (target == '#') return
       $.facebox.reveal($(target).html(), klass)
-	  // iframe
-	} else if (rev.split('|')[0] == 'iframe') {
-	  fillFaceboxFromIframe(href, klass, rev.split('|')[1],rev.split('|')[2])
-    // image
+
+      // image
     } else if (href.match($.facebox.settings.imageTypesRegexp)) {
       fillFaceboxFromImage(href, klass)
-    // ajax
+      // ajax
     } else {
       fillFaceboxFromAjax(href, klass)
     }
   }
-function fillFaceboxFromIframe(href, klass, height, width) {
-	$.facebox.reveal('<iframe scrolling="auto" marginwidth="0" width="'+width+'" height="' + height + '" frameborder="0" src="' + href + '" marginheight="0"></iframe>', klass)
-}
 
   function fillFaceboxFromImage(href, klass) {
     var image = new Image()
@@ -268,13 +258,9 @@ function fillFaceboxFromIframe(href, klass, height, width) {
     }
     image.src = href
   }
-  function fillFaceboxFromText(text, klass) {
-      $.facebox.reveal('<div>'+ text + '</div>', klass)
-
-  }
 
   function fillFaceboxFromAjax(href, klass) {
-    $.get(href, function(data) { $.facebox.reveal(data, klass) })
+    $.facebox.jqxhr = $.get(href, function(data) { $.facebox.reveal(data, klass) })
   }
 
   function skipOverlay() {
@@ -288,9 +274,9 @@ function fillFaceboxFromIframe(href, klass, height, width) {
       $("body").append('<div id="facebox_overlay" class="facebox_hide"></div>')
 
     $('#facebox_overlay').hide().addClass("facebox_overlayBG")
-      .css('opacity', $.facebox.settings.opacity)
-      .click(function() { $(document).trigger('close.facebox') })
-      .fadeIn(200)
+        .css('opacity', $.facebox.settings.opacity)
+        .click(function() { $(document).trigger('close.facebox') })
+        .fadeIn(200)
     return false
   }
 
@@ -311,6 +297,10 @@ function fillFaceboxFromIframe(href, klass, height, width) {
    */
 
   $(document).bind('close.facebox', function() {
+    if ($.facebox.jqxhr) {
+      $.facebox.jqxhr.abort()
+      $.facebox.jqxhr = null
+    }
     $(document).unbind('keydown.facebox')
     $('#facebox').fadeOut(function() {
       $('#facebox .content').removeClass().addClass('content')
@@ -320,19 +310,4 @@ function fillFaceboxFromIframe(href, klass, height, width) {
     hideOverlay()
   })
 
-	$(document).bind('afterReveal.facebox', function() {
-		var windowHeight = $(window).height();
-		var faceboxHeight = $('#facebox').height();
-		if(faceboxHeight < windowHeight) {
-			var scrolltop = $(window).scrollTop();
-			var top = Math.floor((windowHeight - faceboxHeight) / 2) + scrolltop;
-			$('#facebox').css('top', (top));
-		}
-	else {
-		$('#facebox').css('top',$(window).scrollTop() );
-	}
-	});
-
-
 })(jQuery);
-

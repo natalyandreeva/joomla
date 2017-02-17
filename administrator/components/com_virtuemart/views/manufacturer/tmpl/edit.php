@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: edit.php 6350 2012-08-14 17:18:08Z Milbo $
+* @version $Id: edit.php 8330 2014-09-25 15:23:30Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
@@ -36,7 +36,8 @@ AdminUIHelper::buildTabs ( $this,  $tabarray ,$this->manufacturer->virtuemart_ma
 	<input type="hidden" name="virtuemart_manufacturer_id" value="<?php echo $this->manufacturer->virtuemart_manufacturer_id; ?>" />
 	<?php echo $this->addStandardHiddenToForm(); ?>
 </form>
-<script type="text/javascript">
+<?php
+vmJsApi::addJScript('vm.toggle','
 function toggleDisable( elementOnChecked, elementDisable, disableOnChecked ) {
 	try {
 		if( !disableOnChecked ) {
@@ -60,10 +61,10 @@ function toggleDisable( elementOnChecked, elementDisable, disableOnChecked ) {
 }
 
 function toggleFullURL() {
-	if( jQuery('#manufacturer_full_image_url').val().length>0) document.adminForm.manufacturer_full_image_action[1].checked=false;
+	if( jQuery("#manufacturer_full_image_url").val().length>0) document.adminForm.manufacturer_full_image_action[1].checked=false;
 	else document.adminForm.manufacturer_full_image_action[1].checked=true;
 	toggleDisable( document.adminForm.manufacturer_full_image_action[1], document.adminForm.manufacturer_thumb_image_url, true );
 	toggleDisable( document.adminForm.manufacturer_full_image_action[1], document.adminForm.manufacturer_thumb_image, true );
-}
-</script>
-<?php AdminUIHelper::endAdminArea(); ?>
+}');
+
+AdminUIHelper::endAdminArea(); ?>

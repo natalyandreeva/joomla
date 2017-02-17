@@ -2,11 +2,11 @@
 if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not allowed.' );
 /**
 *
-* @version $Id: virtuemart.php 6558 2012-10-18 08:50:00Z alatak $
+* @version $Id: virtuemart.php 9249 2016-06-30 10:46:30Z Milbo $
 * @package VirtueMart
 * @subpackage core
 * @author Max Milbers
-* @copyright Copyright (C) 2009-11 by the authors of the VirtueMart Team listed at /administrator/com_virtuemart/copyright.php - All rights reserved.
+* @copyright Copyright (C) 2009-14 by the authors of the VirtueMart Team listed at /administrator/com_virtuemart/copyright.php - All rights reserved.
 * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
 * VirtueMart is free software. This version may have been modified pursuant
 * to the GNU General Public License, and as distributed it includes or
@@ -18,59 +18,87 @@ if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not 
 */
 
 /* Require the config */
+defined('DS') or define('DS', DIRECTORY_SEPARATOR);
+if (!class_exists( 'VmConfig' )) require(JPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_virtuemart'.DS.'helpers'.DS.'config.php');
 
-//Console::logSpeed('virtuemart start');
-
-if (!class_exists( 'VmConfig' )) require(JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart'.DS.'helpers'.DS.'config.php');
 VmConfig::loadConfig();
 
 vmRam('Start');
-// vmSetStartTime();
-vmSetStartTime('Start');
+//vmTime('joomla start until Vm is called','joomlaStart');
+vmSetStartTime('vmStart');
 
 VmConfig::loadJLang('com_virtuemart', true);
 
-if(VmConfig::get('shop_is_offline',0)){
+$_controller = vRequest::getCmd('view', vRequest::getCmd('controller', 'virtuemart')) ;
+$task = vRequest::getCmd('task','') ;
+if(VmConfig::get('shop_is_offline',0) and $task!='feed' and $_controller!='virtuemart'){	//yes, quickndirty
 	$_controller = 'virtuemart';
-	require (JPATH_VM_SITE.DS.'controllers'.DS.'virtuemart.php');
-	JRequest::setVar('view', 'virtuemart');
+	require (VMPATH_SITE.DS.'controllers'.DS.'virtuemart.php');
+	vRequest::setVar('view', 'virtuemart');
 	$task='';
-	$basePath = JPATH_VM_SITE;
+	$basePath = VMPATH_SITE;
 } else {
 
-	/* Front-end helpers */
-	if(!class_exists('VmImage')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'image.php'); //dont remove that file it is actually in every view except the state view
-	if(!class_exists('shopFunctionsF'))require(JPATH_VM_SITE.DS.'helpers'.DS.'shopfunctionsf.php'); //dont remove that file it is actually in every view
+	// Front-end helpers
+	if(!class_exists('VmImage')) require(VMPATH_ADMIN.DS.'helpers'.DS.'image.php'); //dont remove that file it is actually in every view except the state view
+	if(!class_exists('shopFunctionsF'))require(VMPATH_SITE.DS.'helpers'.DS.'shopfunctionsf.php'); //dont remove that file it is actually in every view
 
-	/* Loading jQuery and VM scripts. */
-	//vmJsApi::jPrice();    //in create button
-	vmJsApi::jQuery();
-	vmJsApi::jSite();
-	vmJsApi::cssSite();
 
-	$_controller = JRequest::getWord('view', JRequest::getWord('controller', 'virtuemart')) ;
 	$trigger = 'onVmSiteController';
-// 	$task = JRequest::getWord('task',JRequest::getWord('layout',$_controller) );		$this makes trouble!
-	$task = JRequest::getWord('task','') ;
+// 	$task = vRequest::getCmd('task',vRequest::getCmd('layout',$_controller) );		$this makes trouble!
 
-	if (($_controller == 'product' || $_controller == 'category') && ($task == 'save' || $task == 'edit') ) {
-		$app = JFactory::getApplication();
 
-			if(!class_exists('Permissions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'permissions.php');
-			if	(Permissions::getInstance()->check("admin,storeadmin")) {
-				$jlang =JFactory::getLanguage();
-				$jlang->load('com_virtuemart', JPATH_ADMINISTRATOR, null, true);
-				$basePath = JPATH_VM_ADMINISTRATOR;
-				$trigger = 'onVmAdminController';
-			} else {
-				$app->redirect('index.php?option=com_virtuemart', jText::_('COM_VIRTUEMART_RESTRICTED_ACCESS') );
-			}
+	$session = JFactory::getSession();
+	$manage = vRequest::getCmd('manage',$session->get('manage', false,'vm'));
+	if(!$manage) $session->set('manage', 0,'vm');
+
+	$feViews = array('askquestion','cart','invoice','pdf','pluginresponse','productdetails','recommend','vendor','vmplg');
+	$app = JFactory::getApplication();
+	if($manage and $task!='feed' and !in_array($_controller,$feViews)){
+
+		if	( shopFunctionsF::isFEmanager() ) {
+			$session->set('manage', 1,'vm');
+			vRequest::setVar('manage','1');
+			vRequest::setVar('tmpl','component') ;
+
+			VmConfig::loadJLang('com_virtuemart');
+			$jlang = JFactory::getLanguage();
+			$tag = $jlang->getTag();
+			$jlang->load('', JPATH_ADMINISTRATOR,$tag,true);
+			VmConfig::loadJLang('com_virtuemart');
+			$basePath = VMPATH_ADMIN;
+			$trigger = 'onVmAdminController';
+
+
+			vmJsApi::jQuery(false);
+			vmJsApi::loadBECSS();
+
+			$router = $app->getRouter();
+			$router->setMode(0);
+
+		} else {
+			$session->set('manage', 0,'vm');
+			vRequest::setVar('manage',0);
+			$basePath = VMPATH_SITE;
+			$app->redirect('index.php?option=com_virtuemart', vmText::_('COM_VIRTUEMART_RESTRICTED_ACCESS') );
+		}
 
 	} elseif($_controller) {
-			$basePath = JPATH_VM_SITE;
+			if($_controller!='productdetails'){
+				$session->set('manage', 0,'vm');
+				vRequest::setVar('manage','0');
+			}
+			vmJsApi::jQuery();
+			vmJsApi::jSite();
+			vmJsApi::cssSite();
+			$basePath = VMPATH_SITE;
 	}
 }
 
+// controller alias
+if ($_controller=='pluginresponse') {
+	$_controller='vmplg';
+}
 /* Create the controller name */
 $_class = 'VirtuemartController'.ucfirst($_controller);
 
@@ -83,29 +111,31 @@ else {
 	// try plugins
 	JPluginHelper::importPlugin('vmextended');
 	$dispatcher = JDispatcher::getInstance();
-	$dispatcher->trigger($trigger, array($_controller));
+	$rets = $dispatcher->trigger($trigger, array($_controller));
+
+	foreach($rets as $ret){
+		if($ret) return true;
+	}
 }
 
 
 if (class_exists($_class)) {
     $controller = new $_class();
 
-	// try plugins
-	JPluginHelper::importPlugin('vmuserfield');
-	$dispatcher = JDispatcher::getInstance();
-	$dispatcher->trigger('plgVmOnMainController', array($_controller));
-
-    /* Perform the Request task */
     $controller->execute($task);
 
-    //Console::logSpeed('virtuemart start');
-    vmTime($_class.' Finished task '.$task,'Start');
+    //vmTime($_class.' Finished task '.$task,'Start');
     vmRam('End');
     vmRamPeak('Peak');
+	vmTime('vm view Finished task ','vmStart');
     /* Redirect if set by the controller */
     $controller->redirect();
 } else {
     vmDebug('VirtueMart controller not found: '. $_class);
-    $mainframe = Jfactory::getApplication();
-    $mainframe->redirect('index.php?option=com_virtuemart');
+    if (VmConfig::get('handle_404',1)) {
+    	$mainframe = Jfactory::getApplication();
+    	$mainframe->redirect(JRoute::_ ('index.php?option=com_virtuemart&view=virtuemart', FALSE));
+    } else {
+    	JError::raise(E_ERROR,'404','Not found');
+    }
 }

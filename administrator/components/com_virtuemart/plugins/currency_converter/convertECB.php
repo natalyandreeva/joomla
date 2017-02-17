@@ -3,7 +3,7 @@ if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not 
 /**
 * ECB Currency Converter Module
 *
-* @version $Id: convertECB.php 6172 2012-06-28 07:24:53Z Milbo $
+* @version $Id: convertECB.php 9287 2016-09-12 15:14:42Z Milbo $
 * @package VirtueMart
 * @subpackage classes
 * @copyright Copyright (C) 2004-2008 soeren - All rights reserved.
@@ -23,9 +23,6 @@ if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not 
  */
 class convertECB {
 
-// 	var $archive = true;
-// 	var $last_updated = '';
-
 	var $document_address = 'http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
 
 	var $info_address = 'http://www.ecb.int/stats/eurofxref/';
@@ -40,43 +37,30 @@ class convertECB {
 	 * @param string $currB defaults to
 	 * @return mixed The converted amount when successful, false on failure
 	 */
-// 	function convert( $amountA, $currA='', $currB='', $a2b = true ) {
 	function convert( $amountA, $currA='', $currB='', $a2rC = true, $relatedCurrency = 'EUR') {
 
-		// cache subfolder(group) 'convertECB', cache method: callback
-		$cache= JFactory::getCache('convertECB','callback');
+		if($currA==$currB){
+			return $amountA;
+		}
 
-		// save configured lifetime
-		@$lifetime=$cache->lifetime;
+		static $globalCurrencyConverter = false;
+		if(!$globalCurrencyConverter){
+			// cache subfolder(group) 'convertECB', cache method: callback
+			$cache= JFactory::getCache('convertECB','callback');
 
-		$cache->setLifeTime(86400/4); // check 4 time per day
+			$cache->setLifeTime(360); // check 4 time per day
+			$cache->setCaching(1); //enable caching
 
-		// save cache conf
-
-		$conf = JFactory::getConfig();
-
-		// check if cache is enabled in configuration
-
-		$cacheactive = $conf->getValue('config.caching');
-
-		$cache->setCaching(1); //enable caching
-
-		$globalCurrencyConverter = $cache->call( array( 'convertECB', 'getSetExchangeRates' ),$this->document_address );
-
-		// revert configuration
-
-		$cache->setCaching($cacheactive);
-
+			$globalCurrencyConverter = $cache->call( array( 'convertECB', 'getSetExchangeRates' ),$this->document_address );
+		}
 
 		if(!$globalCurrencyConverter ){
-			//vmdebug('convert convert No $globalCurrencyConverter convert '.$amountA);
 			return $amountA;
 		} else {
 			$valA = isset( $globalCurrencyConverter[$currA] ) ? $globalCurrencyConverter[$currA] : 1.0;
 			$valB = isset( $globalCurrencyConverter[$currB] ) ? $globalCurrencyConverter[$currB] : 1.0;
 
 			$val = (float)$amountA * (float)$valB / (float)$valA;
-			//vmdebug('convertECB with '.$currA.' '.$amountA.' * '.$valB.' / '.$valA.' = '.$val,$globalCurrencyConverter[$currA]);
 
 			return $val;
 		}
@@ -94,17 +78,16 @@ class convertECB {
 			$date_now_local = gmdate('Ymd', $now);
 			$time_now_local = gmdate('Hi', $now);
 			$time_ecb_update = '1415';
-			if( is_writable(JPATH_BASE.DS.'cache') ) {
-				$store_path = JPATH_BASE.DS.'cache';
+			if( is_writable(VMPATH_ROOT.DS.'cache') ) {
+				$store_path = VMPATH_ROOT.DS.'cache';
 			}
 			else {
-				$store_path = JPATH_SITE.DS.'media';
+				$store_path = VMPATH_ROOT.DS.'media';
 			}
 
 			$archivefile_name = $store_path.'/daily.xml';
 
 			$val = '';
-
 
 			if(file_exists($archivefile_name) && filesize( $archivefile_name ) > 0 ) {
 				// timestamp for the Filename
@@ -135,7 +118,7 @@ class convertECB {
 			//			JError::raiseNotice(1, "The file $archivefile_name should be in the directory $store_path " );
 			if( $curr_filename == $ecb_filename ) {
 				// Fetch the file from the internet
-				if(!class_exists('VmConnector')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'connection.php');
+				if(!class_exists('VmConnector')) require(VMPATH_ADMIN.DS.'helpers'.DS.'connection.php');
 				//				JError::raiseNotice(1, "Updating currency " );
 				if (!$contents = VmConnector::handleCommunication( $curr_filename )) {
 					if (isset($file_datestamp)) {

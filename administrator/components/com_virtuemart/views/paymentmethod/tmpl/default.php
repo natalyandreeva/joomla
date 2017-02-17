@@ -13,52 +13,51 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 6475 2012-09-21 11:54:21Z Milbo $
+* @version $Id: default.php 8534 2014-10-28 10:23:03Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
-//if($virtuemart_vendor_id==1 || $perm->check( 'admin' )){
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
 <form action="index.php" method="post" name="adminForm" id="adminForm">
 	<div id="editcell">
-		<table class="adminlist" cellspacing="0" cellpadding="0">
+		<table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 		<thead>
 		<tr>
 
-			<th width="2">
-				<input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count($this->payments); ?>);" />
+			<th class="admin-checkbox">
+				<input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" />
 			</th>
 			<th >
-				<?php echo JText::_('COM_VIRTUEMART_PAYMENT_LIST_NAME'); ?>
+				<?php echo $this->sort('payment_name', 'COM_VIRTUEMART_PAYMENT_LIST_NAME'); ?>
 			</th>
 			 <th>
-				<?php echo JText::_('COM_VIRTUEMART_PAYMENT_LIST_DESCRIPTION_LBL'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_PAYMENT_LIST_DESCRIPTION_LBL'); ?>
 			</th>
-			<?php if($this->perms->check( 'admin' )){ ?>
+			<?php if($this->showVendors()){ ?>
 			<th >
-				<?php echo JText::_('COM_VIRTUEMART_VENDOR');  ?>
+				<?php echo $this->sort('virtuemart_vendor_id', 'COM_VIRTUEMART_VENDOR');  ?>
 			</th><?php }?>
 
 			<th  >
-				<?php echo JText::_('COM_VIRTUEMART_PAYMENT_SHOPPERGROUPS'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_PAYMENT_SHOPPERGROUPS'); ?>
 			</th>
 			<th >
-				<?php echo JText::_('COM_VIRTUEMART_PAYMENT_ELEMENT'); ?>
+				<?php echo $this->sort('payment_element', 'COM_VIRTUEMART_PAYMENT_ELEMENT'); ?>
 			</th>
 			<th  >
-				<?php echo JText::_('COM_VIRTUEMART_LIST_ORDER'); ?>
+				<?php echo $this->sort('ordering', 'COM_VIRTUEMART_LIST_ORDER'); ?>
 			</th>
 			<th >
-				<?php echo JText::_('COM_VIRTUEMART_PUBLISHED'); ?>
+				<?php echo $this->sort('published', 'COM_VIRTUEMART_PUBLISHED'); ?>
 			</th>
-			<?php if(Vmconfig::get('multix','none')!=='none'){ ?>
+			<?php if($this->showVendors){ ?>
 			<th width="10">
-				<?php echo JText::_('COM_VIRTUEMART_SHARED'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_SHARED'); ?>
 			</th>
 			<?php } ?>
 			 <th><?php echo $this->sort('virtuemart_paymentmethod_id', 'COM_VIRTUEMART_ID')  ?></th>
@@ -70,13 +69,16 @@ AdminUIHelper::startAdminArea();
 		for ($i=0, $n=count( $this->payments ); $i < $n; $i++) {
 
 			$row = $this->payments[$i];
-			$checked = JHTML::_('grid.id', $i, $row->virtuemart_paymentmethod_id);
-			$published = JHTML::_('grid.published', $row, $i);
+			$checked = JHtml::_('grid.id', $i, $row->virtuemart_paymentmethod_id);
+			$published = $this->gridPublished( $row, $i );
+			if($this->showVendors){
+				$shared = $this->toggle($row->shared, $i, 'toggle.shared');
+			}
 			$editlink = JROUTE::_('index.php?option=com_virtuemart&view=paymentmethod&task=edit&cid[]=' . $row->virtuemart_paymentmethod_id);
 			?>
 			<tr class="<?php echo "row".$k; ?>">
 
-				<td align="center" >
+				<td class="admin-checkbox">
 					<?php echo $checked; ?>
 				</td>
 				<td align="left">
@@ -85,9 +87,9 @@ AdminUIHelper::startAdminArea();
 				 <td align="left">
 					<?php echo $row->payment_desc; ?>
 				</td>
-				<?php if($this->perms->check( 'admin' )){?>
+				<?php if($this->showVendors()){?>
 				<td align="left">
-					<?php echo JText::_($row->virtuemart_vendor_id); ?>
+					<?php echo vmText::_($row->virtuemart_vendor_id); ?>
 				</td>
 				<?php } ?>
 
@@ -103,9 +105,9 @@ AdminUIHelper::startAdminArea();
 				<td align="center">
 					<?php echo $published; ?>
 				</td>
-				<?php if(Vmconfig::get('multix','none')!=='none'){ ?>
+				<?php if($this->showVendors){ ?>
 				<td align="center">
-					<?php echo $row->shared; ?>
+					<?php echo $shared; ?>
 				</td>
 				<?php } ?>
 				<td align="center">

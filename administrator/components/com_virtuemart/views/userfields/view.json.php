@@ -20,7 +20,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 // Load the view framework
-jimport( 'joomla.application.component.view');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
 /**
  * Json View class for the VirtueMart Component
@@ -28,36 +28,56 @@ jimport( 'joomla.application.component.view');
  * @package		VirtueMart
  * @author  Patrick Kohl
  */
-class VirtuemartViewUserfields extends JView {
+class VirtuemartViewUserfields extends VmViewAdmin {
 
 	function display($tpl = null) {
 		$db = JFactory::getDBO();
-		if ( $field = JRequest::getVar('field') ) {
+		if ( $field = vRequest::getVar('field') ) {
 			if (strpos($field, 'plugin') !==false) {
-				if (JVM_VERSION===1) {
-					$table = '#__plugins';
-					//$ext_id = 'id';
-				} else {
-					$table = '#__extensions';
-					//$ext_id = 'extension_id';
-				}
-				$field = substr($field, 6);
-				$q = 'SELECT `params`,`element` FROM `' . $table . '` WHERE `element` = "'.$field.'"';
-				$db ->setQuery($q);
-				$this->plugin = $db ->loadObject();
-				$this->loadHelper('parameterparser');
-				$parameters = new vmParameters($this->plugin ,  $this->plugin->element , 'plugin' ,'vmuserfield');
-				$lang = JFactory::getLanguage();
-				$filename = 'plg_vmuserfield_' .  $this->plugin->element;
-				if(VmConfig::get('enableEnglish', 1)){
-		            $lang->load($filename, JPATH_ADMINISTRATOR, 'en-GB', true);
-				}
-				$lang->load($filename, JPATH_ADMINISTRATOR, $lang->getDefault(), true);
-				$lang->load($filename, JPATH_ADMINISTRATOR, null, true);
 
-				echo $parameters->render();
-				//echo '<input type="hidden" value="'.$this->plugin->element.'" name="custom_value">';
-				jExit();
+				JForm::addFieldPath(VMPATH_ADMIN . DS . 'fields');
+
+				$table = '#__extensions';
+
+				$field = substr($field, 6);
+				$q = 'SELECT `params`,`element`,`type` FROM `' . $table . '` WHERE `element` = "'.$field.'"';
+				$db ->setQuery($q);
+				$this->userField = $db ->loadObject();
+				//$this->userField->element = substr($this->userField->type, 6);
+
+				if (!class_exists ('vmPlugin')) require(VMPATH_PLUGINLIBS . DS . 'vmplugin.php');
+
+				vmPlugin::loadJLang('plg_vmuserfield_'.$this->userField->element, 'vmuserfield',$this->userField->element);
+
+				$path = VMPATH_ROOT .DS. 'plugins' .DS. 'vmuserfield' . DS . $this->userField->element . DS . $this->userField->element . '.xml';
+				// Get the payment XML.
+				$formFile	= vRequest::filterPath( $path );
+				if (file_exists($formFile)){
+					if (!class_exists( 'VmConfig' )) require(JPATH_ROOT.DS.'administrator'.DS.'components'.DS.'com_virtuemart'.DS.'helpers'.DS.'config.php');
+					if (!class_exists ('VmTable')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmtable.php');
+
+					$this->userField->form = JForm::getInstance($this->userField->element, $formFile, array(),false, '//vmconfig | //config[not(//vmconfig)]');
+					$this->userField->params = new stdClass();
+					$varsToPush = vmPlugin::getVarsToPushFromForm($this->userField->form);
+					/*
+					$this->userField->params->userfield_params = $this->userField->params;
+					VmTable::bindParameterable($this->userField->params,'userfield_params',$varsToPush);*/
+					if(empty($this->userField->userfield_params)) $this->userField->userfield_params = '';
+					VmTable::bindParameterableToSubField($this->userField,$varsToPush);
+					$this->userField->form->bind($this->userField);
+				} else {
+					$this->userField->form = false;
+					vmdebug('renderUserfieldPlugin could not find xml for '.$this->userField->type.' at '.$path);
+				}
+				//vmdebug('renderUserfieldPlugin ',$this->userField->form);
+				if ($this->userField->form) {
+					$form = $this->userField->form;
+					ob_start();
+					include(VMPATH_ADMIN.DS.'fields'.DS.'formrenderer.php');
+					$body = ob_get_contents();
+					ob_end_clean();
+					echo $body;
+				}
 			}
 		}
 		jExit();

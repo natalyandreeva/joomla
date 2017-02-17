@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: user.php 6071 2012-06-06 15:33:04Z Milbo $
+* @version $Id: user.php 9021 2015-10-20 23:54:07Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -42,6 +39,7 @@ class VirtuemartControllerUser extends VmController {
 	 * @author
 	 */
 	function __construct(){
+
 		parent::__construct('virtuemart_user_id');
 	}
 
@@ -52,8 +50,8 @@ class VirtuemartControllerUser extends VmController {
 
 		//We set here the virtuemart_user_id, when no virtuemart_user_id is set to 0, for adding a new user
 		//In every other case the virtuemart_user_id is sent.
-		$cid = JRequest::getVar('virtuemart_user_id');
-		if(!isset($cid)) JRequest::setVar('virtuemart_user_id', (int)0);
+		$cid = vRequest::getVar('virtuemart_user_id');
+		if(!isset($cid)) vRequest::setVar('virtuemart_user_id', (int)0);
 
 		parent::edit('edit');
 	}
@@ -63,17 +61,32 @@ class VirtuemartControllerUser extends VmController {
 		$this->edit();
 	}
 
+	function removeAddressST(){
+
+		$virtuemart_userinfo_id = vRequest::getInt('virtuemart_userinfo_id');
+		$virtuemart_user_id = vRequest::getInt('virtuemart_user_id');
+
+		//Lets do it dirty for now
+		$userModel = VmModel::getModel('user');
+		vmdebug('removeAddressST',$virtuemart_user_id,$virtuemart_userinfo_id);
+		$userModel->setId($virtuemart_user_id[0]);
+		$userModel->removeAddress($virtuemart_userinfo_id);
+
+		$layout = vRequest::getCmd('layout','edit');
+		$this->setRedirect( 'index.php?option=com_virtuemart&view=user&task=edit&virtuemart_user_id[]='.$virtuemart_user_id[0] );
+	}
+
 	function editshop(){
 
 		$user = JFactory::getUser();
 		//the virtuemart_user_id var gets overriden in the edit function, when not set. So we must set it here
-		JRequest::setVar('virtuemart_user_id', (int)$user->id);
+		vRequest::setVar('virtuemart_user_id', (int)$user->id);
 		$this->edit();
 
 	}
 	function cancel(){
 
-		$lastTask = JRequest::getWord('last_task');
+		$lastTask = vRequest::getCmd('last_task');
 		if ($lastTask == 'edit_shop') $this->setRedirect('index.php?option=com_virtuemart');
 		else $this->setRedirect('index.php?option=com_virtuemart&view=user');
 	}
@@ -90,26 +103,37 @@ class VirtuemartControllerUser extends VmController {
 		$viewType = $document->getType();
 		$view = $this->getView('user', $viewType);
 
-		$_currentUser = JFactory::getUser();
-// TODO sortout which check is correctt.....
-//		if (!$_currentUser->authorize('administration', 'manage', 'components', 'com_users')) {
-		if (!$_currentUser->authorize('com_users', 'manage')) {
-			$msg = JText::_(_NOT_AUTH);
+		if (!vmAccess::manager('user.edit')) {
+			$msg = vmText::_('_NOT_AUTH');
 		} else {
 			$model = VmModel::getModel('user');
 
-			$data = JRequest::get('post');
+			if($data===0) $data = vRequest::getRequest();
 
 			// Store multiple selectlist entries as a ; separated string
-			if (key_exists('vendor_accepted_currencies', $data) && is_array($data['vendor_accepted_currencies'])) {
+			if (array_key_exists('vendor_accepted_currencies', $data) && is_array($data['vendor_accepted_currencies'])) {
 			    $data['vendor_accepted_currencies'] = implode(',', $data['vendor_accepted_currencies']);
 			}
 			// TODO disallow vendor_store_name as HTML ?
-			$data['vendor_store_name'] = JRequest::getVar('vendor_store_name','','post','STRING',JREQUEST_ALLOWHTML);
-			$data['vendor_store_desc'] = JRequest::getVar('vendor_store_desc','','post','STRING',JREQUEST_ALLOWHTML);
-			$data['vendor_terms_of_service'] = JRequest::getVar('vendor_terms_of_service','','post','STRING',JREQUEST_ALLOWHTML);
-			$data['vendor_legal_info'] = JRequest::getVar('vendor_legal_info','','post','STRING',JREQUEST_ALLOWHTML);
+			$data['vendor_store_name'] = vRequest::getHtml('vendor_store_name');
+			$data['vendor_store_desc'] = vRequest::getHtml('vendor_store_desc');
+			$data['vendor_terms_of_service'] = vRequest::getHtml('vendor_terms_of_service');
+			$data['vendor_legal_info'] = vRequest::getHtml('vendor_legal_info');
+			$data['vendor_letter_css'] = vRequest::getHtml('vendor_letter_css');
+			$data['vendor_letter_header_html'] = vRequest::getHtml('vendor_letter_header_html');
+			$data['vendor_letter_footer_html'] = vRequest::getHtml('vendor_letter_footer_html');
 
+			$ids = vRequest::getInt('virtuemart_user_id');
+
+			if($ids){
+				if(is_array($ids) and isset($ids[0])){
+					$model->setId((int)$ids[0]);
+					vmdebug('my user controller set '.(int)$ids[0],$ids);
+				} else{
+					$model->setId((int)$ids);
+					vmdebug('my user controller set '.(int)$ids,$ids);
+				}
+			}
 			$ret=$model->store($data);
 			if(!$ret){
 				$msg = '';
@@ -118,8 +142,8 @@ class VirtuemartControllerUser extends VmController {
 			}
 
 		}
-		$cmd = JRequest::getCmd('task');
-		$lastTask = JRequest::getWord('last_task');
+		$cmd = vRequest::getCmd('task');
+		$lastTask = vRequest::getCmd('last_task');
 		if($cmd == 'apply'){
 			if ($lastTask == 'editshop') $redirection = 'index.php?option=com_virtuemart&view=user&task=editshop';
 			else $redirection = 'index.php?option=com_virtuemart&view=user&task=edit&virtuemart_user_id[]='.$ret['newId'];

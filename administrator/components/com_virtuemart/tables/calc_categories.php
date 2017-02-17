@@ -7,7 +7,7 @@
 * @subpackage Calculation tool
 * @author Max Milbers
 * @link http://www.virtuemart.net
-* @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
+* @copyright Copyright (c) 2011 - 2014 VirtueMart Team. All rights reserved.
 * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
 * VirtueMart is free software. This version may have been modified pursuant
 * to the GNU General Public License, and as distributed it includes or
@@ -18,29 +18,14 @@
 
 defined('_JEXEC') or die();
 
-/**
- *
- * The class is an xref table
- *
- * @author Max Milbers
- * @package		VirtueMart
- */
-
-if(!class_exists('VmTableXarray'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtablexarray.php');
+if(!class_exists('VmTableXarray'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtablexarray.php');
 
 class TableCalc_categories extends VmTableXarray {
 
-	/**
-	 * @author Max Milbers
-	 * @param $db A database connector object
-	 */
 	function __construct(&$db){
 		parent::__construct('#__virtuemart_calc_categories', 'id', $db);
 
 		$this->setPrimaryKey('virtuemart_calc_id');
 		$this->setSecondaryKey('virtuemart_category_id','calc_categories');
-
 	}
-
-
 }

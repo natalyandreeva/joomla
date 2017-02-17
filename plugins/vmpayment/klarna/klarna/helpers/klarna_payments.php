@@ -3,7 +3,7 @@
 defined ('_JEXEC') or die('Restricted access');
 
 /**
- * @version $Id: klarna_payments.php 6398 2012-09-06 09:27:08Z alatak $
+ * @version $Id: klarna_payments.php 8388 2014-10-07 21:06:30Z alatak $
  *
  * @author Valérie Isaksen
  * @package VirtueMart
@@ -106,11 +106,22 @@ class klarna_payments {
 	 */
 	private function setPreviouslyFilledIn ($klarna_data) {
 
-		if (($this->country == "nl" || $this->country == "de") && isset($klarna_data['pno'])) {
+		if (is_object($klarna_data)) {
+			$klarna_data=(array)$klarna_data;
+		}
+		if (($this->country == "nl" ) && isset($klarna_data['pno'])) {
 			$pno = $klarna_data['pno'];
-			$this->klarna_bday['year'] = substr ($pno, 4, 4);
-			$this->klarna_bday['month'] = substr ($pno, 2, 2);
-			$this->klarna_bday['day'] = substr ($pno, 0, 2);
+			$this->birth_year = $klarna_data['birth_year'];
+			$this->birth_month = $klarna_data['birth_month'];
+			$this->birth_day = $klarna_data['birth_day'];
+		}
+		elseif ( $this->country == "de") {
+			$pno = $klarna_data['pno'];
+			$this->birth_year = $klarna_data['birth_year'];
+			$this->birth_month = $klarna_data['birth_month'];
+			$this->birth_day = $klarna_data['birth_day'];
+		} else {
+			$this->socialNumber=$klarna_data['socialNumber'];
 		}
 		$this->klarna_street = ((isset($klarna_data['street']) &&
 			!isset($this->klarna_street)) ? $klarna_data['street'] :
@@ -133,7 +144,7 @@ class klarna_payments {
 	public function get_payment_params ($method, $payment_type, $cart = NULL, $country_currency_code = '', $vendor_currency='') {
 
 		if (!class_exists ('CurrencyDisplay')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
 		}
 		if (!class_exists ('KlarnaAPI')) {
 			require (JPATH_VMKLARNAPLUGIN . DS . 'klarna' . DS . 'helpers' . DS . 'klarnaapi.php');
@@ -145,7 +156,7 @@ class klarna_payments {
 		}
 		$payment_params['payment_currency_info'] = "";
 		if ($cart->pricesCurrency != $this->virtuemart_currency_id) {
-			$payment_params['payment_currency_info'] = JText::_ ('VMPAYMENT_KLARNA_PAYMENT_CURRENCY_INFO');
+			$payment_params['payment_currency_info'] = vmText::_ ('VMPAYMENT_KLARNA_PAYMENT_CURRENCY_INFO');
 		}
 		if ($payment_type == 'invoice') {
 			KlarnaHandler::getInvoiceFeeInclTax ($method, $this->country_code_3, $cart->pricesCurrency, $this->virtuemart_currency_id, $display_invoice_fee, $invoice_fee);
@@ -156,8 +167,8 @@ class klarna_payments {
 			$display_fee = 0;
 
 			$billTotalInCountryCurrency = 0;
-			if (isset($cart->pricesUnformatted['billTotal'])) {
-				$billTotalInCountryCurrency = KlarnaHandler::convertPrice ($cart->pricesUnformatted['billTotal'], $vendor_currency, $country_currency_code, $cart->pricesCurrency);
+			if (isset($cart->cartPrices['billTotal'])) {
+				$billTotalInCountryCurrency = KlarnaHandler::convertPrice ($cart->cartPrices['billTotal'], $vendor_currency, $country_currency_code, $cart->cartPrices);
 			}
 			if ($billTotalInCountryCurrency <= 0) {
 				return NULL;
@@ -172,10 +183,10 @@ class klarna_payments {
 
 		if ($payment_type == 'invoice') {
 			if ($invoice_fee) {
-				$payment_params['module'] = JText::sprintf ('VMPAYMENT_KLARNA_INVOICE_TITLE', $display_invoice_fee);
+				$payment_params['module'] = vmText::sprintf ('VMPAYMENT_KLARNA_INVOICE_TITLE', $display_invoice_fee);
 
 			} else {
-				$payment_params['module'] = JText::_ ('VMPAYMENT_KLARNA_INVOICE_TITLE_NO_PRICE');
+				$payment_params['module'] = vmText::_ ('VMPAYMENT_KLARNA_INVOICE_TITLE_NO_PRICE');
 			}
 			$payment_params['pClasses'] = NULL;
 			$payment_params['id'] = 'klarna_invoice';
@@ -186,7 +197,7 @@ class klarna_payments {
 				return NULL;
 			}
 			if (!class_exists ('VirtueMartModelCurrency')) {
-				require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'currency.php');
+				require(VMPATH_ADMIN . DS . 'models' . DS . 'currency.php');
 			}
 			// Cheapest is in the Klarna country currency, convert it to the current currency display
 			//$currencyDisplay = CurrencyDisplay::getInstance( );
@@ -194,7 +205,7 @@ class klarna_payments {
 			//$sFee = $currencyDisplay->priceDisplay($cheapest, 0, 1,false);
 
 			$sFee = $kCheckout->getPresentableValuta ($cheapest);
-			$payment_params['module'] = JText::sprintf ('VMPAYMENT_KLARNA_PARTPAY_TITLE', $sFee);
+			$payment_params['module'] = vmText::sprintf ('VMPAYMENT_KLARNA_PARTPAY_TITLE', $sFee);
 			$payment_params['pClasses'] = $kCheckout->getPClassesInfo ();
 			$payment_params['id'] = 'klarna_partPayment';
 		}
@@ -203,7 +214,7 @@ class klarna_payments {
 			if (empty($pclasses)) {
 				return NULL;
 			}
-			$payment_params['module'] = JText::_ ('VMPAYMENT_KLARNA_SPEC_TITLE');
+			$payment_params['module'] = vmText::_ ('VMPAYMENT_KLARNA_SPEC_TITLE');
 			$payment_params['pClasses'] = $kCheckout->getPClassesInfo ();
 			$payment_params['id'] = 'klarna_SpecCamp';
 		}
@@ -230,9 +241,9 @@ class klarna_payments {
 		$sessionKlarna = $session->get ('Klarna', 0, 'vm');
 
 		if (!empty($sessionKlarna)) {
-			$sessionKlarnaData = unserialize ($sessionKlarna);
+			$sessionKlarnaData = (object)  json_decode($sessionKlarna ,true);
 			if (isset($sessionKlarnaData->KLARNA_DATA)) {
-				$klarnaData = $sessionKlarnaData->KLARNA_DATA;
+				$klarnaData = (array)$sessionKlarnaData->KLARNA_DATA;
 				$this->setPreviouslyFilledIn ($klarnaData);
 			}
 		}
@@ -267,6 +278,11 @@ class klarna_payments {
 		$payment_params['invoice_name'] = 'klarna_invoice';
 		$payment_params['part_name'] = 'klarna_partPayment';
 		$payment_params['spec_name'] = 'klarna_SpecCamp';
+		$payment_params['fields']['socialNumber'] = isset($this->socialNumber)?$this->socialNumber:"";
+		$payment_params['fields']['birth_day'] = isset($this->birth_day)?$this->birth_day:"";
+		$payment_params['fields']['birth_month'] = isset($this->birth_month)?$this->birth_month:"";
+		$payment_params['fields']['birth_year'] = isset($this->birth_year)?$this->birth_year:"";
+
 		return $payment_params;
 	}
 
@@ -276,7 +292,7 @@ class klarna_payments {
 	public function getCheapestMonthlyCost ($cart = NULL, $cData) {
 
 		if (!class_exists ('CurrencyDisplay')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
 		}
 		if (!class_exists ('KlarnaAPI')) {
 			require (JPATH_VMKLARNAPLUGIN . DS . 'klarna' . DS . 'helpers' . DS . 'klarnaapi.php');
@@ -289,8 +305,8 @@ class klarna_payments {
 		$display_fee = 0;
 
 		$billTotalInCountryCurrency = 0;
-		if (isset($cart->pricesUnformatted['billTotal'])) {
-			$billTotalInCountryCurrency = KlarnaHandler::convertPrice ($cart->pricesUnformatted['billTotal'], $cData['vendor_currency'], $cData['virtuemart_currency_id'],  $cart->pricesCurrency);
+		if (isset($cart->cartPrices['billTotal'])) {
+			$billTotalInCountryCurrency = KlarnaHandler::convertPrice ($cart->cartPrices['billTotal'], $cData['vendor_currency'], $cData['virtuemart_currency_id'],  $cart->pricesCurrency);
 		}
 		if ($billTotalInCountryCurrency <= 0) {
 			return NULL;
@@ -299,13 +315,13 @@ class klarna_payments {
 		$kCheckout = new KlarnaAPI($this->country, $this->lang, 'part', $billTotalInCountryCurrency, KlarnaFlags::CHECKOUT_PAGE, $this->klarna, $aTypes, JPATH_VMKLARNAPLUGIN);
 
 		KlarnaHandler::getCheapestPclass ($kCheckout, $cheapest, $minimum);
-vmdebug('getCheapestMonthlyCost',$cart->pricesUnformatted['billTotal'], $billTotalInCountryCurrency , $cheapest,$minimum);
+vmdebug('getCheapestMonthlyCost',$cart->cartPrices['billTotal'], $billTotalInCountryCurrency , $cheapest,$minimum);
 
 		if ($billTotalInCountryCurrency < $minimum) {
 			return NULL;
 		}
 		if (!class_exists ('VirtueMartModelCurrency')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'currency.php');
+			require(VMPATH_ADMIN . DS . 'models' . DS . 'currency.php');
 		}
 
 		$sFee = $kCheckout->getPresentableValuta ($cheapest);

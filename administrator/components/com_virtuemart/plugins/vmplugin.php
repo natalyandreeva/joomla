@@ -16,12 +16,21 @@ defined ('_JEXEC') or die('Restricted access');
  * other free or open source software licenses.
  * @version $Id: vmplugin.php 4599 2011-11-02 18:29:04Z alatak $
  */
+
+if (!class_exists( 'VmConfig' )) {
+	if(file_exists(VMPATH_ADMIN.DS.'com_virtuemart'.DS.'helpers'.DS.'config.php')){
+		require(VMPATH_ADMIN.DS.'com_virtuemart'.DS.'helpers'.DS.'config.php');
+	} else {
+		echo 'Install VirtueMart first'; return;
+	}
+}
+
 // Load the helper functions that are needed by all plugins
 if (!class_exists ('ShopFunctions')) {
-	require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'shopfunctions.php');
+	require(VMPATH_ADMIN . DS . 'helpers' . DS . 'shopfunctions.php');
 }
 // if (!class_exists('DbScheme'))
-// require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'dbscheme.php');
+// require(VMPATH_ADMIN . DS . 'helpers' . DS . 'dbscheme.php');
 // Get the plugin library
 jimport ('joomla.plugin.plugin');
 
@@ -53,7 +62,8 @@ abstract class vmPlugin extends JPlugin {
 	protected $_configTableFieldName = 0;
 	protected $_debug = FALSE;
 	protected $_loggable = FALSE;
-
+	protected $_cryptedFields = false;
+	protected $_toConvertDec = false;
 	/**
 	 * Constructor
 	 *
@@ -69,37 +79,127 @@ abstract class vmPlugin extends JPlugin {
 
 		$filename = 'plg_' . $this->_type . '_' . $this->_name;
 
-		VmConfig::loadJLang($filename);
-
-		if (!class_exists ('JParameter')) {
-			require(JPATH_VM_LIBRARIES . DS . 'joomla' . DS . 'html' . DS . 'parameter.php');
-		}
+		$this->loadJLangThis($filename);
 
 		$this->_tablename = '#__virtuemart_' . $this->_psType . '_plg_' . $this->_name;
 		$this->_tableChecked = FALSE;
+		$this->_xmlFile	= vRequest::filterPath( VMPATH_ROOT .DS. 'plugins' .DS. $this->_type .DS.  $this->_name . DS. $this->_name . '.xml');
+
 	}
 
-	/**
-	 * @return array
-	 */
-	function getTableSQLFields () {
-
-		return array();
+	public function setConvertDecimal($toConvert) {
+		$this->_toConvertDec = $toConvert;
 	}
+
+	public function convertDec(&$data){
+
+		if($this->_toConvertDec){
+			foreach($this->_toConvertDec as $f){
+				if(!empty($data[$f])){
+					$data[$f] = str_replace(array(',',' '),array('.',''),$data[$f]);
+				}
+			}
+		}
+	}
+
+	public function loadJLangThis($fname,$type=0,$name=0){
+		if(empty($type)) $type = $this->_type;
+		if(empty($name)) $name = $this->_name;
+		self::loadJLang($fname,$type,$name);
+	}
+
+	static public function loadJLang($fname,$type,$name){
+
+		$jlang =JFactory::getLanguage();
+		$tag = $jlang->getTag();
+
+
+		$path = $basePath = VMPATH_ROOT .DS. 'plugins' .DS.$type.DS.$name;
+
+		if(VmConfig::get('enableEnglish', true) and $tag!='en-GB'){
+			$testpath = $basePath.DS.'language'.DS.'en-GB'.DS.'en-GB.'.$fname.'.ini';
+			if(!file_exists($testpath)){
+				$epath = JPATH_ADMINISTRATOR;
+			} else {
+				$epath = $path;
+			}
+			$jlang->load($fname, $epath, 'en-GB');
+		}
+
+		$testpath = $basePath.DS.'language'.DS.$tag.DS.$tag.'.'.$fname.'.ini';
+		if(!file_exists($testpath)){
+			$path = JPATH_ADMINISTRATOR;
+		}
+
+		$jlang->load($fname, $path,$tag,true);
+	}
+
+	function setPluginLoggable($set=TRUE){
+		$this->_loggable = $set;
+	}
+
+	function setCryptedFields($fieldNames){
+		$this->_cryptedFields = $fieldNames;
+	}
+
 
 	function getOwnUrl(){
 
-		if(JVM_VERSION!=1){
-			$url = '/plugins/'.$this->_type.'/'.$this->_name;
-		} else{
-			$url = '/plugins/'.$this->_type;
-		}
+		$url = '/plugins/'.$this->_type.'/'.$this->_name;
 		return $url;
 	}
 
 	function display3rdInfo($intro,$developer,$contactlink,$manlink){
 		$logolink = $this->getOwnUrl() ;
 		return shopfunctions::display3rdInfo($this->_name,$intro,$developer,$logolink,$contactlink,$manlink);
+	}
+
+	/**
+	 * This function gets the parameters of a plugin from the given JForm $form.
+	 * This is used for the configuration GUI in the BE.
+	 * Attention: the xml Params must be always a subset of the varsToPushParams declared in the constructor
+	 * @param $form
+	 * @return array
+	 */
+	static public function getVarsToPushFromForm ($form){
+		$data = array();
+
+		$fieldSets = $form->getFieldsets();
+		foreach ($fieldSets as $name => $fieldSet) {
+			foreach ($form->getFieldset($name) as $field) {
+
+				$fieldname = (string)$field->fieldname;
+				$private = false;
+
+				if(strlen($fieldname)>1){
+					if(substr($fieldname,0,2)=='__'){
+						$private = true;
+					}
+				}
+
+				if(!$private){
+					$type='char';
+					$data[$fieldname] = array('',  $type);
+				}
+
+			}
+		}
+
+		return $data;
+	}
+
+
+	/**
+	 * This function gets the parameters of a plugin by an xml file.
+	 * This is used for the configuration GUI in the BE.
+	 * Attention: the xml Params must be always a subset of the varsToPushParams declared in the constructor
+	 * @param $xmlFile
+	 * @param $name
+	 * @return array
+	 */
+	static public function getVarsToPushByXML ($xmlFile,$name){
+		$form = JForm::getInstance($name, $xmlFile, array(),false, '//vmconfig | //config[not(//vmconfig)]');
+		return vmPlugin::getVarsToPushFromForm($form);
 	}
 
 	/**
@@ -110,7 +210,7 @@ abstract class vmPlugin extends JPlugin {
 	 * @param        string the name of the plugin for example textinput, paypal
 	 * @param        int/array $jid the registered plugin id(s) of the joomla table
 	 */
-	protected function selectedThis ($psType, $name = 0, $jid = 0) {
+	protected function selectedThis ($psType, $name = 0, $jid = null) {
 
 		if ($psType !== 0) {
 			if ($psType != $this->_psType) {
@@ -121,15 +221,16 @@ abstract class vmPlugin extends JPlugin {
 
 		if ($name !== 0) {
 			if ($name != $this->_name) {
-				vmdebug ('selectedThis $name ' . $name . ' does not fit pluginname ' . $this->_name);
+				//vmdebug ('selectedThis $name ' . $name . ' does not fit pluginname ' . $this->_name);
 				return FALSE;
 			}
 		}
 
-		if ($jid === 0) {
+		if ($jid === null) {
+			return true;
+		} else if($jid === 0){
 			return FALSE;
-		}
-		else {
+		} else {
 			if ($this->_jid === 0) {
 				$this->getJoomlaPluginId ();
 			}
@@ -147,7 +248,7 @@ abstract class vmPlugin extends JPlugin {
 			}
 		}
 
-		return TRUE;
+		return true;
 	}
 
 	/**
@@ -170,18 +271,13 @@ abstract class vmPlugin extends JPlugin {
 		else {
 			$db = JFactory::getDBO ();
 
-			if (JVM_VERSION === 1) {
-				$q = 'SELECT vm.* FROM `' . $this->_configTable . '` AS vm,
-							#__plugins AS j WHERE vm.`' . $this->_idName . '` = "' . $id . '"
-							AND vm.' . $this->_psType . '_jplugin_id = j.id
-							AND j.element = "' . $this->_name . '"';
-			}
-			else {
-				$q = 'SELECT vm.* FROM `' . $this->_configTable . '` AS vm,
-							#__extensions AS j WHERE vm.`' . $this->_idName . '` = "' . $id . '"
-							AND vm.' . $this->_psType . '_jplugin_id = j.extension_id
-							AND j.element = "' . $this->_name . '"';
-			}
+			$q = 'SELECT vm.* FROM `' . $this->_configTable . '` AS vm,
+						#__extensions AS j WHERE vm.`' . $this->_idName . '` = "' . $id . '"
+						AND vm.' . $this->_psType . '_jplugin_id = j.extension_id ';
+						if (JFactory::getApplication()->isSite() ) {
+							$q .= 'AND vm.published = 1 ';
+						}
+			$q .= 'AND j.element = "' . $this->_name . '"';
 
 			$db->setQuery ($q);
 			if (!$res = $db->loadObject ()) {
@@ -209,18 +305,10 @@ abstract class vmPlugin extends JPlugin {
 		else {
 			$db = JFactory::getDBO ();
 
-			if (JVM_VERSION === 1) {
-				$q = 'SELECT vm.* FROM `' . $this->_configTable . '` AS vm,
-							#__plugins AS j WHERE vm.`' . $this->_psType . '_jplugin_id`  = "' . $jplugin_id . '"
-							AND vm.' . $this->_psType . '_jplugin_id = j.id
-							AND j.`element` = "' . $this->_name . '"';
-			}
-			else {
-				$q = 'SELECT vm.* FROM `' . $this->_configTable . '` AS vm,
-							#__extensions AS j WHERE vm.`' . $this->_psType . '_jplugin_id`  = "' . $jplugin_id . '"
-							AND vm.`' . $this->_psType . '_jplugin_id` = j.extension_id
-							AND j.`element` = "' . $this->_name . '"';
-			}
+			$q = 'SELECT vm.* FROM `' . $this->_configTable . '` AS vm,
+						#__extensions AS j WHERE vm.`' . $this->_psType . '_jplugin_id`  = "' . $jplugin_id . '"
+						AND vm.`' . $this->_psType . '_jplugin_id` = j.extension_id
+						AND j.`element` = "' . $this->_name . '"';
 
 			$db->setQuery ($q);
 			if (!$res = $db->loadObject ()) {
@@ -245,14 +333,8 @@ abstract class vmPlugin extends JPlugin {
 		}
 		$db = JFactory::getDBO ();
 
-		if (JVM_VERSION === 1) {
-			$q = 'SELECT j.`id` AS c FROM #__plugins AS j
-					WHERE j.element = "' . $this->_name . '" AND j.folder = "' . $this->_type . '"';
-		}
-		else {
-			$q = 'SELECT j.`extension_id` AS c FROM #__extensions AS j
+		$q = 'SELECT j.`extension_id` AS c FROM #__extensions AS j
 					WHERE j.element = "' . $this->_name . '" AND j.`folder` = "' . $this->_type . '"';
-		}
 
 		$db->setQuery ($q);
 		$this->_jid = $db->loadResult ();
@@ -267,34 +349,57 @@ abstract class vmPlugin extends JPlugin {
 
 	/**
 	 * Create the table for this plugin if it does not yet exist.
+	 * Or updates the table, if it exists. Please be aware that this function is slowing and is only called
+	 * storing a method or installing/udpating a plugin.
 	 *
 	 * @param string $psType shipment,payment,custom
 	 * @author Valérie Isaksen
 	 * @author Max Milbers
 	 */
-	protected function onStoreInstallPluginTable ($psType,$name=FALSE) {
+	public function onStoreInstallPluginTable ($psType,$name=FALSE) {
 
 		if(!empty($name) and $name!=$this->_name){
+			vmdebug('onStoreInstallPluginTable return false, given $name '.$name.' plg name '.$this->_name);
 			return false;
 		}
+
 		//Todo the psType should be name of the plugin.
 		if ($psType == $this->_psType) {
-			$query = $this->getVmPluginCreateTableSQL ();
-			if(empty($query)){
-				return false;
+
+			$SQLfields = $this->getTableSQLFields();
+			if(empty($SQLfields)) return false;
+
+			$loggablefields = $this->getTableSQLLoggablefields();
+			$tablesFields = array_merge($SQLfields, $loggablefields);
+
+			$db = JFactory::getDBO();
+			$query = 'SHOW TABLES LIKE "%' . str_replace('#__', $db->getPrefix(), $this->_tablename) . '"';
+			$db->setQuery($query);
+			$result = $db->loadResult();
+			vmdebug('onStoreInstallPluginTable result of table already exists? ',$result);
+			if ($result) {
+				$update[$this->_tablename] = array($tablesFields, array(), array());
+				vmdebug(get_class($this) . ':: VirtueMart2 update ' . $this->_tablename);
+				if (!class_exists('GenericTableUpdater'))
+					require(VMPATH_ADMIN . DS . 'helpers' . DS . 'tableupdater.php');
+				$updater = new GenericTableUpdater();
+				$updater->updateMyVmTables($update);
 			} else {
-			//if ($query !== 0) {
-				// 				vmdebug('onStoreInstallPluginTable '.$query);
-				$db = JFactory::getDBO ();
-				$db->setQuery ($query);
-				if (!$db->query ()) {
-					JError::raiseWarning (1, $this->_name . '::onStoreInstallPluginTable: ' . JText::_ ('COM_VIRTUEMART_SQL_ERROR') . ' ' . $db->stderr (TRUE));
-					echo $this->_name . '::onStoreInstallPluginTable: ' . JText::_ ('COM_VIRTUEMART_SQL_ERROR') . ' ' . $db->stderr (TRUE);
+				$query = $this->createTableSQL($name,$tablesFields);
+				if(empty($query)){
+					return false;
 				} else {
-					return true;
+					$db->setQuery ($query);
+					if (!$db->execute ()) {
+						vmWarn($this->_name . '::onStoreInstallPluginTable: ' . vmText::_ ('COM_VIRTUEMART_SQL_ERROR') . ' ' . $db->stderr (TRUE));
+						echo $this->_name . '::onStoreInstallPluginTable: ' . vmText::_ ('COM_VIRTUEMART_SQL_ERROR') . ' ' . $db->stderr (TRUE);
+					} else {
+						return true;
+					}
 				}
 			}
 		}
+		vmdebug('onStoreInstallPluginTable return false, given $psType '.$psType.' plg name '.$this->_psType);
 		return false;
 	}
 
@@ -342,14 +447,43 @@ abstract class vmPlugin extends JPlugin {
 	}
 
 	/**
+	 * @return array
+	 */
+	function getTableSQLFields () {
+
+		return false;
+	}
+
+	/**
 	 * Set with this function the provided plugin parameters
 	 *
 	 * @param string $paramsFieldName
 	 * @param array  $varsToPushParam
 	 */
 	function setConfigParameterable ($paramsFieldName, $varsToPushParam) {
-		$this->_varsToPushParam = $varsToPushParam;
 		$this->_xParams = $paramsFieldName;
+		$this->_varsToPushParam = $varsToPushParam;
+	}
+
+	/**
+	 *
+	 * @param $psType
+	 * @param $name
+	 * @param $id
+	 * @param $xParams
+	 * @param $varsToPush
+	 * @return bool
+	 */
+	protected function getTablePluginParams ($psType,$name, $id, &$xParams,&$varsToPush) {
+
+		if (!empty($this->_psType) and !$this->selectedThis ($psType, $name, $id)) {
+			//vmdebug('getTablePluginParams return ',$psType, $this->_psType, $name, $this->_name, $id,$this->_jid);
+			return FALSE;
+		}
+
+		$varsToPush = $this->_varsToPushParam;
+		$xParams = $this->_xParams;
+		//vmdebug('getTablePluginParams '.$name.' sets xParams '.$xParams.' vars',$varsToPush);
 	}
 
 	/**
@@ -366,6 +500,10 @@ abstract class vmPlugin extends JPlugin {
 			return FALSE;
 		}
 		else {
+			if($this->_cryptedFields){
+				$table->setCryptedFields($this->_cryptedFields);
+			}
+
 			$table->setParameterable ($this->_xParams, $this->_varsToPushParam);
 			return TRUE;
 		}
@@ -373,29 +511,48 @@ abstract class vmPlugin extends JPlugin {
 	}
 
 	/**
+	 * Does VmTable::bindParameterable and setCryptedFields $name, $id, $data
 	 * @param $psType
-	 * @param $name
-	 * @param $id
 	 * @param $data
 	 * @return bool
 	 */
-	protected function declarePluginParams ($psType, $name, $id, &$data) {
+	protected function declarePluginParams ($psType, &$data, $blind=0, $blind2=0) {
 
-		//vmdebug('declarePluginParams '.$this->_psType.' '.$psType);
-		//Todo I know a test only on seledtThis is wrong here, it works now with extra !empty($this->_psType)
-		if(!empty($this->_psType) and !$this->selectedThis($psType,$name,$id)){
-			return FALSE;
+		if(!empty($this->_psType)){
+			$element = $this->_psType.'_element';
+			$jplugin_id = $this->_psType.'_jplugin_id';
+			if(empty($data->$element)) $data->$element = 0;
+			if(empty($data->$jplugin_id)) $data->$jplugin_id = 0;
+
+			if(!$this->selectedThis($psType,$data->$element,$data->$jplugin_id)){
+				return FALSE;
+			}
+
 		}
+
 		if (!class_exists ('VmTable')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmtable.php');
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmtable.php');
 		}
-		VmTable::bindParameterable ($data, $this->_xParams, $this->_varsToPushParam);
+
+		//New Vm3 way
+
+		//Is only used for the config tables!
+		//VmTable::bindParameterable ($data, $data->_xParams, $this->_varsToPushParam);
+		if(isset($this->_varsToPushParam)){
+			if(isset($data->_varsToPushParam)){
+				$data->_varsToPushParam = array_merge((array)$data->_varsToPushParam, (array)$this->_varsToPushParam);
+			} else {
+				$data->_varsToPushParam = (array)$this->_varsToPushParam;
+			}
+		} else{
+			vmdebug('no vars to push?',$this);
+		}
+
+		if($this->_cryptedFields){
+			$data->setCryptedFields($this->_cryptedFields);
+		}
+		//vmdebug('my params ',$data->_varsToPushParam);
 		return TRUE;
-		// 			vmdebug('getDeclaredPluginParams return '.$this->_xParams);
-		// 			return array($this->_xParams,$this->_varsToPushParam);
-		// 		} else {
-		// 			return false;
-		// 		}
 	}
 
 	/**
@@ -408,14 +565,16 @@ abstract class vmPlugin extends JPlugin {
 			$db = JFactory::getDBO ();
 
 			if (!class_exists ($this->_configTableClassName)) {
-				require(JPATH_VM_ADMINISTRATOR . DS . 'tables' . DS . $this->_configTableFileName . '.php');
+				require(VMPATH_ADMIN . DS . 'tables' . DS . $this->_configTableFileName . '.php');
 			}
 			$this->_vmpCtable = new $this->_configTableClassName($db);
 			if ($this->_xParams !== 0) {
-				$this->_vmpCtable->setParameterable ($this->_xParams, $this->_varsToPushParam);
+				$this->_vmpCtable->setParameterable ($this->_configTableFieldName, $this->_varsToPushParam);
 			}
 
-			// 			$this->_vmpCtable = $this->createPluginTableObject($this->_tablename,$this->tableFields,$this->_loggable);
+			if($this->_cryptedFields){
+				$this->_vmpCtable->setCryptedFields($this->_cryptedFields);
+			}
 		}
 
 		return $this->_vmpCtable->load ($int);
@@ -427,26 +586,22 @@ abstract class vmPlugin extends JPlugin {
 	 *
 	 * @author Max Milbers
 	 * @param array  $values array or object with the data to store
-	 * @param string $tableName When different then the default of the plugin, provid it here
-	 * @param string $tableKey an additionally unique key
+     * @param int|string $primaryKey
+     * @param int|string $id
+     * @param boolean $preload
+     * @return array
 	 */
 	protected function storePluginInternalData (&$values, $primaryKey = 0, $id = 0, $preload = FALSE) {
 
 		if ($primaryKey === 0) {
 			$primaryKey = $this->_tablepkey;
 		}
-		if ($this->_vmpItable === 0) {
+		if ($this->_vmpItable === 0 or $id==0) {
 			$this->_vmpItable = $this->createPluginTableObject ($this->_tablename, $this->tableFields, $primaryKey, $this->_tableId, $this->_loggable);
 		}
 
 		$this->_vmpItable->bindChecknStore ($values, $preload);
-		//vmdebug('storePluginInternalData',$values,$this->_vmpItable);
-		$errors = $this->_vmpItable->getErrors ();
-		if (!empty($errors)) {
-			foreach ($errors as $error) {
-				vmError ($error);
-			}
-		}
+
 		return $values;
 	}
 
@@ -465,7 +620,7 @@ abstract class vmPlugin extends JPlugin {
 		if ($this->_vmpItable === 0) {
 			$this->_vmpItable = $this->createPluginTableObject ($this->_tablename, $this->tableFields, $primaryKey, $this->_tableId, $this->_loggable);
 		}
-		// 		vmdebug('getPluginInternalData $id '.$id.' and $primaryKey '.$primaryKey);
+		//vmdebug('getPluginInternalData $id '.$id.' and $primaryKey '.$primaryKey);
 		return $this->_vmpItable->load ($id);
 	}
 
@@ -480,7 +635,7 @@ abstract class vmPlugin extends JPlugin {
 	protected function createPluginTableObject ($tableName, $tableFields, $primaryKey, $tableId, $loggable = FALSE) {
 
 		if (!class_exists ('VmTableData')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmtabledata.php');
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmtabledata.php');
 		}
 		$db = JFactory::getDBO ();
 		$table = new VmTableData($tableName, $tableId, $db);
@@ -495,10 +650,15 @@ abstract class vmPlugin extends JPlugin {
 			$table->setLoggable ();
 		}
 
-		if (!$this->_tableChecked) {
+		if($this->_cryptedFields){
+			//I think that should be set on $table, not _vmpCtable
+			$this->_vmpCtable->setCryptedFields($this->_cryptedFields);
+		}
+
+		/*if (!$this->_tableChecked) {
 			$this->onStoreInstallPluginTable ($this->_psType);
 			$this->_tableChecked = TRUE;
-		}
+		}*/
 
 		return $table;
 	}
@@ -520,17 +680,12 @@ abstract class vmPlugin extends JPlugin {
 	}
 
 	/**
-	 * Get the path to a layout for a type
-	 *
-	 * @param   string  $type  The name of the type
-	 * @param   string  $layout  The name of the type layout. If alternative
-	 *                           layout, in the form template:filename.
-	 * @param   array   $viewData  The data you want to use in the layout
-	 *                           can be an object/array/string... to reuse in the template
-	 * @return  string  The path to the type layout
-	 * original from libraries\joomla\application\module\helper.php
-	 * @since   11.1
-	 * @author Patrick Kohl, Valérie Isaksen
+	 * @param string $layout
+	 * @param null $viewData
+	 * @param null $name
+	 * @param null $psType
+	 * @return string
+	 * @author Patrick Kohl, Valérie Isaksen, Max Milbers
 	 */
 	public function renderByLayout ($layout = 'default', $viewData = NULL, $name = NULL, $psType = NULL) {
 		if ($name === NULL) {
@@ -538,41 +693,66 @@ abstract class vmPlugin extends JPlugin {
 		}
 
 		if ($psType === NULL) {
-			$psType = $this->_psType;
+			$psType = 'vm'.$this->_psType;
 		}
-		$layout = vmPlugin::_getLayoutPath ($name, 'vm' . $psType, $layout);
 
-		ob_start ();
-		include ($layout);
-		return ob_get_clean ();
+		$layout = vmPlugin::_getLayoutPath ($name,  $psType, $layout);
+
+		if($layout){
+			ob_start ();
+			include ($layout);
+			return ob_get_clean ();
+		} else {
+			vmdebug('renderByLayout: layout '.$layout.'not found '.$psType. ' '.$name.' default path '.$layout);
+		}
 
 	}
 
 	/**
 	 *  Note: We have 2 subfolders for versions > J15 for 3rd parties developers, to avoid 2 installers
-	 *
-	 * @author Patrick Kohl, Valérie Isaksen
+	 *	Note: from Version 2.12: it is possible to have the tmpl folder directly in $pluginName folder
+	 * @author Max Milbers, Valérie Isaksen
 	 */
-	private function _getLayoutPath ($pluginName, $group, $layout = 'default') {
-		$app = JFactory::getApplication ();
-		// get the template and default paths for the layout
-		if (JVM_VERSION === 2) {
-			$templatePath = JPATH_SITE . DS . 'templates' . DS . $app->getTemplate () . DS . 'html' . DS . $group . DS . $pluginName . DS . $layout . '.php';
-			$defaultPath = JPATH_SITE . DS . 'plugins' . DS . $group . DS . $pluginName . DS . $pluginName . DS . 'tmpl' . DS . $layout . '.php';
-		}
-		else {
-			$templatePath = JPATH_SITE . DS . 'templates' . DS . $app->getTemplate () . DS . 'html' . DS . $group . DS . $pluginName . DS . $layout . '.php';
-			$defaultPath = JPATH_SITE . DS . 'plugins' . DS . $group . DS . $pluginName . DS . 'tmpl' . DS . $layout . '.php';
-		}
 
-		// if the site template has a layout override, use it
+	private function _getLayoutPath ($pluginName, $group, $layout = 'default') {
+		$layoutPath=$templatePathWithGroup=$defaultPathWithGroup='';
 		jimport ('joomla.filesystem.file');
+		// First search in the new system
+		if(!class_exists('VmTemplate')) require(VMPATH_SITE.DS.'helpers'.DS.'vmtemplate.php');
+		$vmStyle = VmTemplate::loadVmTemplateStyle();
+		$template = $vmStyle['template'];
+		$templatePath         = VMPATH_ROOT . DS . 'templates' . DS . $template . DS . 'html' . DS . $group . DS . $pluginName . DS . $layout . '.php';
+		$defaultPath          = VMPATH_ROOT . DS . 'plugins' . DS . $group . DS . $pluginName . DS . 'tmpl' . DS . $layout . '.php';
+		$defaultPathWithGroup = VMPATH_ROOT . DS . 'plugins' . DS . $group . DS . $pluginName . DS . $pluginName . DS . 'tmpl' . DS . $layout . '.php';
+
 		if (JFile::exists ($templatePath)) {
-			return $templatePath;
+			$layoutPath= $templatePath;
+		} elseif (JFile::exists ($defaultPath)) {
+			$layoutPath= $defaultPath;
+		} elseif (JFile::exists ($defaultPathWithGroup)) {
+			$layoutPath = $defaultPathWithGroup;
 		}
-		else {
-			return $defaultPath;
+		if (empty($layoutPath)) {
+			$warn='The layout: '. $layout. ' does not exist in:';
+			$warn.='<br />'. $templatePath.'<br />'.$defaultPath;
+			if (!empty($defaultPathWithGroup)) {
+				$warn.='<br />'.$defaultPathWithGroup .'<br />';
+			}
+			vmWarn($warn);
+			return false;
 		}
+		return $layoutPath;
+	}
+	/**
+	 * @param        $pluginName
+	 * @param        $group
+	 * @param string $layout
+	 * @return mixed
+	 * @author Valérie Isaksen
+	 */
+	public function getTemplatePath($pluginName, $group, $layout = 'default') {
+		$layoutPath = vmPlugin::_getLayoutPath ($pluginName, 'vm' . $group, $layout);
+		return str_replace(DS . $layout . '.php','',$layoutPath );
 	}
 
 }

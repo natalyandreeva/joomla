@@ -21,9 +21,6 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-$user=&JFactory::getUser();
-echo "------".$user->id;
-
 if ($this->category->haschildren) {
 
 // Category and Columns Counter
@@ -69,12 +66,11 @@ if ($this->category->children ) {
 			    <div class="spacer">
 				    <h2>
 					    <a href="<?php echo $caturl ?>" title="<?php echo $category->category_name ?>">
-					    
+					    <?php echo $category->category_name ?>
+					    <br />
 					    <?php // if ($category->ids) {
-						    //echo $category->images[0]->displayMediaThumb("",false);
-							//echo '<a class="modal" href="'.$category->images[0]->file_url.'"><img class="browseProductImage" border="0" src="'.$category->images[0]->file_url_thumb.'"></a>';
+						    echo $category->images[0]->displayMediaThumb("",false);
 					    //} ?>
-					    <span><?php echo $category->category_name ?></span>
 					    </a>
 				    </h2>
 			    </div>

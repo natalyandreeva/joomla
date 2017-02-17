@@ -52,6 +52,8 @@ class JUpdaterExtension extends JUpdateAdapter
 				break;
 			// Don't do anything
 			case 'UPDATES':
+				// Store compatibility info per updates block (usually one per file)
+				$this->compatibility = array();
 				break;
 			default:
 				if (in_array($name, $this->_updatecols))
@@ -62,6 +64,15 @@ class JUpdaterExtension extends JUpdateAdapter
 				if ($name == 'TARGETPLATFORM')
 				{
 					$this->current_update->targetplatform = $attrs;
+
+					if (isset($attrs['NAME']) && ($attrs['NAME'] == 'joomla') && !empty($attrs['VERSION']))
+					{
+						$this->current_update->compatibility = $attrs['VERSION'];
+					}
+				}
+				if ($name == 'PHP_MINIMUM')
+				{
+					$this->current_update->php_minimum = '';
 				}
 				break;
 		}
@@ -86,22 +97,56 @@ class JUpdaterExtension extends JUpdateAdapter
 			case 'UPDATE':
 				$ver = new JVersion;
 				$product = strtolower(JFilterInput::getInstance()->clean($ver->PRODUCT, 'cmd')); // lower case and remove the exclamation mark
+
+				// Keep compatibility information in class property
+				if (isset($this->current_update->compatibility))
+				{
+					$this->compatibility[$this->current_update->version][] = $this->current_update->compatibility;
+					unset($this->current_update->compatibility);
+				}
+
 				// Check that the product matches and that the version matches (optionally a regexp)
 				if ($product == $this->current_update->targetplatform['NAME']
 					&& preg_match('/' . $this->current_update->targetplatform['VERSION'] . '/', $ver->RELEASE))
 				{
-					// Target platform isn't a valid field in the update table so unset it to prevent J! from trying to store it
-					unset($this->current_update->targetplatform);
-					if (isset($this->latest))
+					// Check if PHP version supported via <php_minimum> tag, assume true if tag isn't present
+					if (!isset($this->current_update->php_minimum) || version_compare(PHP_VERSION, $this->current_update->php_minimum, '>='))
 					{
-						if (version_compare($this->current_update->version, $this->latest->version, '>') == 1)
-						{
-							$this->latest = $this->current_update;
-						}
+						$phpMatch = true;
 					}
 					else
 					{
-						$this->latest = $this->current_update;
+						// Notify the user of the potential update
+						$msg = JText::sprintf(
+							'JLIB_INSTALLER_AVAILABLE_UPDATE_PHP_VERSION',
+							$this->current_update->name,
+							$this->current_update->version,
+							$this->current_update->php_minimum,
+							PHP_VERSION
+						);
+
+						JFactory::getApplication()->enqueueMessage($msg, 'warning');
+
+						$phpMatch = false;
+					}
+
+					// Target platform and php_minimum aren't valid fields in the update table so unset them to prevent J! from trying to store them
+					unset($this->current_update->targetplatform);
+					unset($this->current_update->php_minimum);
+
+					if ($phpMatch)
+					{
+						if (isset($this->latest))
+						{
+							if (version_compare($this->current_update->version, $this->latest->version, '>') == 1)
+							{
+								$this->latest = $this->current_update;
+							}
+						}
+						else
+						{
+							$this->latest = $this->current_update;
+						}
 					}
 				}
 				break;
@@ -131,6 +176,11 @@ class JUpdaterExtension extends JUpdateAdapter
 		{
 			$tag = strtolower($tag);
 			$this->current_update->$tag .= $data;
+		}
+				
+		if ($tag == 'PHP_MINIMUM')
+		{
+			$this->current_update->php_minimum = $data;
 		}
 	}
 
@@ -218,6 +268,6 @@ class JUpdaterExtension extends JUpdateAdapter
 			$updates = array();
 		}
 
-		return array('update_sites' => array(), 'updates' => $updates);
+		return array('update_sites' => array(), 'updates' => $updates, 'compatibility' => $this->compatibility);
 	}
 }

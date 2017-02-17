@@ -14,7 +14,7 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: edit_address_userfields.php 6349 2012-08-14 16:56:24Z Milbo $
+ * @version $Id: edit_address_userfields.php 9222 2016-05-23 11:41:31Z Milbo $
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
@@ -36,14 +36,16 @@ foreach($this->userFields['fields'] as $field) {
 			</table>
 		</fieldset>
 		<?php
-		} ?>
-
-		<fieldset>
+			$closeDelimiter = false;
+		} //else {
+			?>
+			<fieldset>
 			<span class="userfields_info"><?php echo $field['title'] ?></span>
 
-		<?php
-		$closeDelimiter = true;
-		$openTable = true;
+			<?php
+			$closeDelimiter = true;
+			$openTable = true;
+		//}
 
 	} elseif ($field['hidden'] == true) {
 
@@ -59,17 +61,17 @@ foreach($this->userFields['fields'] as $field) {
 			$openTable = false;
 			?>
 
-			<table  class="adminForm user-details">
+			<table class="adminForm user-details">
 
 		<?php
 		}
-
+		$descr = empty($field['description'])? $field['title']:$field['description'];
 		// Output: Userfields
 		?>
-				<tr>
-					<td class="key" title="<?php echo $field['description'] ?>" >
+				<tr title="<?php echo strip_tags($descr) ?>">
+					<td class="key"  >
 						<label class="<?php echo $field['name'] ?>" for="<?php echo $field['name'] ?>_field">
-							<?php echo $field['title'] . ($field['required'] ? ' *' : '') ?>
+							<?php echo $field['title'] . ($field['required'] ? ' <span class="asterisk">*</span>' : '') ?>
 						</label>
 					</td>
 					<td>

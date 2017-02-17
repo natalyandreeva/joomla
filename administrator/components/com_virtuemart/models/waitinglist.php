@@ -13,7 +13,7 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: waitinglist.php 6425 2012-09-11 20:17:08Z Milbo $
+ * @version $Id: waitinglist.php 8972 2015-09-08 09:59:49Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
@@ -68,15 +68,14 @@ class VirtueMartModelWaitingList extends VmModel {
 		$max_number = (int)$max_number;
 
 		if (!class_exists ('shopFunctionsF')) {
-			require(JPATH_VM_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
+			require(VMPATH_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
 		}
 		$vars = array();
-		$waitinglistModel = VmModel::getModel ('waitinglist');
-		$waiting_users = $waitinglistModel->getWaitingusers ($virtuemart_product_id);
+		$waiting_users = $this->getWaitingusers ($virtuemart_product_id);
 
 		/* Load the product details */
 		$db = JFactory::getDbo ();
-		$q = "SELECT l.product_name,product_in_stock FROM `#__virtuemart_products_" . VMLANG . "` l
+		$q = "SELECT l.product_name,product_in_stock FROM `#__virtuemart_products_" . VmConfig::$vmlang . "` l
 				JOIN `#__virtuemart_products` p ON p.virtuemart_product_id=l.virtuemart_product_id
 			   WHERE p.virtuemart_product_id = " . $virtuemart_product_id;
 		$db->setQuery ($q);
@@ -92,7 +91,7 @@ class VirtueMartModelWaitingList extends VmModel {
 
 
 		if (empty($subject)) {
-			$subject = JText::sprintf('COM_VIRTUEMART_PRODUCT_WAITING_LIST_EMAIL_SUBJECT', $item->product_name);
+			$subject = vmText::sprintf('COM_VIRTUEMART_PRODUCT_WAITING_LIST_EMAIL_SUBJECT', $item->product_name);
 		}
 		$vars['subject'] = $subject;
 		$vars['mailbody'] = $mailbody;
@@ -113,7 +112,7 @@ class VirtueMartModelWaitingList extends VmModel {
 			$vars['user'] =  $waiting_user->name ;
 			if (shopFunctionsF::renderMail ('productdetails', $waiting_user->notify_email, $vars, 'productdetails')) {
 				$db->setQuery ('UPDATE #__virtuemart_waitingusers SET notified=1 WHERE virtuemart_waitinguser_id=' . $waiting_user->virtuemart_waitinguser_id);
-				$db->query ();
+				$db->execute ();
 				$i++;
 			}
 			if (!empty($max_number) && $i >= $max_number) {
@@ -132,7 +131,8 @@ class VirtueMartModelWaitingList extends VmModel {
 	public
 	function adduser ($data) {
 
-		JRequest::checkToken () or jexit ('Invalid Token, in notify customer');
+		vRequest::vmCheckToken('Invalid Token, in adduser to waitinglist');
+		vRequest::vmCheckToken() or jexit ('');
 
 		$field = $this->getTable ('waitingusers');
 

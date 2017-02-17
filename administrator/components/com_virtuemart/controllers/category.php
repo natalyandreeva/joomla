@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: category.php 6071 2012-06-06 15:33:04Z Milbo $
+* @version $Id: category.php 8970 2015-09-06 23:19:17Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController')) require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 /**
  * Category Controller
@@ -33,10 +30,6 @@ if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.
  */
 class VirtuemartControllerCategory extends VmController {
 
-	public function __construct() {
-		parent::__construct();
-
-	}
 
 	/**
 	 * We want to allow html so we need to overwrite some request data
@@ -45,50 +38,17 @@ class VirtuemartControllerCategory extends VmController {
 	 */
 	function save($data = 0){
 
-		$data = JRequest::get('post');
+		//ACL
+		if (!vmAccess::manager('category.edit')) {
+			JFactory::getApplication()->redirect( 'index.php?option=com_virtuemart', vmText::_('JERROR_ALERTNOAUTHOR'), 'error');
+		}
+		
+		$data = vRequest::getRequest();
 
-		$data['category_name'] = JRequest::getVar('category_name','','post','STRING',JREQUEST_ALLOWHTML);
-		$data['category_description'] = JRequest::getVar('category_description','','post','STRING',JREQUEST_ALLOWHTML);
-
-		//TODO multi-x
-		$data['virtuemart_vendor_id'] = 1;
+		$data['category_name'] = vRequest::getHtml('category_name','');
+		$data['category_description'] = vRequest::getHtml('category_description','');
 
 		parent::save($data);
-	}
-
-	/**
-	 * Handle the shared/unshared action
-	 *
-	 * @author jseros
-	 */
-	public function toggleShared()
-	{
-		$mainframe = JFactory::getApplication();
-
-		// Check token
-		JRequest::checkToken() or jexit( 'Invalid Token' );
-
-		$cid = JRequest::getVar( 'cid', array(), 'post', 'array' );
-		$msg = '';
-
-		JArrayHelper::toInteger($cid);
-
-		if(count($cid) < 1) {
-			$msg = JText::_('COM_VIRTUEMART_SELECT_ITEM_TO_TOGGLE');
-			$mainframe->redirect('index.php?option=com_virtuemart&view=category', $msg, 'error');
-		}
-
-		$categoryModel = VmModel::getModel('category');
-		$status = $categoryModel->share($cid);
-
-		if( $status == 1 ){
-			$msg = JText::_('COM_VIRTUEMART_CATEGORY_SHARED_SUCCESS');
-		}
-		elseif( $status == -1 ){
-			$msg = JText::_('COM_VIRTUEMART_CATEGORY_UNSHARED_SUCCESS');
-		}
-
-		$mainframe->redirect('index.php?option=com_virtuemart&view=category', $msg);
 	}
 
 
@@ -99,28 +59,31 @@ class VirtuemartControllerCategory extends VmController {
 	*/
 	public function orderUp()
 	{
+		//ACL
+		if (!vmAccess::manager('category.edit')) {
+			JFactory::getApplication()->redirect( 'index.php?option=com_virtuemart', vmText::_('JERROR_ALERTNOAUTHOR'), 'error');
+		}
+
 		// Check token
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
 		//capturing virtuemart_category_id
 		$id = 0;
-		$cid	= JRequest::getVar( 'cid', array(), 'post', 'array' );
-		JArrayHelper::toInteger($cid);
+		$cid	= vRequest::getInt( 'cid', array() );
 
 		if (isset($cid[0]) && $cid[0]) {
 			$id = $cid[0];
 		} else {
-			$this->setRedirect( 'index.php?option=com_virtuemart&view=category', JText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
+			$this->setRedirect( 'index.php?option=com_virtuemart&view=category', vmText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
 			return false;
 		}
 
 		//getting the model
 		$model = VmModel::getModel('category');
 
+		$msg = '';
 		if ($model->orderCategory($id, -1)) {
-			$msg = JText::_('COM_VIRTUEMART_ITEM_MOVED_UP');
-		} else {
-			$msg = $model->getError();
+			$msg = vmText::_('COM_VIRTUEMART_ITEM_MOVED_UP');
 		}
 
 		$this->setRedirect( 'index.php?option=com_virtuemart&view=category', $msg );
@@ -134,28 +97,31 @@ class VirtuemartControllerCategory extends VmController {
 	*/
 	public function orderDown()
 	{
+		//ACL
+		if (!vmAccess::manager('category.edit')) {
+			JFactory::getApplication()->redirect( 'index.php?option=com_virtuemart', vmText::_('JERROR_ALERTNOAUTHOR'), 'error');
+		}
+		
 		// Check token
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
 		//capturing virtuemart_category_id
 		$id = 0;
-		$cid	= JRequest::getVar( 'cid', array(), 'post', 'array' );
-		JArrayHelper::toInteger($cid);
+		$cid	= vRequest::getInt( 'cid', array() );
 
 		if (isset($cid[0]) && $cid[0]) {
 			$id = $cid[0];
 		} else {
-			$this->setRedirect( 'index.php?option=com_virtuemart&view=category', JText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
+			$this->setRedirect( 'index.php?option=com_virtuemart&view=category', vmText::_('COM_VIRTUEMART_NO_ITEMS_SELECTED') );
 			return false;
 		}
 
 		//getting the model
 		$model = VmModel::getModel('category');
 
+		$msg = '';
 		if ($model->orderCategory($id, 1)) {
-			$msg = JText::_('COM_VIRTUEMART_ITEM_MOVED_DOWN');
-		} else {
-			$msg = $model->getError();
+			$msg = vmText::_('COM_VIRTUEMART_ITEM_MOVED_DOWN');
 		}
 
 		$this->setRedirect( 'index.php?option=com_virtuemart&view=category', $msg );
@@ -167,22 +133,25 @@ class VirtuemartControllerCategory extends VmController {
 	*/
 	public function saveOrder()
 	{
+		//ACL
+		if (!vmAccess::manager('category.edit')) {
+			JFactory::getApplication()->redirect( 'index.php?option=com_virtuemart', vmText::_('JERROR_ALERTNOAUTHOR'), 'error');
+		}
+		
 		// Check for request forgeries
-		JRequest::checkToken() or jexit( 'Invalid Token' );
+		vRequest::vmCheckToken();
 
-		$cid	= JRequest::getVar( 'cid', array(), 'post', 'array' );	//is sanitized
-		JArrayHelper::toInteger($cid);
+		$cid	= vRequest::getInt( 'cid', array() );	//is sanitized
 
 		$model = VmModel::getModel('category');
 
-		$order	= JRequest::getVar('order', array(), 'post', 'array');
-		JArrayHelper::toInteger($order);
+		$order	= vRequest::getInt('order', array() );
 
+		$msg = '';
 		if ($model->setOrder($cid,$order)) {
-			$msg = JText::_('COM_VIRTUEMART_NEW_ORDERING_SAVED');
-		} else {
-			$msg = $model->getError();
+			$msg = vmText::_('COM_VIRTUEMART_NEW_ORDERING_SAVED');
 		}
+
 		$this->setRedirect('index.php?option=com_virtuemart&view=category', $msg );
 	}
 

@@ -17,10 +17,7 @@ if( !defined( '_JEXEC' ) ) die( 'Direct Access to '.basename(__FILE__).' is not 
 * http://virtuemart.org
 */
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -37,9 +34,16 @@ class VirtuemartControllerReport extends VmController {
 	 */
 	function __constuct(){
 		parent::__construct();
-
 	}
+	
+	function updateOrderItems(){
 
+		vRequest::vmCheckToken();
+
+		$model = VmModel::getModel('report');
+		$model->updateOrderItems();
+		$this->setRedirect($this->redirectPath, 'Order Items updated');
+	}
 
 }
 // pure php no closing tag

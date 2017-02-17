@@ -14,12 +14,12 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: product_prices.php 5913 2012-04-16 15:07:25Z Milbo $
+ * @version $Id: product_prices.php 8398 2014-10-09 10:02:58Z Milbo $
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTableData'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtabledata.php');
+if(!class_exists('VmTableData'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtabledata.php');
 
 /**
  * Product table class
@@ -58,7 +58,7 @@ class TableProduct_prices extends VmTableData {
 
     /**
      * @author RolandD
-     * @param $db A database connector object
+     * @param JDataBase $db
      */
     function __construct(&$db) {
         parent::__construct('#__virtuemart_product_prices', 'virtuemart_product_price_id', $db);
@@ -66,6 +66,7 @@ class TableProduct_prices extends VmTableData {
         $this->setPrimaryKey('virtuemart_product_price_id');
 		$this->setLoggable();
 		$this->setTableShortCut('pp');
+		$this->_updateNulls = true;
     }
 
     /**
@@ -75,7 +76,7 @@ class TableProduct_prices extends VmTableData {
 
 	function check(){
 
-		if(!empty($this->product_price)){
+		if(isset($this->product_price)){
 			$this->product_price = str_replace(array(',',' '),array('.',''),$this->product_price);
 		}
 

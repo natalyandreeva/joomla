@@ -13,61 +13,70 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: default.php 5628 2012-03-08 09:00:21Z alatak $
+* @version $Id: default.php 8917 2015-07-09 12:44:51Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 
 ?>
 
 <form action="index.php" method="post" name="adminForm" id="adminForm">
 	<div id="editcell">
-		<table class="adminlist" cellspacing="0" cellpadding="0">
+		<table class="adminlist table table-striped" cellspacing="0" cellpadding="0">
 		<thead>
 		<tr>
-			<th width="10">
-				<input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count($this->shipments); ?>);" />
+			<th class="admin-checkbox">
+				<input type="checkbox" name="toggle" value="" onclick="Joomla.checkAll(this)" />
 			</th>
 			<th>
-				<?php echo JText::_('COM_VIRTUEMART_SHIPMENT_NAME_LBL'); ?>
+				<?php echo $this->sort('shipment_name', 'COM_VIRTUEMART_SHIPMENT_NAME_LBL'); ?>
 			</th>
                         <th>
-				<?php echo JText::_('COM_VIRTUEMART_SHIPMENT_LIST_DESCRIPTION_LBL'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_SHIPMENT_LIST_DESCRIPTION_LBL'); ?>
 			</th>
                         <th width="20">
-				<?php echo JText::_('COM_VIRTUEMART_SHIPPING_SHOPPERGROUPS'); ?>
+				<?php echo vmText::_('COM_VIRTUEMART_SHIPPING_SHOPPERGROUPS'); ?>
 			</th>
                         <th>
-				<?php echo JText::_('COM_VIRTUEMART_SHIPMENTMETHOD'); ?>
+				<?php echo $this->sort('shipment_element', 'COM_VIRTUEMART_SHIPMENTMETHOD'); ?>
 			</th>
 			<th>
-				<?php echo JText::_('COM_VIRTUEMART_LIST_ORDER'); ?>
+				<?php echo $this->sort('ordering', 'COM_VIRTUEMART_LIST_ORDER'); ?>
 			</th>
-			<th width="20"><?php echo JText::_('COM_VIRTUEMART_PUBLISHED'); ?></th>
+			<th width="20"><?php echo $this->sort('published', 'COM_VIRTUEMART_PUBLISHED'); ?></th>
+			<?php if($this->showVendors()){ ?>
+				<th width="20">
+				<?php echo vmText::_( 'COM_VIRTUEMART_SHARED')  ?>
+				</th><?php }  ?>
 			 <th><?php echo $this->sort('virtuemart_shipmentmethod_id', 'COM_VIRTUEMART_ID')  ?></th>
 		</tr>
 		</thead>
 		<?php
 		$k = 0;
+		$set_automatic_shipment = VmConfig::get('set_automatic_shipment',false);
 		for ($i=0, $n=count( $this->shipments ); $i < $n; $i++) {
 			$row = $this->shipments[$i];
-			$published = JHTML::_('grid.published', $row, $i );
-			/**
-			 * @todo Add to database layout published column
-			 */
-			$row->published = 1;
-			$checked = JHTML::_('grid.id', $i, $row->virtuemart_shipmentmethod_id);
-			$editlink = JROUTE::_('index.php?option=com_virtuemart&view=shipmentmethod&task=edit&cid[]=' . $row->virtuemart_shipmentmethod_id);
-			?>
-			<tr class="row<?php echo $k ; ?>">
-				<td width="10">
+			$published = $this->gridPublished($row, $i);
+			//$row->published = 1;
+			$checked = JHtml::_('grid.id', $i, $row->virtuemart_shipmentmethod_id);
+			if ($this->showVendors) {
+				$shared = $this->toggle($row->shared, $i, 'toggle.shared');
+			}
+			$editlink = JROUTE::_('index.php?option=com_virtuemart&view=shipmentmethod&task=edit&cid[]='.$row->virtuemart_shipmentmethod_id);
+	?>
+			<tr class="row<?php echo $k; ?>">
+				<td class="admin-checkbox">
 					<?php echo $checked; ?>
 				</td>
 				<td align="left">
-					<?php echo JHTML::_('link', $editlink, JText::_($row->shipment_name)); ?>
+					<?php echo JHtml::_('link', $editlink, vmText::_($row->shipment_name)); ?>
+					<?php if ($set_automatic_shipment == $row->virtuemart_shipmentmethod_id) {
+						?><i class="icon-featured"></i><?php
+					}
+					?>
 				</td>
                                 <td align="left">
 					<?php echo $row->shipment_desc; ?>
@@ -76,15 +85,23 @@ AdminUIHelper::startAdminArea();
 					<?php echo $row->shipmentShoppersList; ?>
 				</td>
                                 <td align="left">
-					<?php echo $row->shipment_element; //JHTML::_('link', $editlink, JText::_($row->shipment_element)); ?>
+					<?php echo $row->shipment_element; //JHtml::_('link', $editlink, vmText::_($row->shipment_element)); ?>
 				</td>
 				<td align="left">
-					<?php echo JText::_($row->ordering); ?>
+					<?php echo vmText::_($row->ordering); ?>
 				</td>
 				<td><?php echo $published; ?></td>
+				<?php
+				if($this->showVendors) {
+				?><td align="center">
+				<?php echo $shared; ?>
+				</td>
+				<?php }?>
 				<td align="center">
 					<?php echo $row->virtuemart_shipmentmethod_id; ?>
 				</td>
+
+
 			</tr>
 			<?php
 			$k = 1 - $k;

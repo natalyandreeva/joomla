@@ -13,7 +13,7 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: edit.php 6053 2012-06-05 12:36:21Z Milbo $
+* @version $Id: edit.php 6472 2012-09-19 08:46:21Z alatak $
 */
 
 // Check to ensure this file is included in Joomla!
@@ -50,19 +50,26 @@ function myValidator(f, t)
 	return false;
 }
 </script>
-<div class="page-heading">
-	<h1 class="vm-page-title"><?php echo $this->page_title ?></h1>
-</div>
+<h1><?php echo $this->page_title ?></h1>
 <?php echo shopFunctionsF::getLoginForm(false); ?>
 
 <h2><?php if($this->userDetails->virtuemart_user_id==0) {
 	echo JText::_('COM_VIRTUEMART_YOUR_ACCOUNT_REG');
 }?></h2>
 <form method="post" id="adminForm" name="userForm" action="<?php echo JRoute::_('index.php?view=user',$this->useXHTML,$this->useSSL) ?>" class="form-validate">
+<?php if($this->userDetails->user_is_vendor){ ?>
+    <div class="buttonBar-right">
+	<button class="button" type="submit" onclick="javascript:return myValidator(userForm, 'saveUser');" ><?php echo $this->button_lbl ?></button>
+	&nbsp;
+<button class="button" type="reset" onclick="window.location.href='<?php echo JRoute::_('index.php?option=com_virtuemart&view=user'); ?>'" ><?php echo JText::_('COM_VIRTUEMART_CANCEL'); ?></button></div>
+    <?php } ?>
 <?php // Loading Templates in Tabs
 if($this->userDetails->virtuemart_user_id!=0) {
     $tabarray = array();
     if($this->userDetails->user_is_vendor){
+	    if(!empty($this->add_product_link)) {
+		    echo $this->add_product_link;
+	    }
 	    $tabarray['vendor'] = 'COM_VIRTUEMART_VENDOR';
     }
     $tabarray['shopper'] = 'COM_VIRTUEMART_SHOPPER_FORM_LBL';
@@ -73,7 +80,6 @@ if($this->userDetails->virtuemart_user_id!=0) {
     if (($_ordcnt = count($this->orderlist)) > 0) {
 	    $tabarray['orderlist'] = 'COM_VIRTUEMART_YOUR_ORDERS';
     }
-
 
     shopFunctionsF::buildTabs ( $this, $tabarray);
 
@@ -116,14 +122,6 @@ if($this->userDetails->virtuemart_user_id!=0) {
 
 // 	echo $this->pane->endPane();
 ?>
-
-	<?php if($this->userDetails->user_is_vendor){ ?>
-    <div class="buttonBar-right">
-			<button class="button" type="submit" onclick="javascript:return myValidator(userForm, 'saveUser');" ><?php echo $this->button_lbl ?></button>
-			<button class="button" type="reset" onclick="window.location.href='<?php echo JRoute::_('index.php?option=com_virtuemart&view=user'); ?>'" ><?php echo JText::_('COM_VIRTUEMART_CANCEL'); ?></button>
-		</div>
-  <?php } ?>
-
 <input type="hidden" name="option" value="com_virtuemart" />
 <input type="hidden" name="controller" value="user" />
 <?php echo JHTML::_( 'form.token' ); ?>

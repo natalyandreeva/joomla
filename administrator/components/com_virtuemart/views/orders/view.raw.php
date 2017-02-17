@@ -12,7 +12,7 @@
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: view.raw.php 5522 2012-02-21 14:40:10Z Milbo $
+ * @version $Id: view.raw.php 8533 2014-10-27 18:10:04Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
@@ -27,19 +27,21 @@ jimport( 'joomla.application.component.view');
  * @package		VirtueMart
  * @author
  */
-if(!class_exists('VmView'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmview.php');
+if(!class_exists('VmViewAdmin'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmviewadmin.php');
 
-class VirtuemartViewOrders extends VmView {
+class VirtuemartViewOrders extends VmViewAdmin {
 
 	function display($tpl = null) {
 
 		//Load helpers
 
-		$this->loadHelper('currencydisplay');
+		if (!class_exists('CurrencyDisplay'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
 
-		$this->loadHelper('html');
+		if (!class_exists('VmHTML'))
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
 
-		if(!class_exists('vmPSPlugin')) require(JPATH_VM_PLUGINS.DS.'vmpsplugin.php');
+		if(!class_exists('vmPSPlugin')) require(VMPATH_PLUGINLIBS.DS.'vmpsplugin.php');
 
 		// Load addl models
 		$orderModel = VmModel::getModel();
@@ -48,7 +50,7 @@ class VirtuemartViewOrders extends VmView {
 
 		/* Get the data */
 
-		$virtuemart_order_id = JRequest::getvar('virtuemart_order_id');
+		$virtuemart_order_id = vRequest::getvar('virtuemart_order_id');
 		$order = $orderModel->getOrder($virtuemart_order_id);
 		//$order = $this->get('Order');
 		$orderNumber = $order['details']['BT']->virtuemart_order_number;
@@ -60,7 +62,7 @@ class VirtuemartViewOrders extends VmView {
 
 
 		$_userFields = $userFieldsModel->getUserFields(
-				 'registration'
+				 'account'
 				, array('captcha' => true, 'delimiters' => true) // Ignore these types
 				, array('delimiter_userinfo','user_is_vendor' ,'username', 'email', 'password', 'password2', 'agreed', 'address_type') // Skips
 		);
@@ -83,7 +85,7 @@ class VirtuemartViewOrders extends VmView {
 		$_orderStats = $this->get('OrderStatusList');
 		$_orderStatusList = array();
 		foreach ($_orderStats as $orderState) {
-				$_orderStatusList[$orderState->order_status_code] = JText::_($orderState->order_status_name);
+				$_orderStatusList[$orderState->order_status_code] = vmText::_($orderState->order_status_name);
 		}
 
 		/*foreach($order['items'] as $_item) {

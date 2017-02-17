@@ -13,13 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: userfield_values.php 6361 2012-08-21 16:05:40Z alatak $
+* @version $Id: userfield_values.php 8310 2014-09-21 17:51:47Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-if(!class_exists('VmTable'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmtable.php');
+if(!class_exists('VmTable'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmtable.php');
 
 /**
  * Userfields table class
@@ -65,7 +65,7 @@ class TableUserfield_values extends VmTable {
 	function check()
 	{
 		if (preg_match('/[^a-z0-9\._\-]/i', $this->fieldvalue) > 0) {
-			vmError(JText::_('COM_VIRTUEMART_TITLE_IN_FIELDVALUES_CONTAINS_INVALID_CHARACTERS'));
+			vmError(vmText::_('COM_VIRTUEMART_TITLE_IN_FIELDVALUES_CONTAINS_INVALID_CHARACTERS'));
 			return false;
 		}
 
@@ -92,7 +92,7 @@ class TableUserfield_values extends VmTable {
 
 		$db = JFactory::getDBO();
 		$db->setQuery('DELETE from `#__virtuemart_userfield_values` WHERE `virtuemart_userfield_id` = ' . $virtuemart_userfield_id);
-		if ($db->query() === false) {
+		if ($db->execute() === false) {
 			vmError($db->getError());
 			return false;
 		}

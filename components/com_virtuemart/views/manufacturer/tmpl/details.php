@@ -36,14 +36,14 @@ defined('_JEXEC') or die('Restricted access');
 	if(!empty($this->manufacturer->mf_email)) { ?>
 		<div class="manufacturer-email">
 		<?php // TO DO Make The Email Visible Within The Lightbox
-		echo JHtml::_('email.cloak', $this->manufacturer->mf_email,true,JText::_('COM_VIRTUEMART_EMAIL'),false) ?>
+		echo JHtml::_('email.cloak', $this->manufacturer->mf_email,true,vmText::_('COM_VIRTUEMART_EMAIL'),false) ?>
 		</div>
 	<?php } ?>
 
 	<?php // Manufacturer URL
 	if(!empty($this->manufacturer->mf_url)) { ?>
 		<div class="manufacturer-url">
-			<a target="_blank" href="<?php echo $this->manufacturer->mf_url ?>"><?php echo JText::_('COM_VIRTUEMART_MANUFACTURER_PAGE') ?></a>
+			<a target="_blank" href="<?php echo $this->manufacturer->mf_url ?>"><?php echo vmText::_('COM_VIRTUEMART_MANUFACTURER_PAGE') ?></a>
 		</div>
 	<?php } ?>
 
@@ -55,11 +55,11 @@ defined('_JEXEC') or die('Restricted access');
 	<?php } ?>
 
 	<?php // Manufacturer Product Link
-	$manufacturerProductsURL = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_manufacturer_id=' . $this->manufacturer->virtuemart_manufacturer_id);
+	$manufacturerProductsURL = JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_manufacturer_id=' . $this->manufacturer->virtuemart_manufacturer_id, FALSE);
 
 	if(!empty($this->manufacturer->virtuemart_manufacturer_id)) { ?>
 		<div class="manufacturer-product-link">
-			<a target="_top" href="<?php echo $manufacturerProductsURL; ?>"><?php echo JText::sprintf('COM_VIRTUEMART_PRODUCT_FROM_MF',$this->manufacturer->mf_name); ?></a>
+			<a target="_top" href="<?php echo $manufacturerProductsURL; ?>"><?php echo vmText::sprintf('COM_VIRTUEMART_PRODUCT_FROM_MF',$this->manufacturer->mf_name); ?></a>
 		</div>
 	<?php } ?>
 

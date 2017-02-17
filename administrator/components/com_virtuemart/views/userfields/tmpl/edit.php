@@ -13,16 +13,16 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: edit.php 6361 2012-08-21 16:05:40Z alatak $
+* @version $Id: edit.php 8887 2015-06-25 13:05:26Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
 vmJsApi::JvalideForm();
-AdminUIHelper::startAdminArea();
+AdminUIHelper::startAdminArea($this);
 AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
-// vmdebug ('$this->userField',$this->userField);
+
 ?>
 
 <form action="index.php" method="post" name="adminForm" id="adminForm">
@@ -30,7 +30,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 
 <div class="col50">
 	<fieldset>
-	<legend><?php echo JText::_('COM_VIRTUEMART_USERFIELD_DETAILS'); ?></legend>
+	<legend><?php echo vmText::_('COM_VIRTUEMART_USERFIELD_DETAILS'); ?></legend>
 	<table class="admintable" width="100%">
 		<?php echo VmHTML::row('raw','COM_VIRTUEMART_FIELDMANAGER_TYPE', $this->lists['type'] ); ?>
 
@@ -39,7 +39,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 			<td colspan="2" style="text-align:left;overflow: auto;" id="toggler">
 				<div id="divText">
 					<fieldset>
-					<legend><?php echo JText::_('COM_VIRTUEMART_TEXTFIELD_ATTRIBUTES'); ?></legend>
+					<legend><?php echo vmText::_('COM_VIRTUEMART_TEXTFIELD_ATTRIBUTES'); ?></legend>
 						<table class="admintable">
 							<?php echo VmHTML::row('input','COM_VIRTUEMART_USERFIELDS_MAXLENGTH','maxlength',$this->userField->maxlength,'class="inputbox"','',5); ?>
 						</table>
@@ -48,7 +48,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 
 				<div id="divColsRows">
 					<fieldset>
-					<legend><?php echo JText::_('COM_VIRTUEMART_COL_ROWS_ATTRIBUTES'); ?></legend>
+					<legend><?php echo vmText::_('COM_VIRTUEMART_COL_ROWS_ATTRIBUTES'); ?></legend>
 						<table class="admintable">
 							<?php echo VmHTML::row('input','COM_VIRTUEMART_USERFIELDS_COLUMNS','cols',$this->userField->cols,'class="inputbox"','',5); ?>
 							<?php echo VmHTML::row('input','COM_VIRTUEMART_USERFIELDS_ROWS','rows',$this->userField->rows,'class="inputbox"','',5); ?>
@@ -58,7 +58,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 
 				<div id="divAgeVerification" style="text-align:left;">
 					<fieldset>
-					<legend><?php echo JText::_('COM_VIRTUEMART_FIELDS_AGEVERIFICATION_ATTRIBUTES'); ?></legend>
+					<legend><?php echo vmText::_('COM_VIRTUEMART_FIELDS_AGEVERIFICATION_ATTRIBUTES'); ?></legend>
 						<table class="admintable">
 							<?php echo VmHTML::row('raw','COM_VIRTUEMART_FIELDS_AGEVERIFICATION_MINIMUM', $this->lists['minimum_age'] ); ?>
 						</table>
@@ -67,7 +67,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 
 				<div id="divWeb">
 					<fieldset>
-					<legend><?php echo JText::_('COM_VIRTUEMART_FIELDS_WEBADDRESS'); ?></legend>
+					<legend><?php echo vmText::_('COM_VIRTUEMART_FIELDS_WEBADDRESS'); ?></legend>
 						<table class="admintable">
 							<?php echo VmHTML::row('raw','COM_VIRTUEMART_FIELDMANAGER_TYPE', $this->lists['webaddresstypes'] ); ?>
 						</table>
@@ -76,22 +76,22 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 
 				<div id="divValues" style="text-align:left;">
 					<fieldset>
-					<legend><?php echo JText::_('COM_VIRTUEMART_USERFIELDS_ADDVALUES_TIP'); ?></legend>
+					<legend><?php echo vmText::_('COM_VIRTUEMART_USERFIELDS_ADDVALUES_TIP'); ?></legend>
 						<table align=left id="divFieldValues" cellpadding="4" cellspacing="1" border="0" width="100%" class="admintable">
 							<thead>
 								<tr>
-									<th class="title" width="20%"><?php echo JText::_('COM_VIRTUEMART_VALUE') ?></th>
-									<th class="title" width="60%"><?php echo JText::_('COM_VIRTUEMART_TITLE') ?></th>
+									<th class="title" width="20%"><?php echo vmText::_('COM_VIRTUEMART_VALUE') ?></th>
+									<th class="title" width="60%"><?php echo vmText::_('COM_VIRTUEMART_TITLE') ?></th>
 								</tr>
 							</thead>
 							<tbody id="fieldValuesBody"><?php echo $this->lists['userfield_values'];?></tbody>
 						</table>
-						<input type="button" class="button insertRow" value="<?php echo JText::_('COM_VIRTUEMART_USERFIELDS_ADDVALUE') ?>" />
+						<input type="button" class="button insertRow" value="<?php echo vmText::_('COM_VIRTUEMART_USERFIELDS_ADDVALUE') ?>" />
 					</fieldset>
 				</div>
 				<div id="divPlugin" style="text-align:left;">
 					<fieldset>
-					<legend><?php echo JText::_('COM_VIRTUEMART_USERFIELDS_PLUGIN_TIP'); ?></legend>
+					<legend><?php echo vmText::_('COM_VIRTUEMART_USERFIELDS_PLUGIN_TIP'); ?></legend>
 					<div id="fieldPluginBody">
 						<?php echo $this->userFieldPlugin;	?>
 					</div>
@@ -104,7 +104,7 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 		<tr>
 			<td width="110" class="key">
 				<label for="name">
-					<?php echo JText::_('COM_VIRTUEMART_FIELDMANAGER_NAME') ?>
+					<?php echo vmText::_('COM_VIRTUEMART_FIELDMANAGER_NAME') ?>
 				</label>
 			</td>
 			<td>
@@ -113,34 +113,33 @@ AdminUIHelper::imitateTabs('start','COM_VIRTUEMART_USERFIELD_DETAILS');
 				?>" <?php
 					echo ($this->userField->sys ? 'readonly="readonly"' : '');
 					$readonly=$this->userField->sys ? 'readonly' : ''
-				?> class="validate[required,funcCall[checkName]] inputbox <?php echo $readonly ?> " />
+				?> class="required <?php echo $readonly ?> " />
 			</td>
 		</tr>
-
 		<tr>
 			<td width="110" class="key">
 				<label for="title">
-					<?php echo JText::_('COM_VIRTUEMART_FIELDMANAGER_TITLE') ?>
+					<?php echo vmText::_('COM_VIRTUEMART_FIELDMANAGER_TITLE') ?>
 				</label>
 			</td>
 			<td>
-                            <?php
-                            $lang = JFactory::getLanguage();
-                            $text = $lang->hasKey($this->userField->title) ? JText::_($this->userField->title) : $this->userField->title;
-                            ?>
-				<input class="inputbox" type="text" name="title" id="title" size="50" value="<?php echo $this->userField->title; ?>" />(<?php echo $text ?>)
+				<?php
+				$lang = JFactory::getLanguage();
+				$text = $lang->hasKey($this->userField->title) ? vmText::_($this->userField->title) : $this->userField->title;
+				?>
+				<input class="required" type="text" name="title" id="title" size="50" value="<?php echo $this->userField->title; ?>" />(<?php echo $text ?>)
 			</td>
 		</tr>
 		<?php echo VmHTML::row('editor','COM_VIRTUEMART_USERFIELDS_DESCRIPTION','description', $this->userField->description,'100%','300', array('image','pagebreak', 'readmore') ); ?>
 		<?php echo VmHTML::row('input','COM_VIRTUEMART_DEFAULT','default',$this->userField->default,'class="inputbox"','',5); ?>
 		<?php echo $this->lists['required']; ?>
-		<?php echo $this->lists['registration']; ?>
+		<?php echo $this->lists['cart']; ?>
 		<?php echo $this->lists['account']; ?>
 		<?php echo $this->lists['shipment']; ?>
 		<?php echo $this->lists['readonly']; ?>
 		<?php echo $this->lists['published']; ?>
 		<?php echo VmHTML::row('input','COM_VIRTUEMART_USERFIELDS_SIZE','size',$this->userField->size,'class="inputbox"','',5); ?>
-		<?php echo VmHTML::row('input','COM_VIRTUEMART_ORDERING','ordering',$this->userField->ordering,'class="inputbox"','',5); ?>
+		<?php echo VmHTML::row('raw','COM_VIRTUEMART_ORDERING',$this->ordering);// VmHTML::row('input','COM_VIRTUEMART_ORDERING','ordering',$this->userField->ordering,'class="inputbox"','',5); ?>
 		<?php if(Vmconfig::get('multix','none')!=='none'){
 				echo VmHTML::row('raw','COM_VIRTUEMART_VENDOR', $this->lists['vendors'] );
 			} ?>
@@ -158,10 +157,6 @@ AdminUIHelper::imitateTabs('end');
 AdminUIHelper::endAdminArea(); ?>
 
 <?php $duration = 650;
-$db = JFactory::getDBO();
-$db->setQuery("SHOW COLUMNS FROM `#__virtuemart_userfields`");
-$existingFields = '"'.implode('","',$db->loadResultArray()).'"';
-
 ?>
 <script type="text/javascript">
 
@@ -245,7 +240,7 @@ function toggleType( sType ) {
 function checkName(field, rules, i, options){
 	name = field.val();
 	field.val(name.replace(/[^0-9a-zA-Z\_]+/g,''));
-	var existingFields = new Array(<?php echo $existingFields ?>);
+	var existingFields = new Array(<?php echo $this->existingFields ?>);
 	if(jQuery.inArray(name,existingFields) > -1) {
 		return options.allrules.onlyLetterNumber.alertText;
 	}

@@ -13,16 +13,13 @@
 * to the GNU General Public License, and as distributed it includes or
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
-* @version $Id: manufacturer.php 6071 2012-06-06 15:33:04Z Milbo $
+* @version $Id: manufacturer.php 8618 2014-12-10 22:45:48Z Milbo $
 */
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 
 
 /**
@@ -48,16 +45,16 @@ class VirtuemartControllerManufacturer extends VmController {
 
 	/**
 	 * Handle the save task
-	 * Checks already in the controller the rights todo so and sets the data by filtering the post
+	 * Checks already in the controller the rights and sets the data by filtering the post
 	 *
 	 * @author Max Milbers
 	 */
 	function save($data = 0){
 
 		/* Load the data */
-		$data = JRequest::get('post');
+		$data = vRequest::getRequest();
 		/* add the mf desc as html code */
-		$data['mf_desc'] = JRequest::getVar('mf_desc', '', 'post', 'string', JREQUEST_ALLOWHTML );
+		$data['mf_desc'] = vRequest::getHtml('mf_desc', '' );
 
 		parent::save($data);
 	}

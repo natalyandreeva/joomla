@@ -1,5 +1,5 @@
 // Load when document finished loading
-jQuery( function (){
+jQuery(function () {
     klarna.invoiceReady();
 });
 

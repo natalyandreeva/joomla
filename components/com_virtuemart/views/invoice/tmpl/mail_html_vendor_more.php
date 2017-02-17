@@ -19,4 +19,4 @@ defined('_JEXEC') or die('');
 */
 ?>
 
-<?php //echo JText::_('COM_VIRTUEMART_VENDOR_MORE'); ?>
+<?php //echo vmText::_('COM_VIRTUEMART_VENDOR_MORE'); ?>

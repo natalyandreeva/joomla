@@ -5,15 +5,15 @@
  *
  * @package    VirtueMart
  * @subpackage
- * @author RolandD
+ * @author Max Milbers
  * @link http://www.virtuemart.net
- * @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
+ * @copyright Copyright (c) 2004 - 2014 VirtueMart Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
  * VirtueMart is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: productdetails.php 6425 2012-09-11 20:17:08Z Milbo $
+ * @version $Id: productdetails.php 9074 2015-11-26 15:28:54Z Milbo $
  */
 
 // Check to ensure this file is included in Joomla!
@@ -26,9 +26,9 @@ jimport ('joomla.application.component.controller');
  * VirtueMart Component Controller
  *
  * @package VirtueMart
- * @author RolandD
+ * @author Max Milbers
  */
-class VirtueMartControllerProductdetails extends JController {
+class VirtueMartControllerProductdetails extends JControllerLegacy {
 
 	public function __construct () {
 
@@ -37,13 +37,17 @@ class VirtueMartControllerProductdetails extends JController {
 		$this->registerTask ('askquestion', 'MailForm');
 	}
 
-	function display($cachable = false, $urlparams = false)  {
+	function display($cachable = false, $urlparams = false) {
 
-		$format = JRequest::getWord ('format', 'html');
+		$format = vRequest::getCmd ('format', 'html');
+		$tmpl = vRequest::getCmd('tmpl',false);
+
+		$viewName = 'Productdetails';
 		if ($format == 'pdf') {
 			$viewName = 'Pdf';
-		} else {
-			$viewName = 'Productdetails';
+		} else	//We override the format here, because we need actually the same data.
+			if ($format == 'raw' and $tmpl == 'component') {
+			$format = 'html';
 		}
 
 		$view = $this->getView ($viewName, $format);
@@ -55,61 +59,76 @@ class VirtueMartControllerProductdetails extends JController {
 	 * Send the ask question email.
 	 *
 	 * @author Kohl Patrick, Christopher Roussel
+	 * @author Max Milbers
 	 */
 	public function mailAskquestion () {
 
-		// Display it all
+		JSession::checkToken () or jexit ('Invalid Token');
+
+		$app = JFactory::getApplication ();
+		if(!VmConfig::get('ask_question',false) and !VmConfig::get ('askprice', 1)){
+			$app->redirect (JRoute::_ ('index.php?option=com_virtuemart&tmpl=component&view=productdetails&task=askquestion&virtuemart_product_id=' . vRequest::getInt ('virtuemart_product_id', 0)), 'Function disabled');
+		}
+
 		$view = $this->getView ('askquestion', 'html');
-		if(!VmConfig::get('ask_question',false)){
-			$view->display ();
-		}
-		JRequest::checkToken () or jexit ('Invalid Token');
 		if (!class_exists ('shopFunctionsF')) {
-			require(JPATH_VM_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
+			require(VMPATH_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
 		}
-		$mainframe = JFactory::getApplication ();
+
 		$vars = array();
 		$min = VmConfig::get ('asks_minimum_comment_length', 50) + 1;
 		$max = VmConfig::get ('asks_maximum_comment_length', 2000) - 1;
-		$commentSize = mb_strlen (JRequest::getString ('comment'));
-		$validMail = filter_var (JRequest::getVar ('email'), FILTER_VALIDATE_EMAIL);
+		$commentSize = vRequest::getString ('comment');
+		if (function_exists('mb_strlen')) {
+			$commentSize =  mb_strlen($commentSize);
+		} else {
+			$commentSize =  strlen($commentSize);
+		}
+
+		$validMail = filter_var (vRequest::getVar ('email'), FILTER_VALIDATE_EMAIL);
 
 		if ($commentSize < $min or $commentSize > $max or !$validMail) {
-			$errmsg = JText::_ ('COM_VIRTUEMART_COMMENT_NOT_VALID_JS');
+			$errmsg = vmText::_ ('COM_VIRTUEMART_COMMENT_NOT_VALID_JS');
 			if ($commentSize < $min) {
-				vmdebug ('mailAskquestion', $min, $commentSize);
-				$errmsg = JText::_ ('COM_VIRTUEMART_ASKQU_CS_MIN');
-				;
+				$errmsg = vmText::_ ('COM_VIRTUEMART_ASKQU_CS_MIN');
+
 			} else {
 				if ($commentSize > $max) {
-					$errmsg = JText::_ ('COM_VIRTUEMART_ASKQU_CS_MAX');
-					;
+					$errmsg = vmText::_ ('COM_VIRTUEMART_ASKQU_CS_MAX');
+
 				} else {
 					if (!$validMail) {
-						$errmsg = JText::_ ('COM_VIRTUEMART_ASKQU_INV_MAIL');
-						;
+						$errmsg = vmText::_ ('COM_VIRTUEMART_ASKQU_INV_MAIL');
+
 					}
 				}
 			}
 
-			$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&tmpl=component&view=productdetails&task=askquestion&virtuemart_product_id=' . JRequest::getInt ('virtuemart_product_id', 0)), $errmsg);
+			$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&tmpl=component&view=productdetails&task=askquestion&virtuemart_product_id=' . vRequest::getInt ('virtuemart_product_id', 0)), $errmsg);
 			return;
 		}
 
-		$virtuemart_product_idArray = JRequest::getInt ('virtuemart_product_id', 0);
-		if (is_array ($virtuemart_product_idArray)) {
-			$virtuemart_product_id = (int)$virtuemart_product_idArray[0];
-		} else {
-			$virtuemart_product_id = (int)$virtuemart_product_idArray;
+		if(JFactory::getUser()->guest == 1 and VmConfig::get ('ask_captcha')){
+			$recaptcha = vRequest::getVar ('recaptcha_response_field');
+			JPluginHelper::importPlugin('captcha');
+			$dispatcher = JDispatcher::getInstance();
+			$res = $dispatcher->trigger('onCheckAnswer',$recaptcha);
+			$session = JFactory::getSession();
+			if(!$res[0]){
+				$askquestionform = array('name' => vRequest::getVar ('name'), 'email' => vRequest::getVar ('email'), 'comment' => vRequest::getString ('comment'));
+				$session->set('askquestion', $askquestionform, 'vm');
+				$errmsg = vmText::_('PLG_RECAPTCHA_ERROR_INCORRECT_CAPTCHA_SOL');
+				$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&tmpl=component&view=productdetails&task=askquestion&virtuemart_product_id=' . vRequest::getInt ('virtuemart_product_id', 0)), $errmsg);
+				return;
+			} else {
+				$session->set('askquestion', 0, 'vm');
+			}
 		}
-		$productModel = VmModel::getModel ('product');
-
-		$vars['product'] = $productModel->getProduct ($virtuemart_product_id);
 
 		$user = JFactory::getUser ();
 		if (empty($user->id)) {
-			$fromMail = JRequest::getVar ('email'); //is sanitized then
-			$fromName = JRequest::getVar ('name', ''); //is sanitized then
+			$fromMail = vRequest::getVar ('email'); //is sanitized then
+			$fromName = vRequest::getVar ('name', ''); //is sanitized then
 			$fromMail = str_replace (array('\'', '"', ',', '%', '*', '/', '\\', '?', '^', '`', '{', '}', '|', '~'), array(''), $fromMail);
 			$fromName = str_replace (array('\'', '"', ',', '%', '*', '/', '\\', '?', '^', '`', '{', '}', '|', '~'), array(''), $fromName);
 		} else {
@@ -118,16 +137,28 @@ class VirtueMartControllerProductdetails extends JController {
 		}
 		$vars['user'] = array('name' => $fromName, 'email' => $fromMail);
 
+		$virtuemart_product_id = vRequest::getInt ('virtuemart_product_id', 0);
+		$productModel = VmModel::getModel ('product');
+
+		$vars['product'] = $productModel->getProduct ($virtuemart_product_id);
+
 		$vendorModel = VmModel::getModel ('vendor');
 		$VendorEmail = $vendorModel->getVendorEmail ($vars['product']->virtuemart_vendor_id);
+
+		JPluginHelper::importPlugin ('system');
+		JPluginHelper::importPlugin ('vmextended');
+		JPluginHelper::importPlugin ('userfield');
+		$dispatcher = JDispatcher::getInstance ();
+		$dispatcher->trigger ('plgVmOnAskQuestion', array(&$VendorEmail, &$vars, &$view));
+
 		$vars['vendor'] = array('vendor_store_name' => $fromName);
 
-		if (shopFunctionsF::renderMail ('askquestion', $VendorEmail, $vars, 'productdetails')) {
+		if (shopFunctionsF::renderMail ('askquestion', $VendorEmail, $vars, 'productdetails',true)) {
 			$string = 'COM_VIRTUEMART_MAIL_SEND_SUCCESSFULLY';
 		} else {
 			$string = 'COM_VIRTUEMART_MAIL_NOT_SEND_SUCCESSFULLY';
 		}
-		$mainframe->enqueueMessage (JText::_ ($string));
+		$app->enqueueMessage (vmText::_ ($string));
 
 
 		$view->setLayout ('mail_confirmed');
@@ -137,51 +168,39 @@ class VirtueMartControllerProductdetails extends JController {
 	/**
 	 * Send the Recommend to a friend email.
 	 *
-	 * @author Kohl Patrick,
+	 * @author Kohl Patrick
+	 * @author Max Milbers
 	 */
 	public function mailRecommend () {
 
-		JRequest::checkToken () or jexit ('Invalid Token');
-		// Display it all
-		$view = $this->getView ('recommend', 'html');
+		JSession::checkToken () or jexit ('Invalid Token');
 
+		$app = JFactory::getApplication ();
 		if(!VmConfig::get('show_emailfriend',false)){
-			$view->display ();
+			$app->redirect (JRoute::_ ('index.php?option=com_virtuemart&tmpl=component&view=productdetails&task=askquestion&virtuemart_product_id=' . vRequest::getInt ('virtuemart_product_id', 0)), 'Function disabled');
 		}
-		if (!class_exists ('shopFunctionsF')) {
-			require(JPATH_VM_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
-		}
-		if(!class_exists('ShopFunctions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'shopfunctions.php');
 
-		$mainframe = JFactory::getApplication ();
+		if(JFactory::getUser()->guest == 1 and VmConfig::get ('ask_captcha')){
+			$recaptcha = vRequest::getVar ('recaptcha_response_field');
+			JPluginHelper::importPlugin('captcha');
+			$dispatcher = JDispatcher::getInstance();
+			$res = $dispatcher->trigger('onCheckAnswer',$recaptcha);
+			$session = JFactory::getSession();
+			if(!$res[0]){
+				$mailrecommend = array('email' => vRequest::getVar ('email'), 'comment' => vRequest::getString ('comment'));
+				$session->set('mailrecommend', $mailrecommend, 'vm');
+				$errmsg = vmText::_('PLG_RECAPTCHA_ERROR_INCORRECT_CAPTCHA_SOL');
+				$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&tmpl=component&view=productdetails&task=recommend&virtuemart_product_id=' . vRequest::getInt ('virtuemart_product_id', 0)), $errmsg);
+				return;
+			} else {
+				$session->set('mailrecommend', 0, 'vm');
+			}
+		}
+
+
 		$vars = array();
 
-		$virtuemart_product_idArray = JRequest::getInt ('virtuemart_product_id', 0);
-		if (is_array ($virtuemart_product_idArray)) {
-			$virtuemart_product_id = (int)$virtuemart_product_idArray[0];
-		} else {
-			$virtuemart_product_id = (int)$virtuemart_product_idArray;
-		}
-		$productModel = VmModel::getModel ('product');
-
-		$vars['product'] = $productModel->getProduct ($virtuemart_product_id);
-
-		$user = JFactory::getUser ();
-		$vars['user'] = array('name' => $user->name, 'email' =>  $user->email);
-
-		$vars['vendorEmail'] = $user->email;
-		$vendorModel = VmModel::getModel ('vendor');
-		$vendor = $vendorModel->getVendor ($vars['product']->virtuemart_vendor_id);
-		$vendorModel->addImages ($vars['vendor']);
-		$vendor->vendorFields = $vendorModel->getVendorAddressFields();
-		$vars['vendor'] = $vendor;
-		$vars['vendorAddress']= shopFunctions::renderVendorAddress($vars['product']->virtuemart_vendor_id);
-
-		$vars['vendorEmail']=  $user->email;
-		$vars['vendor']->vendor_name =$user->name;
-
-
-		$toMail = JRequest::getVar ('email'); //is sanitized then
+		$toMail = vRequest::getVar ('email'); //is sanitized then
 		$toMail = str_replace (array('\'', '"', ',', '%', '*', '/', '\\', '?', '^', '`', '{', '}', '|', '~'), array(''), $toMail);
 
 		if (shopFunctionsF::renderMail ('recommend', $toMail, $vars, 'productdetails', TRUE)) {
@@ -189,10 +208,9 @@ class VirtueMartControllerProductdetails extends JController {
 		} else {
 			$string = 'COM_VIRTUEMART_MAIL_NOT_SEND_SUCCESSFULLY';
 		}
-		$mainframe->enqueueMessage (JText::_ ($string));
+		$app->enqueueMessage (vmText::_ ($string));
 
-// 		vmdebug('my email vars ',$vars,$TOMail);
-
+		$view = $this->getView ('recommend', 'html');
 
 		$view->setLayout ('mail_confirmed');
 		$view->display ();
@@ -204,45 +222,44 @@ class VirtueMartControllerProductdetails extends JController {
 	 */
 	public function MailForm () {
 
-		if (JRequest::getCmd ('task') == 'recommend') {
-
-			/*OSP 2012-03-14 ...Track #375; allowed by setting */
-			if (VmConfig::get ('recommend_unauth', 0) == '0') {
-				$user = JFactory::getUser ();
-				if (empty($user->id)) {
-					VmInfo (JText::_ ('JGLOBAL_YOU_MUST_LOGIN_FIRST'));
-					return;
-				}
-			}
+		if (vRequest::getCmd ('task') == 'recommend') {
 			$view = $this->getView ('recommend', 'html');
 		} else {
 			$view = $this->getView ('askquestion', 'html');
 		}
 
-		/* Set the layout */
+		// Set the layout
 		$view->setLayout ('form');
 
 		// Display it all
 		$view->display ();
 	}
 
-	/* Add or edit a review
-	 TODO  control and update in database the review */
+	/**
+	 * Add or edit a review
+	 */
 	public function review () {
-
-		$data = JRequest::get ('post');
+		$msg="";
 
 		$model = VmModel::getModel ('ratings');
-		$model->saveRating ($data);
-		$errors = $model->getErrors ();
-		if (empty($errors)) {
-			$msg = JText::sprintf ('COM_VIRTUEMART_STRING_SAVED', JText::_ ('COM_VIRTUEMART_REVIEW'));
-		}
-		foreach ($errors as $error) {
-			$msg = ($error) . '<br />';
+		$virtuemart_product_id = vRequest::getInt('virtuemart_product_id',0);
+
+		$allowReview = $model->allowReview($virtuemart_product_id);
+		$allowRating = $model->allowRating($virtuemart_product_id);
+		if($allowReview || $allowRating){
+			$return = $model->saveRating ();
+			if ($return !== FALSE) {
+				$msg = vmText::sprintf ('COM_VIRTUEMART_STRING_SAVED', vmText::_ ('COM_VIRTUEMART_REVIEW'));
+
+				if (!class_exists ('ShopFunctionsF')) {
+					require(VMPATH_SITE . DS . 'helpers' . DS . 'shopfunctionsf.php');
+				}
+				$data = vRequest::getPost();
+				shopFunctionsF::sendRatingEmailToVendor($data);
+			}
 		}
 
-		$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id=' . (int)$data['virtuemart_product_id']), $msg);
+		$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id=' . $virtuemart_product_id, FALSE), $msg);
 
 	}
 
@@ -251,70 +268,75 @@ class VirtueMartControllerProductdetails extends JController {
 	 *
 	 * @author Max Milbers
 	 * @author Patrick Kohl
-	 *
 	 */
 	public function recalculate () {
 
-		//$post = JRequest::get('request');
-
-//		echo '<pre>'.print_r($post,1).'</pre>';
-		jimport ('joomla.utilities.arrayhelper');
-		$virtuemart_product_idArray = JRequest::getVar ('virtuemart_product_id', array()); //is sanitized then
-		if(is_array($virtuemart_product_idArray)){
-			JArrayHelper::toInteger ($virtuemart_product_idArray);
+		$virtuemart_product_idArray = vRequest::getInt ('virtuemart_product_id', array()); //is sanitized then
+		if(is_array($virtuemart_product_idArray) and !empty($virtuemart_product_idArray[0])){
 			$virtuemart_product_id = $virtuemart_product_idArray[0];
 		} else {
 			$virtuemart_product_id = $virtuemart_product_idArray;
 		}
 
-		$customPrices = array();
-		$customVariants = JRequest::getVar ('customPrice', array()); //is sanitized then
-		//echo '<pre>'.print_r($customVariants,1).'</pre>';
-
-		//MarkerVarMods
-		foreach ($customVariants as $customVariant) {
-			//foreach ($customVariant as $selected => $priceVariant) {
-			//In this case it is NOT $selected => $variant, because we get it that way from the form
-			foreach ($customVariant as $priceVariant => $selected) {
-				//Important! sanitize array to int
-				$selected = (int)$selected;
-				$customPrices[$selected] = $priceVariant;
+		$quantity = 0;
+		$quantityArray = vRequest::getInt ('quantity', array()); //is sanitized then
+		if(is_array($quantityArray)){
+			if(!empty($quantityArray[0])){
+				$quantity = $quantityArray[0];
 			}
+		} else {
+			$quantity = (int)$quantityArray;
 		}
 
-		$quantityArray = JRequest::getVar ('quantity', array()); //is sanitized then
-		JArrayHelper::toInteger ($quantityArray);
-
-		$quantity = 1;
-		if (!empty($quantityArray[0])) {
-			$quantity = $quantityArray[0];
+		if (empty($quantity)) {
+			$quantity = 1;
 		}
 
 		$product_model = VmModel::getModel ('product');
 
-		//VmConfig::$echoDebug = TRUE;
-		$prices = $product_model->getPrice ($virtuemart_product_id, $customPrices, $quantity);
-
+		if(!empty($virtuemart_product_id)){
+			$prices = $product_model->getPrice ($virtuemart_product_id, $quantity);
+		} else {
+			jexit ();
+		}
 		$priceFormated = array();
 		if (!class_exists ('CurrencyDisplay')) {
-			require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
+			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
 		}
 		$currency = CurrencyDisplay::getInstance ();
-		foreach ($prices as $name => $product_price) {
-// 		echo 'Price is '.print_r($name,1).'<br />';
-			if ($name != 'costPrice') {
+
+		$priceFieldsRoots = array('basePrice','variantModification','basePriceVariant',
+			'basePriceWithTax','discountedPriceWithoutTax',
+			'salesPrice','priceWithoutTax',
+			'salesPriceWithDiscount','discountAmount','taxAmount','unitPrice');
+
+		foreach ($priceFieldsRoots as $name) {
+			if(isset($prices[$name])){
 				$priceFormated[$name] = $currency->createPriceDiv ($name, '', $prices, TRUE);
 			}
 		}
 
 		// Get the document object.
 		$document = JFactory::getDocument ();
-		$document->setName ('recalculate');
+		// stAn: setName works in JDocumentHTML and not JDocumentRAW
+		if (method_exists($document, 'setName')){
+			$document->setName ('recalculate');
+		}
+
+		// Also return all messages (in HTML format!):
+		// Since we are in a JSON document, we have to temporarily switch the type to HTML
+		// to make sure the html renderer is actually used
+		$previoustype = $document->getType();
+		$document->setType('html');
+		$msgrenderer = $document->loadRenderer('message');
+		$priceFormated['messages'] = $msgrenderer->render('Message');
+		$document->setType($previoustype);
+
 		JResponse::setHeader ('Cache-Control', 'no-cache, must-revalidate');
 		JResponse::setHeader ('Expires', 'Mon, 6 Jul 2000 10:00:00 GMT');
 		// Set the MIME type for JSON output.
 		$document->setMimeEncoding ('application/json');
-		JResponse::setHeader ('Content-Disposition', 'attachment;filename="recalculate.json"', TRUE);
+		//JResponse::setHeader ('Content-Disposition', 'attachment;filename="recalculate.json"', TRUE);
 		JResponse::sendHeaders ();
 		echo json_encode ($priceFormated);
 		jexit ();
@@ -323,7 +345,6 @@ class VirtueMartControllerProductdetails extends JController {
 	public function getJsonChild () {
 
 		$view = $this->getView ('productdetails', 'json');
-
 		$view->display (NULL);
 	}
 
@@ -331,34 +352,47 @@ class VirtueMartControllerProductdetails extends JController {
 	 * Notify customer
 	 *
 	 * @author Seyi Awofadeju
-	 *
 	 */
 	public function notifycustomer () {
 
-		$data = JRequest::get ('post');
+		$data = vRequest::getPost();
 
 		$model = VmModel::getModel ('waitinglist');
 		if (!$model->adduser ($data)) {
-			$errors = $model->getErrors ();
-			foreach ($errors as $error) {
-				$msg = ($error) . '<br />';
-			}
-			$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&view=productdetails&layout=notify&virtuemart_product_id=' . $data['virtuemart_product_id']), $msg);
+			$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&view=productdetails&layout=notify&virtuemart_product_id=' . $data['virtuemart_product_id'], FALSE), $msg);
 		} else {
-			$msg = JText::sprintf ('COM_VIRTUEMART_STRING_SAVED', JText::_ ('COM_VIRTUEMART_CART_NOTIFY'));
-			$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id=' . $data['virtuemart_product_id']), $msg);
+			$msg = vmText::sprintf ('COM_VIRTUEMART_STRING_SAVED', vmText::_ ('COM_VIRTUEMART_CART_NOTIFY'));
+			$this->setRedirect (JRoute::_ ('index.php?option=com_virtuemart&view=productdetails&virtuemart_product_id=' . $data['virtuemart_product_id'], FALSE), $msg);
 		}
 
 	}
-	/*
+
+	/**
 	 * Send an email to all shoppers who bought a product
 	 */
-
 	public function sentProductEmailToShoppers () {
 
 		$model = VmModel::getModel ('product');
 	    $model->sentProductEmailToShoppers ();
+	}
 
+	/**
+	 * View email layout on browser
+	 */
+	function viewRecommendMail(){
+
+		$view = $this->getView('recommend', 'html');
+		$viewLayout = vRequest::getCmd('layout', 'mail_html');
+		$view->setLayout($viewLayout);
+		$view->display();
+	}
+
+	function viewAskQuestionMail(){
+
+		$view = $this->getView('askquestion', 'html');
+		$viewLayout = vRequest::getCmd('layout', 'mail_confirmed');
+		$view->setLayout($viewLayout);
+		$view->display();
 	}
 
 }

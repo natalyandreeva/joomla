@@ -21,7 +21,7 @@ defined('_JEXEC') or die('Restricted access');
 
 ?>
 
-<div class="vendor-details-view">
+<div class="vendor-details-view vendor-details-view-contact">
 	<h1><?php echo $this->vendor->vendor_store_name;
 	if (!empty($this->vendor->images[0])) { ?>
 		<div class="vendor-image">
@@ -33,15 +33,14 @@ defined('_JEXEC') or die('Restricted access');
 
 <?php
 
-	if(!class_exists('ShopFunctions')) require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'shopfunctions.php');
-	echo shopFunctions::renderVendorAddress($this->vendor->virtuemart_vendor_id);
+	echo shopFunctionsF::renderVendorAddress($this->vendor->virtuemart_vendor_id);
 
 /*	foreach($this->userFields as $userfields){
 
 		foreach($userfields['fields'] as $item){
 			if(!empty($item['value'])){
 				if($item['name']==='agreed'){
-					$item['value'] =  ($item['value']===0) ? JText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_NO'):JText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_YES');
+					$item['value'] =  ($item['value']===0) ? vmText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_NO'):vmText::_('COM_VIRTUEMART_USER_FORM_BILLTO_TOS_YES');
 				}
 			?><!-- span class="titles"><?php echo $item['title'] ?></span -->
 						<span class="values vm2<?php echo '-'.$item['name'] ?>" ><?php echo $this->escape($item['value']) ?></span>
@@ -57,8 +56,7 @@ defined('_JEXEC') or die('Restricted access');
 	$min = VmConfig::get('asks_minimum_comment_length', 50);
 	$max = VmConfig::get('asks_maximum_comment_length', 2000) ;
 	vmJsApi::JvalideForm();
-	$document = JFactory::getDocument();
-	$document->addScriptDeclaration('
+	vmJsApi::addJScript('askform', '
 		jQuery(function($){
 				$("#askform").validationEngine("attach");
 				$("#comment").keyup( function () {
@@ -69,7 +67,7 @@ defined('_JEXEC') or die('Restricted access');
 	');
 ?>
 
-		<h3><?php echo JText::_('COM_VIRTUEMART_VENDOR_ASK_QUESTION')  ?></h3>
+		<h3><?php echo vmText::_('COM_VIRTUEMART_VENDOR_ASK_QUESTION')  ?></h3>
 
 		<div class="clear"></div>
 
@@ -77,23 +75,23 @@ defined('_JEXEC') or die('Restricted access');
 
 			<form method="post" class="form-validate" action="<?php echo JRoute::_('index.php') ; ?>" name="askform" id="askform">
 
-				<label><?php echo JText::_('COM_VIRTUEMART_USER_FORM_NAME')  ?> : <input type="text" class="validate[required,minSize[4],maxSize[64]]" value="<?php echo $this->user->name ?>" name="name" id="name" size="30"  validation="required name"/></label>
+				<label><?php echo vmText::_('COM_VIRTUEMART_USER_FORM_NAME')  ?> : <input type="text" class="validate[required,minSize[4],maxSize[64]]" value="<?php echo $this->user->name ?>" name="name" id="name" size="30"  validation="required name"/></label>
 				<br />
-				<label><?php echo JText::_('COM_VIRTUEMART_USER_FORM_EMAIL')  ?> : <input type="text" class="validate[required,custom[email]]" value="<?php echo $this->user->email ?>" name="email" id="email" size="30"  validation="required email"/></label>
+				<label><?php echo vmText::_('COM_VIRTUEMART_USER_FORM_EMAIL')  ?> : <input type="text" class="validate[required,custom[email]]" value="<?php echo $this->user->email ?>" name="email" id="email" size="30"  validation="required email"/></label>
 				<br/>
 				<label>
 					<?php
-					$ask_comment = JText::sprintf('COM_VIRTUEMART_ASK_COMMENT', $min, $max);
+					$ask_comment = vmText::sprintf('COM_VIRTUEMART_ASK_COMMENT', $min, $max);
 					echo $ask_comment;
 					?>
 					<br />
 					<textarea title="<?php echo $ask_comment ?>" class="validate[required,minSize[<?php echo $min ?>],maxSize[<?php echo $max ?>]] field" id="comment" name="comment" cols="30" rows="10"></textarea>
 				</label>
 				<div class="submit">
-					<input class="highlight-button" type="submit" name="submit_ask" title="<?php echo JText::_('COM_VIRTUEMART_ASK_SUBMIT')  ?>" value="<?php echo JText::_('COM_VIRTUEMART_ASK_SUBMIT')  ?>" />
+					<input class="highlight-button" type="submit" name="submit_ask" title="<?php echo vmText::_('COM_VIRTUEMART_ASK_SUBMIT')  ?>" value="<?php echo vmText::_('COM_VIRTUEMART_ASK_SUBMIT')  ?>" />
 
 					<div class="width50 floatright right paddingtop">
-						<?php echo JText::_('COM_VIRTUEMART_ASK_COUNT')  ?>
+						<?php echo vmText::_('COM_VIRTUEMART_ASK_COUNT')  ?>
 						<input type="text" value="0" size="4" class="counter" id="counter" name="counter" maxlength="4" readonly="readonly" />
 					</div>
 				</div>
@@ -102,7 +100,7 @@ defined('_JEXEC') or die('Restricted access');
 				<input type="hidden" name="virtuemart_vendor_id" value="<?php echo $this->vendor->virtuemart_vendor_id ?>" />
 				<input type="hidden" name="option" value="com_virtuemart" />
 				<input type="hidden" name="task" value="mailAskquestion" />
-				<?php echo JHTML::_( 'form.token' ); ?>
+				<?php echo JHtml::_( 'form.token' ); ?>
 			</form>
 
 		</div>

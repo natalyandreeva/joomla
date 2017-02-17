@@ -7,25 +7,25 @@
  * @subpackage Media
  * @author Max Milbers
  * @link http://www.virtuemart.net
- * @copyright Copyright (c) 2004 - 2010 VirtueMart Team. All rights reserved.
+ * @copyright Copyright (c) 2004 - 2014 VirtueMart Team. All rights reserved.
  * @license http://www.gnu.org/copyleft/gpl.html GNU/GPL, see LICENSE.php
  * VirtueMart is free software. This version may have been modified pursuant
  * to the GNU General Public License, and as distributed it includes or
  * is derivative of works licensed under the GNU General Public License or
  * other free or open source software licenses.
- * @version $Id: medias.php 6468 2012-09-18 22:00:43Z Milbo $
+ * @version $Id: medias.php 8656 2015-01-16 16:37:05Z kkmediaproduction $
  */
 
 // Check to ensure this file is included in Joomla!
 defined ('_JEXEC') or die('Restricted access');
 
 if (!class_exists ('VmTable')) {
-	require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmtable.php');
+	require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmtable.php');
 }
 
 /**
  * Media table class
- * The class is is used to manage the countries in the shop.
+ * The class is is used to manage the media in the shop.
  *
  * @author Max Milbers
  * @package        VirtueMart
@@ -42,18 +42,18 @@ class TableMedias extends VmTable {
 	var $file_description = '';
 	/** @var string File Meta or alt  */
 	var $file_meta = '';
+	/** @var string File Class  */
+	var $file_class = '';
 
 	/** @var string File mime type */
 	var $file_mimetype = '';
 	/** @var string File typ, this determines where a media is stored */
 	var $file_type = '';
-	/** @var string File URL */
+
 	var $file_url = '';
 	var $file_url_thumb = '';
 
-	/** @var int File published or not */
 	var $published = 0;
-	/** @var int File is an image or other */
 	var $file_is_downloadable = 0;
 	var $file_is_forSale = 0;
 	var $file_is_product_image = 0;
@@ -61,10 +61,11 @@ class TableMedias extends VmTable {
 
 	var $shared = 0;
 	var $file_params = '';
+	var $file_lang = '';
 
 	/**
 	 * @author Max Milbers
-	 * @param $db A database connector object
+	 * @param JDataBase $db
 	 */
 	function __construct (&$db) {
 
@@ -78,11 +79,7 @@ class TableMedias extends VmTable {
 
 	}
 
-	/**
-	 *
-	 * @author Max Milbers
-	 * @return boolean True if the table buffer is contains valid data, false otherwise.
-	 */
+
 	function check () {
 
 		$ok = TRUE;
@@ -90,28 +87,26 @@ class TableMedias extends VmTable {
 
 		if (empty($this->file_type) and empty($this->file_is_forSale)) {
 			$ok = FALSE;
-			vmError (JText::sprintf ('COM_VIRTUEMART_MEDIA_NO_TYPE'), $this->file_name);
+			vmError (vmText::sprintf ('COM_VIRTUEMART_MEDIA_NO_TYPE'), $this->file_name);
 		}
 
 		if (!empty($this->file_url)) {
 			if (function_exists ('mb_strlen')) {
-				if (mb_strlen ($this->file_url) > 254) {
-					vmError (JText::sprintf ('COM_VIRTUEMART_URL_TOO_LONG', mb_strlen ($this->file_url)));
-				}
+				$length = mb_strlen ($this->file_url);
+			} else {
+				$length = strlen ($this->file_url);
 			}
-			else {
-				if (strlen ($this->file_url) > 254) {
-					vmError (JText::sprintf ('COM_VIRTUEMART_URL_TOO_LONG', strlen ($this->file_url)));
-				}
+			if($length>254){
+				vmError (JText::sprintf ('COM_VIRTUEMART_URL_TOO_LONG', $length));
 			}
 
 			if (strpos ($this->file_url, '..') !== FALSE) {
 				$ok = FALSE;
-				vmError (JText::sprintf ('COM_VIRTUEMART_URL_NOT_VALID', $this->file_url));
+				vmError (vmText::sprintf ('COM_VIRTUEMART_URL_NOT_VALID', $this->file_url));
 			}
 
 			if (empty($this->virtuemart_media_id)) {
-				$q = 'SELECT `virtuemart_media_id`,`file_url` FROM `' . $this->_tbl . '` WHERE `file_url` = "' . $this->_db->getEscaped ($this->file_url) . '" ';
+				$q = 'SELECT `virtuemart_media_id`,`file_url` FROM `' . $this->_tbl . '` WHERE `file_url` = "' . $this->_db->escape ($this->file_url) . '" ';
 				$this->_db->setQuery ($q);
 				$unique_id = $this->_db->loadAssocList ();
 
@@ -123,13 +118,13 @@ class TableMedias extends VmTable {
 							$this->virtuemart_media_id = $unique_id[0]['virtuemart_media_id'];
 						}
 						else {
-							vmError (JText::_ ('COM_VIRTUEMART_MEDIA_IS_ALREADY_IN_DB'));
+							vmError (vmText::_ ('COM_VIRTUEMART_MEDIA_IS_ALREADY_IN_DB'));
 							$ok = FALSE;
 						}
 					}
 					else {
-						//      			vmError(JText::_('COM_VIRTUEMART_MEDIA_IS_DOUBLED_IN_DB'));
-						vmError (JText::_ ('COM_VIRTUEMART_MEDIA_IS_DOUBLED_IN_DB'));
+						//      			vmError(vmText::_('COM_VIRTUEMART_MEDIA_IS_DOUBLED_IN_DB'));
+						vmError (vmText::_ ('COM_VIRTUEMART_MEDIA_IS_DOUBLED_IN_DB'));
 						$ok = FALSE;
 					}
 				}
@@ -137,7 +132,7 @@ class TableMedias extends VmTable {
 
 		}
 		else {
-			vmError (JText::_ ('COM_VIRTUEMART_MEDIA_MUST_HAVE_URL'));
+			vmError (vmText::_ ('COM_VIRTUEMART_MEDIA_MUST_HAVE_URL'));
 			$ok = FALSE;
 		}
 
@@ -147,11 +142,11 @@ class TableMedias extends VmTable {
 
 		if (!empty($this->file_title)) {
 			if (strlen ($this->file_title) > 126) {
-				vmError (JText::sprintf ('COM_VIRTUEMART_TITLE_TOO_LONG', strlen ($this->file_title)));
+				vmError (vmText::sprintf ('COM_VIRTUEMART_TITLE_TOO_LONG', strlen ($this->file_title)));
 			}
 
 			$q = 'SELECT * FROM `' . $this->_tbl . '` ';
-			$q .= 'WHERE `file_title`="' . $this->_db->getEscaped ($this->file_title) . '" AND `file_type`="' . $this->_db->getEscaped ($this->file_type) . '"';
+			$q .= 'WHERE `file_title`="' . $this->_db->escape ($this->file_title) . '" AND `file_type`="' . $this->_db->escape ($this->file_type) . '"';
 			$this->_db->setQuery ($q);
 			$unique_id = $this->_db->loadAssocList ();
 
@@ -173,13 +168,13 @@ class TableMedias extends VmTable {
 			}
 		}
 		else {
-			vmError (JText::_ ('COM_VIRTUEMART_MEDIA_MUST_HAVE_TITLE'));
+			vmError (vmText::_ ('COM_VIRTUEMART_MEDIA_MUST_HAVE_TITLE'));
 			$ok = FALSE;
 		}
 
 		if (!empty($this->file_description)) {
 			if (strlen ($this->file_description) > 254) {
-				vmError (JText::sprintf ('COM_VIRTUEMART_DESCRIPTION_TOO_LONG', strlen ($this->file_description)));
+				vmError (vmText::sprintf ('COM_VIRTUEMART_DESCRIPTION_TOO_LONG', strlen ($this->file_description)));
 			}
 		}
 
@@ -234,7 +229,7 @@ class TableMedias extends VmTable {
 			}
 			else {*/
 				if (!class_exists ('JFile')) {
-					require(JPATH_VM_LIBRARIES . DS . 'joomla' . DS . 'filesystem' . DS . 'file.php');
+					require(VMPATH_LIBS . DS . 'joomla' . DS . 'filesystem' . DS . 'file.php');
 				}
 
 				if (!$this->file_is_forSale) {
@@ -249,7 +244,7 @@ class TableMedias extends VmTable {
 				}
 
 				if (empty($name)) {
-					vmError (JText::_ ('COM_VIRTUEMART_NO_MEDIA'));
+					vmError (vmText::_ ('COM_VIRTUEMART_NO_MEDIA'));
 				}
 
 				//images
@@ -263,7 +258,7 @@ class TableMedias extends VmTable {
 					$this->file_mimetype = 'image/png';
 				}
 				elseif($file_extension === 'bmp'){
-					vmInfo(JText::sprintf('COM_VIRTUEMART_MEDIA_SHOULD_NOT_BMP',$name));
+					vmInfo(vmText::sprintf('COM_VIRTUEMART_MEDIA_SHOULD_NOT_BMP',$name));
 					$notice = true;
 				}
 
@@ -363,10 +358,20 @@ class TableMedias extends VmTable {
 				}
 
 				else {
-					vmInfo (JText::sprintf ('COM_VIRTUEMART_MEDIA_SHOULD_HAVE_MIMETYPE', $name));
+					vmInfo (vmText::sprintf ('COM_VIRTUEMART_MEDIA_SHOULD_HAVE_MIMETYPE', $name));
 					$notice = TRUE;
 				}
 			//}
+		}
+
+		//Nasty small hack, should work as long the word for default is in the language longer than 3 words and the first
+		//letter should be always / or something like this
+		//It prevents storing of the default path
+		$a = trim(substr($this->file_url_thumb,0,4));
+		$b = trim(substr(vmText::_('COM_VIRTUEMART_DEFAULT_URL'),0,4));
+
+		if( strpos($a,$b)!==FALSE ){
+			$this->file_url_thumb = null;
 		}
 
 		if ($ok) {

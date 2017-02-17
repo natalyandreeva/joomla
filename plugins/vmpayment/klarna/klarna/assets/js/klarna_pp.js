@@ -1,4 +1,3 @@
-
 jQuery(function () {
     // unbind click to prevent duplicate click functions in case of more
     // than one pp box
