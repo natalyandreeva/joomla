@@ -49,12 +49,12 @@ class JaextmanagerControllerFile extends JaextmanagerController
 		$file['name'] = JFile::makeSafe($file['name']);
 		
 		if (isset($file['name'])) {
-			$filepath = JPath::clean(JA_WORKING_DATA_FOLDER . DS . $folder . DS . strtolower($file['name']));
+			$filepath = JPath::clean(JA_WORKING_DATA_FOLDER .'/'. $folder .'/'. strtolower($file['name']));
 			
 			if (!RepoHelper::canUpload($file, $err)) {
 				if ($format == 'json') {
 					jimport('joomla.error.log');
-					$log = &JLog::getInstance('upload.error.php');
+					$log = JLog::getInstance('upload.error.php');
 					$log->addEntry(array('comment' => 'Invalid: ' . $filepath . ': ' . $err));
 					header('HTTP/1.0 415 Unsupported Media Type');
 					jexit('Error. Unsupported Media Type!');
@@ -71,7 +71,7 @@ class JaextmanagerControllerFile extends JaextmanagerController
 			if (JFile::exists($filepath)) {
 				if ($format == 'json') {
 					jimport('joomla.error.log');
-					$log = &JLog::getInstance('upload.error.php');
+					$log = JLog::getInstance('upload.error.php');
 					$log->addEntry(array('comment' => 'File already exists: ' . $filepath));
 					header('HTTP/1.0 409 Conflict');
 					jexit('Error. File already exists');
@@ -88,7 +88,7 @@ class JaextmanagerControllerFile extends JaextmanagerController
 			if (!JFile::upload($file['tmp_name'], $filepath)) {
 				if ($format == 'json') {
 					jimport('joomla.error.log');
-					$log = &JLog::getInstance('upload.error.php');
+					$log = JLog::getInstance('upload.error.php');
 					$log->addEntry(array('comment' => 'Cannot upload: ' . $filepath));
 					header('HTTP/1.0 400 Bad Request');
 					jexit('Error. Unable to upload file');
@@ -103,7 +103,7 @@ class JaextmanagerControllerFile extends JaextmanagerController
 			} else {
 				if ($format == 'json') {
 					jimport('joomla.error.log');
-					$log = &JLog::getInstance();
+					$log = JLog::getInstance();
 					$log->addEntry(array('comment' => $folder));
 					jexit('Upload complete');
 				} else {
@@ -153,7 +153,7 @@ class JaextmanagerControllerFile extends JaextmanagerController
 					continue;
 				}
 				
-				$fullPath = JPath::clean(JA_WORKING_DATA_FOLDER . DS . $folder . DS . $path);
+				$fullPath = JPath::clean(JA_WORKING_DATA_FOLDER .'/'. $folder .'/'. $path);
 				if (JFile::exists($fullPath)) {
 					$ret |= !JFile::delete($fullPath);
 				} else if (JFolder::exists($fullPath)) {
@@ -182,9 +182,9 @@ class JaextmanagerControllerFile extends JaextmanagerController
 		}
 		if ($tmpl == 'component') {
 			// We are inside the iframe
-			$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $folder . '&tmpl=component');
+			$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $folder . '&tmpl=component');
 		} else {
-			$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $folder);
+			$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $folder);
 		}
 	}
 
@@ -210,7 +210,7 @@ class JaextmanagerControllerFile extends JaextmanagerController
 		
 		if (count($paths)) {
 			foreach ($paths as $path) {
-				$fullPath = JPath::clean(JA_WORKING_DATA_FOLDER . DS . $folder . DS . $path);
+				$fullPath = JPath::clean(JA_WORKING_DATA_FOLDER .'/'. $folder .'/'. $path);
 				if (JFile::exists($fullPath) && JFile::getExt($fullPath) == 'zip') {
 					// Set headers
 					header("Cache-Control: public");
@@ -226,9 +226,9 @@ class JaextmanagerControllerFile extends JaextmanagerController
 		}
 		if ($tmpl == 'component') {
 			// We are inside the iframe
-			$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $folder . '&tmpl=component');
+			$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $folder . '&tmpl=component');
 		} else {
-			$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $folder);
+			$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $folder);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -40,8 +40,8 @@ class JaextmanagerControllerServices extends JaextmanagerController
 				JToolBarHelper::cancel();
 				break;
 			default:
-				JToolBarHelper::addNew();
-				JToolBarHelper::deleteList();
+				// JToolBarHelper::addNew();
+				// JToolBarHelper::deleteList();
 				JToolBarHelper::makeDefault('publish');
 				break;
 		}
@@ -53,7 +53,7 @@ class JaextmanagerControllerServices extends JaextmanagerController
 	}
 
 
-	function display()
+	function display($cachable = false, $urlparams = false)
 	{
 		
 		$user = JFactory::getUser();
@@ -81,7 +81,7 @@ class JaextmanagerControllerServices extends JaextmanagerController
 
 	function cancel()
 	{
-		$this->setRedirect('index.php?option=' . JACOMPONENT . '&view=services');
+		$this->setRedirect('index.php?option=com_jaextmanager&view=services');
 		
 		return TRUE;
 	}
@@ -97,7 +97,7 @@ class JaextmanagerControllerServices extends JaextmanagerController
 	{
 		$task = $this->getTask();
 		
-		$model = & $this->getModel('services');
+		$model = $this->getModel('services');
 		$post = JRequest::get('post');
 		
 		$post['ws_name'] = JRequest::getString('ws_name', '');
@@ -124,79 +124,90 @@ class JaextmanagerControllerServices extends JaextmanagerController
 	 */
 	function saveIFrame()
 	{
-		global $jauc;
-		
-		$post = JRequest::get('request', JREQUEST_ALLOWHTML);
-		$number = $post['number'];
+		$input = JFactory::getApplication()->input;
 		$errors = array();
-		$row = $this->save($errors);
-		
-		$helper = new JAFormHelpers();
-		
-		if (isset($row->id)) {
-			$result = true;
-			if ($row->ws_mode == 'remote') {
-				$model = & $this->getModel('services');
-				$row2 = $model->getRow2($row->id);
-				$service = new stdClass();
-				$service->ws_uri = $row2->ws_uri;
-				$service->ws_user = $row2->ws_user;
-				$service->ws_pass = $row2->ws_pass;
-				
-				//authenticate service account
-				if ($jauc->authUser($service) == 0) {
-					$result = false;
-					if (!empty($service->ws_user)) {
-						$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(1, JText::_("WRONG_USERNAME_AND_PASSWORD_LOGIN_FAILED_PLEASE_TRY_AGAIN")));
-					} else {
-						$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(0, JText::_("YOU_ARE_LOGGED_IN_AS_ANONYMOUS_USER")));
-					}
-				}
-			}
-			
-			if ($result) {
-				$id = $row->id;
-				$model = & $this->getModel('services');
-				
-				$listItems = $model->getList(" AND t.id = '{$id}' ", "t.ws_name ASC", 0, 1);
-				$item = $listItems[0];
-				
-				/*$reload = 0;
-				 if($post['id']=='0'){
-					$reload = 1;
-					}*/
-				$reload = 1;
-				$objects[] = $helper->parseProperty("reload", "#reload" . $item->id, $reload);
-				$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(0, JText::_("SAVE_DATA_SUCCESSFULLY")));
-				
-				if (!$reload) {
-					$objects[] = $helper->parseProperty("html", "#ws_name" . $item->id, $item->ws_name);
-					$objects[] = $helper->parseProperty("html", "#ws_mode" . $item->id, $item->ws_mode);
-					$objects[] = $helper->parseProperty("html", "#ws_uri" . $item->id, $item->ws_uri);
-					$objects[] = $helper->parseProperty("html", "#ws_user" . $item->id, $item->ws_user);
-					$objects[] = $helper->parseProperty("html", "#ws_pass" . $item->id, $item->ws_pass);
-					
-					$objects[] = $helper->parsePropertyPublish("html", "#default" . $item->id, $item->ws_default, $number);
-				}
-			}
+		if ($input->get('id')) {
+			$row = $this->save($errors);
+			$input->def('sid', $row->id);
+			$this->status();
 		} else {
-			$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(1, $errors));
+			$this->addService();
 		}
 		
-		$data = "({'data':[";
 		
-		$data .= $helper->parse_JSON($objects);
-		
-		$data .= "]})";
-		
-		echo '
-		<script type="text/javascript">
-			jaFormHideIFrame();
-			parseData_admin(' . $data . ');
-		</script>
-		';
-		/*echo $data;
-		 exit ();*/
+//		global $jauc;
+//		
+//		$post = JRequest::get('request', JREQUEST_ALLOWHTML);
+//		$number = $post['number'];
+//		$errors = array();
+//		$row = $this->save($errors);
+//		
+//		$helper = new JAFormHelpers();
+//		
+//		if (isset($row->id)) {
+//			$result = true;
+//			if ($row->ws_mode == 'remote') {
+//				$model = $this->getModel('services');
+//				$row2 = $model->getRow2($row->id);
+//				$service = new stdClass();
+//				$service->ws_uri = $row2->ws_uri;
+//				$service->ws_user = $row2->ws_user;
+//				$service->ws_pass = $row2->ws_pass;
+//				
+//				//authenticate service account
+//				if ($jauc->authUser($service) == 0) {
+//					$result = false;
+//					if (!empty($service->ws_user)) {
+//						$objects[] = $helper->parseProperty("html", "#system-message-container", $helper->message(1, JText::_("WRONG_USERNAME_AND_PASSWORD_LOGIN_FAILED_PLEASE_TRY_AGAIN")));
+//					} else {
+//						$objects[] = $helper->parseProperty("html", "#system-message-container", $helper->message(0, JText::_("YOU_ARE_LOGGED_IN_AS_ANONYMOUS_USER")));
+//					}
+//				}
+//			}
+//			
+//			if ($result) {
+//				$id = $row->id;
+//				$model = $this->getModel('services');
+//				
+//				$listItems = $model->getList(" AND t.id = '{$id}' ", "t.ws_name ASC", 0, 1);
+//				$item = $listItems[0];
+//				
+//				/*$reload = 0;
+//				 if($post['id']=='0'){
+//					$reload = 1;
+//					}*/
+//				$reload = 1;
+//				$objects[] = $helper->parseProperty("reload", "#reload" . $item->id, $reload);
+//				$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(0, JText::_("SAVE_DATA_SUCCESSFULLY")));
+//				
+//				if (!$reload) {
+//					$objects[] = $helper->parseProperty("html", "#ws_name" . $item->id, $item->ws_name);
+//					$objects[] = $helper->parseProperty("html", "#ws_mode" . $item->id, $item->ws_mode);
+//					$objects[] = $helper->parseProperty("html", "#ws_uri" . $item->id, $item->ws_uri);
+//					$objects[] = $helper->parseProperty("html", "#ws_user" . $item->id, $item->ws_user);
+//					$objects[] = $helper->parseProperty("html", "#ws_pass" . $item->id, $item->ws_pass);
+//					
+//					$objects[] = $helper->parsePropertyPublish("html", "#default" . $item->id, $item->ws_default, $number);
+//				}
+//			}
+//		} else {
+//			$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(1, $errors));
+//		}
+//		
+//		$data = "({'data':[";
+//		
+//		$data .= $helper->parse_JSON($objects);
+//		
+//		$data .= "]})";
+//		
+//		echo '
+//		<script type="text/javascript">
+//			jaFormHideIFrame();
+//			parseData_admin(' . $data . ');
+//		</script>
+//		';
+//		/*echo $data;
+//		 exit ();*/
 	}
 
 
@@ -213,7 +224,7 @@ class JaextmanagerControllerServices extends JaextmanagerController
 				$backUrl = urldecode($backUrl);
 				$this->setRedirect($backUrl);
 			} else {
-				$this->setRedirect('index.php?option=' . JACOMPONENT . '&view=services');
+				$this->setRedirect('index.php?option=com_jaextmanager&view=services');
 			}
 		}
 	}
@@ -228,7 +239,7 @@ class JaextmanagerControllerServices extends JaextmanagerController
 		} else {
 			$msg = JText::_('SAVE_DATA_SUCCESSFULLY');
 		}
-		$this->setRedirect('index.php?option=' . JACOMPONENT . '&view=services', $msg);
+		$this->setRedirect('index.php?option=com_jaextmanager&view=services', $msg);
 	}
 
 
@@ -246,7 +257,7 @@ class JaextmanagerControllerServices extends JaextmanagerController
 		} else {
 			$msg = JText::_('SAVE_DATA_SUCCESSFULLY');
 		}
-		$link = 'index.php?option=' . JACOMPONENT . '&view=services';
+		$link = 'index.php?option=com_jaextmanager&view=services';
 		if ($createdate)
 			$link .= "&createdate=" . $createdate;
 		$this->setRedirect($link, $msg);
@@ -271,7 +282,66 @@ class JaextmanagerControllerServices extends JaextmanagerController
 			JError::raiseWarning(1001, JText::_('ERROR_OCCURRED_UNABLE_TO_DELETE_THE_ITEMS_WITH_ID') . ': ' . " [$err]");
 		} else
 			$msg = JText::_("DELETE_DATA_SUCCESSFULLY");
-		$this->setRedirect('index.php?option=' . JACOMPONENT . '&view=services', $msg);
+		$this->setRedirect('index.php?option=com_jaextmanager&view=services', $msg);
 	}
+	
+	/**
+	 * Get login status
+	 */
+	
+	function status() {
+		global $jauc;
+		$input = JFactory::getApplication()->input;
+		$sid = $input->get('sid', 0);
+		$result = new stdClass();
+		$result->sid = $sid;
+		$result->status = 0;
+		$result->msg = 'WRONG_USERNAME_AND_PASSWORD_LOGIN_FAILED_PLEASE_TRY_AGAIN';
+		
+		if (!empty($sid)) {
+			$model = $this->getModel('services');
+			$row2 = $model->getRow2($sid);
+			$service = new stdClass();
+			$service->ws_uri = $row2->ws_uri;
+			$service->ws_user = $row2->ws_user;
+			$service->ws_pass = $row2->ws_pass;
+			$response = $jauc->getLoginStatus($service);
+
+			//authenticate service account
+			if ($row2->ws_mode == 'local' || (!empty($response) && $response->response)) {
+				$result->status = 1;
+				$result->msg = 'YOUR_SETTING_IS_SUCCESSFULLY_SAVED';
+			}
+		}
+		
+		echo json_encode($result);
+		die;
+	}
+	
+	function addService() {
+		$app = JFactory::getApplication();
+		$input = $app->input;
+		$result = new stdClass();
+		$service = new stdClass();
+		$service->ws_uri = $input->getString('ws_uri');
+		$service->ws_user = $input->getString('ws_user');
+		$service->ws_pass = base64_encode($input->getString('ws_pass'));
+		
+		global $jauc;
+		$response = $jauc->getLoginStatus($service);
+		if ((!empty($response) && $response->response)) {
+			$this->save();
+			// added successfully
+			$result->status = 2;
+			$result->msg = 'NEW_SERVICE_SUCCESSFULLY_ADDED';
+		} else {
+			// added failed, check login info
+			$result->status = 3;
+			$result->msg = 'WRONG_USERNAME_AND_PASSWORD_LOGIN_FAILED_PLEASE_TRY_AGAIN';
+		}
+		
+		echo json_encode($result);
+		die;
+	}
+
 }
-?>

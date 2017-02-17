@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -44,7 +44,7 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 	/**
 	 * Display the list of import bills
 	 */
-	function display()
+	function display($cachable = false, $urlparams = false)
 	{
 		parent::display();
 	}
@@ -80,7 +80,7 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 	 */
 	function checkSettings()
 	{
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$params = $model->getComponentParams();
 		
 		$errors = "";
@@ -115,7 +115,7 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 		}
 		
 		$message = '';
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$version = $model->doUpgrade();
 		if ($version === false) {
 			$message = JText::_("UPGRADE_FAILURED");
@@ -288,13 +288,13 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 	 */
 	function configService()
 	{
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		
 		$data = JRequest::getVar('params', array());
 		$param = $model->storeComponentParams($data);
 		
 		$msg = JText::_('YOUR_SETTING_IS_SUCCESSFULLY_SAVED');
-		$this->setRedirect("index.php?option=" . JACOMPONENT . "&view=default&layout=" . JRequest::getVar("layout"), $msg);
+		$this->setRedirect("index.php?option=com_jaextmanager&view=default&layout=" . JRequest::getVar("layout"), $msg);
 	}
 
 
@@ -306,7 +306,7 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 		$param = $model->storeComponentParams($data);
 		//
 		$msg = JText::_('YOUR_SETTING_IS_SUCCESSFULLY_SAVED');
-		$this->setRedirect("index.php?option=" . JACOMPONENT . "&view=default&layout=" . JRequest::getVar("layout"), $msg);
+		$this->setRedirect("index.php?option=com_jaextmanager&view=default&layout=" . JRequest::getVar("layout"), $msg);
 	}
 
 
@@ -317,7 +317,7 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 	 */
 	function configExtensions()
 	{
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		
 		$data = JRequest::getVar('params', array());
 		$result = $model->storeExtensionSettings($data);
@@ -328,22 +328,24 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 		if ($result !== false) {
 			$reload = 0;
 			$number = 0;
-			$objects[] = $helper->parseProperty("reload", "#reload", $reload);
+			
 			if (!$reload) {
-				$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(0, JText::_('YOUR_SETTING_IS_SUCCESSFULLY_SAVED', true)));
+				$objects[] = $helper->parseProperty("html", "#system-message-container", $helper->message(0, JText::_('YOUR_SETTING_IS_SUCCESSFULLY_SAVED', true)));
 				$serviceName = JRequest::getVar("service-name-" . $data[$pro->extId]);
 				$objects[] = $helper->parseProperty("html", "#config" . $pro->extId, $serviceName, $number);
 			}
+			
+			$objects[] = $helper->parseProperty("reload", "#reload", $reload);
 		
 		} else {
-			$objects[] = $helper->parseProperty("html", "#system-message", $helper->message(1, JText::_('YOUR_SETTING_IS_UNSUCCESSFULLY_SAVED', true)));
+			$objects[] = $helper->parseProperty("html", "#system-message-container", $helper->message(1, JText::_('YOUR_SETTING_IS_UNSUCCESSFULLY_SAVED', true)));
 		}
-		
-		$data = "({'data':[";
+		//var_dump($objects);
+		$data = '{"data":[';
 		
 		$data .= $helper->parse_JSON($objects);
 		
-		$data .= "]})";
+		$data .= "]}";
 		
 		echo $data;
 		exit();
@@ -373,7 +375,7 @@ class JaextmanagerControllerDefault extends JaextmanagerController
 				$msg = JText::_('YOUR_SETTING_IS_UNSUCCESSFULLY_SAVED');
 			}
 		}
-		$this->setRedirect("index.php?option=" . JACOMPONENT . "&view=default&extionsion_type=" . JRequest::getVar("extionsion_type") . "&search=" . JRequest::getVar("search"), $msg);
+		$this->setRedirect("index.php?option=com_jaextmanager&view=default&extionsion_type=" . JRequest::getVar("extionsion_type") . "&search=" . JRequest::getVar("search"), $msg);
 	}
 
 

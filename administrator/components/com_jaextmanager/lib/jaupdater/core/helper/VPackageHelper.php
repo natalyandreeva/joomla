@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -16,6 +16,8 @@ defined ( '_JEXEC' ) or die ( 'Restricted access' );
  * Visual package emulator
  *
  */
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 class VPackageHelper
 {
 	// Static variables using for decide error code
@@ -43,7 +45,7 @@ class VPackageHelper
 	 */
 	function import($class, $path = null, $stripExt = null)
 	{
-		$classPath = realpath(dirname(__FILE__) . DS . ".." . DS . "..");
+		$classPath = realpath(dirname(__FILE__) . "/../..");
 		$classPath = empty($path) ? $classPath : $path;
 		$className = $class;
 		
@@ -59,10 +61,10 @@ class VPackageHelper
 		if (strpos($className, '.') !== false && empty($path)) {
 			$pieces = explode('.', $className);
 			$className = array_pop($pieces);
-			$classPath = $classPath . DS . implode(DS, $pieces);
+			$classPath = $classPath.'/'.implode(DS, $pieces);
 		}
 		
-		$fullClassPath = $classPath . DS . $className . '.php';
+		$fullClassPath = $classPath.'/'.$className . '.php';
 		if (file_exists($fullClassPath)) {
 			require_once ($fullClassPath);
 			return 0;
@@ -120,7 +122,7 @@ class VPackageHelper
 				}
 				continue;
 			}
-			$fullPath = $path . DS . $entry;
+			$fullPath = $path.'/'.$entry;
 			if (VPackageHelper::debug()) {
 				echo "entry: $entry<br>";
 				echo "full path: $fullPath<br>";

@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,8 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' ); 
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 
 class jaExtUploaderPlugin extends JObject
 {
@@ -45,7 +46,7 @@ class jaExtUploaderPlugin extends JObject
 		
 
 		// Get a database connector object
-		$db = & $this->parent->getDBO();
+		$db = $this->parent->getDbo();
 		
 		// Get the extension manifest object
 		$this->manifest = $this->parent->getManifest();
@@ -76,10 +77,10 @@ class jaExtUploaderPlugin extends JObject
 		 * Backward Compatability
 		 * @todo Deprecate in future version
 		 */
-		$type = (string) $xml->attributes()->type;
-		
+		$type 	= (string) $xml->attributes()->type;
+		$pname 	= '';
 		// Set the installation path
-		if (count($xml->files->children())) {
+		if ($xml->files && count($xml->files->children())) {
 			foreach ($xml->files->children() as $file) {
 				if ((string) $file->attributes()->$type) {
 					$pname = (string) $file->attributes()->$type;
@@ -91,7 +92,7 @@ class jaExtUploaderPlugin extends JObject
 		
 		if ($jaProduct !== false) {
 			//path for install, we dont need it on upload to local reposiotry :)
-			//$this->parent->setPath('extension_root', JPATH_ROOT.DS.'plugins'.DS.$group);
+			//$this->parent->setPath('extension_root', JPATH_ROOT.'/plugins/'.$group);
 			$storePath = $jauc->getLocalVersionPath($jaProduct, false);
 			$this->parent->setPath('extension_root', $storePath);
 		} else {

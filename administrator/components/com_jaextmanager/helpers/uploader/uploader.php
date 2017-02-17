@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -166,7 +166,7 @@ class jaExtUploader extends JAdapter
 	 * @return	object	Database connector object
 	 * @since	1.5
 	 */
-	function &getDBO()
+	function getDbo()
 	{
 		return $this->_db;
 	}
@@ -248,11 +248,11 @@ class jaExtUploader extends JAdapter
 	 * @param (string) $name - name of extension type
 	 * @return (mixed)
 	 */
-	function getAdapter($name)
+	function getAdapter($name, $options = array())
 	{
 		if (!isset($this->_adapters[$name]) || !is_object($this->_adapters[$name])) {
 			//Try to get adapter
-			$file = dirname(__FILE__) . DS . 'adapters' . DS . strtolower($name) . '.php';
+			$file = dirname(__FILE__) . '/adapters/' . strtolower($name) . '.php';
 			if (!JFile::exists($file)) {
 				return false;
 			}
@@ -328,7 +328,7 @@ class jaExtUploader extends JAdapter
 		$type = (string) $manifest->attributes()->type;
 		$version = (string) $manifest->attributes()->version;
 		$rootName = (string) $manifest->name;
-		$config = &JFactory::getConfig();
+		$config = JFactory::getConfig();
 		
 		// Needed for legacy reasons ... to be deprecated in next minor release
 		if ($type == 'mambot') {
@@ -370,7 +370,8 @@ class jaExtUploader extends JAdapter
 		$name = (string) $manifest->name;
 		$coreVersion = jaGetCoreVersion($coreVersion, $pname);
 		$version = (string) $manifest->version;
-		$version = JFilterInput::clean($version, 'cmd');
+		$filter = JFilterInput::getInstance();
+		$version = $filter->clean($version, 'cmd');
 		
 		if (!empty($pname) && !empty($type)) {
 			
@@ -436,16 +437,16 @@ class jaExtUploader extends JAdapter
 		 * copying files.
 		 */
 		$folder = (string) $element->attributes()->folder;
-		if ($folder && file_exists($this->getPath('source') . DS . $folder)) {
-			$source = $this->getPath('source') . DS . $folder;
+		if ($folder && file_exists($this->getPath('source') . '/' . $folder)) {
+			$source = $this->getPath('source') . '/' . $folder;
 		} else {
 			$source = $this->getPath('source');
 		}
 		
 		// Process each file in the $files array (children of $tagName).
 		foreach ($element->children() as $file) {
-			$path['src'] = $source . DS . $file;
-			$path['dest'] = $destination . DS . $file;
+			$path['src'] = $source.'/'.$file;
+			$path['dest'] = $destination.'/'.$file;
 			
 			// Is this path a file or folder?
 			$path['type'] = ($file->getName() == 'folder') ? 'folder' : 'file';
@@ -660,17 +661,17 @@ class jaExtUploader extends JAdapter
 				} else {
 					$folder = '';
 				}
-				$source = $client->path . DS . 'media' . DS . $folder;
+				$source = $client->path.'/media/'.$folder;
 				break;
 			
 			case 'languages':
 				$lang_client = (string) $element->attributes()->client;
 				if ($lang_client) {
 					$client = JApplicationHelper::getClientInfo($lang_client, true);
-					$source = $client->path . DS . 'language';
+					$source = $client->path.'/language';
 				} else {
 					if ($client) {
-						$source = $client->path . DS . 'language';
+						$source = $client->path.'/language';
 					} else {
 						$source = '';
 					}
@@ -700,10 +701,10 @@ class jaExtUploader extends JAdapter
 			 */
 			if ($file->getName() == 'language' && (string) $file->attributes()->tag != '') {
 				if ($source) {
-					$path = $source . DS . $file->attributes()->tag . DS . basename((string) $file);
+					$path = $source.'/'.$file->attributes()->tag.'/'.basename((string) $file);
 				} else {
 					$target_client = JApplicationHelper::getClientInfo((string) $file->attributes()->client, true);
-					$path = $target_client->path . DS . 'language' . DS . $file->attributes()->tag . DS . basename((string) $file);
+					$path = $target_client->path.'/language/'.$file->attributes()->tag.'/'.basename((string) $file);
 				}
 				
 				// If the language folder is not present, then the core pack hasn't been installed... ignore
@@ -711,7 +712,7 @@ class jaExtUploader extends JAdapter
 					continue;
 				}
 			} else {
-				$path = $source . DS . $file;
+				$path = $source.'/'.$file;
 			}
 			
 			/*
@@ -755,10 +756,10 @@ class jaExtUploader extends JAdapter
 		
 		if ($client) {
 			$pathname = 'extension_' . $client->name;
-			$path['dest'] = $this->getPath($pathname) . DS . basename($this->getPath('manifest'));
+			$path['dest'] = $this->getPath($pathname).'/'.basename($this->getPath('manifest'));
 		} else {
 			$pathname = 'extension_root';
-			$path['dest'] = $this->getPath($pathname) . DS . basename($this->getPath('manifest'));
+			$path['dest'] = $this->getPath($pathname).'/'.basename($this->getPath('manifest'));
 		}
 		return $this->copyFiles(array($path), true);
 	}
@@ -885,6 +886,7 @@ class jaExtUploader extends JAdapter
 
 	function getResults()
 	{
+		$filter = JFilterInput::getInstance();
 		$result = "";
 		if (count($this->results) > 0) {
 			$result .= "
@@ -898,12 +900,13 @@ class jaExtUploader extends JAdapter
 		      </tr>";
 			foreach ($this->results as $item) {
 				$error = intval($item['error']);
+				
 				$ext = $item['ext'];
 				if (!$error) {
 					$css = "upload-success";
 					
 					$relLocation = substr($item['location'], strlen(JA_WORKING_DATA_FOLDER));
-					$relLocation = FileSystemHelper::clean($relLocation, "/");
+					$relLocation = $filter->clean($relLocation, "/");
 					$url = "index.php?option=com_jaextmanager&view=repo&folder={$relLocation}";
 					$linkRepo = " <a href=\"{$url}\" onclick=\"opener.location='{$url}'; return false;\" target=\"_parent\" title=\"" . addslashes($item['location']) . "\">" . JText::_("REPOSITORY") . "</a>";
 					
@@ -914,15 +917,20 @@ class jaExtUploader extends JAdapter
 					$css = "upload-error";
 					$message = $item["message"];
 				}
-				
-				$result .= "
-			      <tr class=\"" . $css . "\">
-			        <td class=\"icon\"> </td>
-			        <td><span title=\"" . $ext->extKey . "\">" . $ext->name . "</span></td>
-			        <td>" . $ext->type . "</td>
-			        <td>" . $ext->version . "</td>
-			        <td>" . $message . "</td>
-			      </tr>";
+				if($ext){
+					$extkey 	= $ext->extKey;
+					$extname	= $ext->name;
+					$exttype	= $ext->type;
+					$extversion = $ext->version;
+					$result .= "
+				      <tr class=\"" . $css . "\">
+				        <td class=\"icon\"> </td>
+				        <td><span title=\"" . $extkey . "\">" . $extname . "</span></td>
+				        <td>" . $exttype . "</td>
+				        <td>" . $extversion . "</td>
+				        <td>" . $message . "</td>
+				      </tr>";
+				}
 			}
 			$result .= "</table>";
 		}

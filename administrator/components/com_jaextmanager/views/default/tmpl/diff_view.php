@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -12,8 +12,6 @@
 
 //no direct access
 defined( '_JEXEC' ) or die( 'Retricted Access' );
-
-global $mainframe, $option, $jauc;
 
 $extID = $this->obj->extId;
 
@@ -59,8 +57,8 @@ jQuery(document).ready(function(){
 /*]]>*/
 </script>
 <form name="adminForm" id="adminForm" action="index.php" method="post">
-  <?php echo JHTML::_( 'form.token'); ?>
-  <input type="hidden" name="option" value="<?php echo JACOMPONENT; ?>" />
+  <?php echo JHtml::_( 'form.token'); ?>
+  <input type="hidden" name="option" value="com_jaextmanager" />
   <input type="hidden" name="view" value="<?php echo JRequest::getVar("view", "default")?>" />
   <input type="hidden" name="task" value="" />
   <input type="hidden" name="version" value="<?php echo JRequest::getVar("version")?>" />
@@ -70,9 +68,9 @@ jQuery(document).ready(function(){
     <?php echo $this->loadTemplate('message'); ?>
   <?php endif; ?>
   <!-- Include DTree 3rd party to show file tree view -->
-	<script language="javascript" src="components/<?php echo JACOMPONENT; ?>/assets/dtree/dtree.js"></script>
-	<link rel="stylesheet" href="components/<?php echo JACOMPONENT; ?>/assets/dtree/dtree.css" type="text/css" />
-  <link rel="stylesheet" type="text/css" src="components/<?php echo JACOMPONENT; ?>/assets/css/default.css"  />
+	<script language="javascript" src="components/com_jaextmanager/assets/dtree/dtree.js"></script>
+	<link rel="stylesheet" href="components/com_jaextmanager/assets/dtree/dtree.css" type="text/css" />
+  <link rel="stylesheet" type="text/css" src="components/com_jaextmanager/assets/css/default.css"  />
   
 <fieldset>
 <legend><?php echo JText::sprintf('FILE_COMPARISON_BETWEEN_S_VERSION_S_AND_S', $this->obj->name, $this->obj->version, $compareVersion); ?></legend>
@@ -85,55 +83,55 @@ jQuery(document).ready(function(){
               <div class="Item">
                 <div class="Desc">
                     <input name="file_type" type="checkbox" value="new" checked="checked" />&nbsp;
-                    <img src="components/<?php echo JACOMPONENT; ?>/assets/dtree/img/icon_new.gif" />&nbsp;
+                    <img src="components/com_jaextmanager/assets/dtree/img/icon_new.gif" />&nbsp;
                     <a href="#" id="diffview-status-new" title="" class="ja-tips-title"><?php echo JText::_('NEW_FILE_IN_NEW_VERSION')?></a>
                     </div>
               </div>
               <div class="Item">
                 <div class="Desc">
                 <input name="file_type" type="checkbox" value="bmodified" checked="checked" />&nbsp;
-                <img src="components/<?php echo JACOMPONENT; ?>/assets/dtree/img/icon_bmodified.gif" />&nbsp; 
+                <img src="components/com_jaextmanager/assets/dtree/img/icon_bmodified.gif" />&nbsp; 
                 <a href="#" id="diffview-status-bmodified" title="" class="ja-tips-title"><?php echo JText::_('CONFLICTED_FILES')?></a>
                 </div>
               </div>
               <div class="Item">
                 <div class="Desc">
                 <input name="file_type" type="checkbox" value="updated" checked="checked" />&nbsp;
-                <img src="components/<?php echo JACOMPONENT; ?>/assets/dtree/img/icon_updated.gif" />&nbsp; 
+                <img src="components/com_jaextmanager/assets/dtree/img/icon_updated.gif" />&nbsp; 
                 <a href="#" id="diffview-status-updated" title="" class="ja-tips-title"><?php echo JText::_('UPDATED_FILE_IN_NEW_VERSION')?></a>
                 </div>
               </div>
              <div class="Item">
                 <div class="Desc">
                 <input name="file_type" type="checkbox" value="removed" checked="checked" />&nbsp;
-                <img src="components/<?php echo JACOMPONENT; ?>/assets/dtree/img/icon_removed.gif" />&nbsp;
+                <img src="components/com_jaextmanager/assets/dtree/img/icon_removed.gif" />&nbsp;
                 <a href="#" id="diffview-status-removed" title="" class="ja-tips-title"><?php echo JText::_('REMOVED_FILE_IN_NEW_VERSION')?></a>
                 </div>
               </div>
                <div class="Item">
                 <div class="Desc">
                 <input name="file_type" type="checkbox" value="umodified" checked="checked" />&nbsp;
-                <img src="components/<?php echo JACOMPONENT; ?>/assets/dtree/img/icon_umodified.gif" />&nbsp; 
+                <img src="components/com_jaextmanager/assets/dtree/img/icon_umodified.gif" />&nbsp; 
                 <a href="#" id="diffview-status-umodified" title="" class="ja-tips-title"><?php echo JText::_('MODIFIED_BY_USER')?></a>
                 </div>
               </div>
               <div class="Item">
                 <div class="Desc">
                 <input name="file_type" type="checkbox" value="ucreated" checked="checked" />&nbsp;
-                <img src="components/<?php echo JACOMPONENT; ?>/assets/dtree/img/icon_ucreated.gif" />&nbsp; 
+                <img src="components/com_jaextmanager/assets/dtree/img/icon_ucreated.gif" />&nbsp; 
                 <a href="#" id="diffview-status-ucreated" title="" class="ja-tips-title"><?php echo JText::_('CREATED_BY_USER')?></a>
                 </div>
               </div>
               <div class="Item">
                 <div class="Desc">
                 <input name="file_type" type="checkbox" value="nochange" />&nbsp;
-                <img src="components/<?php echo JACOMPONENT; ?>/assets/dtree/img/icon_nochange.gif" />&nbsp;
+                <img src="components/com_jaextmanager/assets/dtree/img/icon_nochange.gif" />&nbsp;
                 <a href="#" id="diffview-status-nochange" title="" class="ja-tips-title"><?php echo JText::_('NO_CHANGE')?></a>
                 </div>
               </div>
 
     </fieldset>
-    <table class="adminlist" cellpadding="1" cellspacing="1">
+    <table class="adminlist table table-striped" cellpadding="1" cellspacing="1">
       <thead>
         <tr>
           <th><?php echo JText::_("FILE_CHANGES") ?></th>

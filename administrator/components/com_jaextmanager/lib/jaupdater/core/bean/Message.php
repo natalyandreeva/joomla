@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -29,7 +29,7 @@ class Message
 	 * @param $from
 	 * @param $to
 	 */
-	function Message($content, $from, $to)
+	function __construct($content, $from, $to)
 	{
 		if (is_array($content)) {
 			$this->content = $content;

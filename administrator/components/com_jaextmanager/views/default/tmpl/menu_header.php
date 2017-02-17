@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -18,7 +18,9 @@ defined( '_JEXEC' ) or die( 'Retricted Access' );
 <div id="jacom-mainnav">
   <div class="inner">
     <div class="ja-showhide"> <a class="openall opened" title="Open all" onclick="JATreeMenu.openall();" href="javascript:;" id="menu_open"><?php echo JText::_("OPEN_ALL");?></a> <a class="closeall" title="Close all" onclick="JATreeMenu.closeall();" href="javascript:;" id="menu_close"><?php echo JText::_("CLOSE_ALL");?></a> </div>
-    <?php JAMenu::_menu();?>
+    <?php 
+    $JAMenu = new JAMenu();
+    $JAMenu->_menu();?>
     <script type="text/javascript">
 		JATreeMenu.initmenu();
 	</script>

@@ -23,11 +23,11 @@ $style = "details";
 		<div class="submenu-box">
 			<div class="submenu-pad">
 				<ul id="submenu" class="media">
-					<li><a title="" href="index.php?option=<?php echo JACOMPONENT; ?>&extionsion_type=&search="> <?php echo JText::_("EXTENSIONS_MANAGER"); ?></a></li>
-					<li><a title="" href="index.php?option=<?php echo JACOMPONENT; ?>&view=services"> <?php echo JText::_("SERVICES_MANAGER"); ?></a></li>
-					<li><a title="" class="active" href="index.php?option=<?php echo JACOMPONENT; ?>&view=repo"> <?php echo JText::_("REPOSITORY_MANAGER"); ?></a></li>
-					<li><a title="" href="index.php?option=<?php echo JACOMPONENT; ?>&view=default&layout=config_service"> <?php echo JText::_("CONFIGURATIONS"); ?></a></li>
-					<li><a title="" href="index.php?option=<?php echo JACOMPONENT; ?>&view=default&layout=help_support"> <?php echo JText::_("HELP_AND_SUPPORT"); ?></a></li>
+					<li><a title="" href="index.php?option=com_jaextmanager&extionsion_type=&search="> <?php echo JText::_("EXTENSIONS_MANAGER"); ?></a></li>
+					<li><a title="" href="index.php?option=com_jaextmanager&view=services"> <?php echo JText::_("SERVICES_MANAGER"); ?></a></li>
+					<li><a title="" class="active" href="index.php?option=com_jaextmanager&view=repo"> <?php echo JText::_("REPOSITORY_MANAGER"); ?></a></li>
+					<li><a title="" href="index.php?option=com_jaextmanager&view=default&layout=config_service"> <?php echo JText::_("CONFIGURATIONS"); ?></a></li>
+					<li><a title="" href="index.php?option=com_jaextmanager&view=default&layout=help_support"> <?php echo JText::_("HELP_AND_SUPPORT"); ?></a></li>
 				</ul>
 				<div class="clr"></div>
 			</div>

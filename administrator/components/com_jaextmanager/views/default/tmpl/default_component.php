@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -19,7 +19,7 @@ defined( '_JEXEC' ) or die( 'Retricted Access' );
   <td>
     <input type="checkbox" id="cId<?php echo $this->component->index;?>"
           name="cId[]" value="<?php echo $this->component->id; ?>"
-          onclick="isChecked(this.checked);" <?php echo $this->component->cbd; ?> />
+          onclick="Joomla.isChecked(this.checked);" <?php echo $this->component->cbd; ?> />
   </td>
   <td>
     <span class="bold"><?php echo $this->component->name; ?></span>

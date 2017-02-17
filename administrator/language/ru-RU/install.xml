@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<install version="2.5" client="administrator" type="language" method="upgrade">
-	<name>Russian</name>
+<extension version="3.6" client="administrator" type="language" method="upgrade">
+	<name>Русский (Россия)</name>
 	<tag>ru-RU</tag>
-	<version>2.5.24.1</version>
-	<creationDate>2014-08-05</creationDate>
+	<version>3.6.2.2</version>
+	<creationDate>2016-09-04</creationDate>
 	<author>Russian Translation Team</author>
 	<authorEmail>smart@joomlaportal.ru</authorEmail>
 	<authorUrl>www.joomlaportal.ru</authorUrl>
-	<copyright>Copyright (C) 2005 - 2014 Open Source Matters. All rights reserved</copyright>
+	<copyright>Copyright (C) 2005 - 2016 Open Source Matters. All rights reserved.</copyright>
 	<license>GNU General Public License version 2 or later; see LICENSE.txt</license>
-	<description>Russian language pack (administrator) for Joomla! 2.5</description>
+	<description>Russian language pack (administrator) for Joomla! 3.6.2</description>
 	<files>
 		<filename>index.html</filename>
-		<filename>ru-RU.css</filename>
 		<filename>ru-RU.com_admin.ini</filename>
 		<filename>ru-RU.com_admin.sys.ini</filename>
+		<filename>ru-RU.com_ajax.ini</filename>
+		<filename>ru-RU.com_ajax.sys.ini</filename>
 		<filename>ru-RU.com_banners.ini</filename>
 		<filename>ru-RU.com_banners.sys.ini</filename>
 		<filename>ru-RU.com_cache.ini</filename>
@@ -29,6 +30,8 @@
 		<filename>ru-RU.com_contact.sys.ini</filename>
 		<filename>ru-RU.com_content.ini</filename>
 		<filename>ru-RU.com_content.sys.ini</filename>
+		<filename>ru-RU.com_contenthistory.ini</filename>
+		<filename>ru-RU.com_contenthistory.sys.ini</filename>
 		<filename>ru-RU.com_cpanel.ini</filename>
 		<filename>ru-RU.com_cpanel.sys.ini</filename>
 		<filename>ru-RU.com_finder.ini</filename>
@@ -54,10 +57,14 @@
 		<filename>ru-RU.com_newsfeeds.sys.ini</filename>
 		<filename>ru-RU.com_plugins.ini</filename>
 		<filename>ru-RU.com_plugins.sys.ini</filename>
+		<filename>ru-RU.com_postinstall.ini</filename>
+		<filename>ru-RU.com_postinstall.sys.ini</filename>
 		<filename>ru-RU.com_redirect.ini</filename>
 		<filename>ru-RU.com_redirect.sys.ini</filename>
 		<filename>ru-RU.com_search.ini</filename>
 		<filename>ru-RU.com_search.sys.ini</filename>
+		<filename>ru-RU.com_tags.ini</filename>
+		<filename>ru-RU.com_tags.sys.ini</filename>
 		<filename>ru-RU.com_templates.ini</filename>
 		<filename>ru-RU.com_templates.sys.ini</filename>
 		<filename>ru-RU.com_users.ini</filename>
@@ -87,6 +94,8 @@
 		<filename>ru-RU.mod_popular.sys.ini</filename>
 		<filename>ru-RU.mod_quickicon.ini</filename>
 		<filename>ru-RU.mod_quickicon.sys.ini</filename>
+		<filename>ru-RU.mod_stats_admin.ini</filename>
+		<filename>ru-RU.mod_stats_admin.sys.ini</filename>
 		<filename>ru-RU.mod_status.ini</filename>
 		<filename>ru-RU.mod_status.sys.ini</filename>
 		<filename>ru-RU.mod_submenu.ini</filename>
@@ -97,6 +106,8 @@
 		<filename>ru-RU.mod_toolbar.sys.ini</filename>
 		<filename>ru-RU.mod_version.ini</filename>
 		<filename>ru-RU.mod_version.sys.ini</filename>
+		<filename>ru-RU.plg_authentication_cookie.ini</filename>
+		<filename>ru-RU.plg_authentication_cookie.sys.ini</filename>
 		<filename>ru-RU.plg_authentication_gmail.ini</filename>
 		<filename>ru-RU.plg_authentication_gmail.sys.ini</filename>
 		<filename>ru-RU.plg_authentication_joomla.ini</filename>
@@ -105,12 +116,12 @@
 		<filename>ru-RU.plg_authentication_ldap.sys.ini</filename>
 		<filename>ru-RU.plg_captcha_recaptcha.ini</filename>
 		<filename>ru-RU.plg_captcha_recaptcha.sys.ini</filename>
+		<filename>ru-RU.plg_content_contact.ini</filename>
+		<filename>ru-RU.plg_content_contact.sys.ini</filename>
 		<filename>ru-RU.plg_content_emailcloak.ini</filename>
 		<filename>ru-RU.plg_content_emailcloak.sys.ini</filename>
 		<filename>ru-RU.plg_content_finder.ini</filename>
 		<filename>ru-RU.plg_content_finder.sys.ini</filename>
-		<filename>ru-RU.plg_content_geshi.ini</filename>
-		<filename>ru-RU.plg_content_geshi.sys.ini</filename>
 		<filename>ru-RU.plg_content_joomla.ini</filename>
 		<filename>ru-RU.plg_content_joomla.sys.ini</filename>
 		<filename>ru-RU.plg_content_loadmodule.ini</filename>
@@ -121,20 +132,22 @@
 		<filename>ru-RU.plg_content_pagenavigation.sys.ini</filename>
 		<filename>ru-RU.plg_content_vote.ini</filename>
 		<filename>ru-RU.plg_content_vote.sys.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_article.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_article.sys.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_image.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_image.sys.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_module.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_module.sys.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_pagebreak.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_pagebreak.sys.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_readmore.ini</filename>
+		<filename>ru-RU.plg_editors-xtd_readmore.sys.ini</filename>
 		<filename>ru-RU.plg_editors_codemirror.ini</filename>
 		<filename>ru-RU.plg_editors_codemirror.sys.ini</filename>
 		<filename>ru-RU.plg_editors_none.ini</filename>
 		<filename>ru-RU.plg_editors_none.sys.ini</filename>
 		<filename>ru-RU.plg_editors_tinymce.ini</filename>
 		<filename>ru-RU.plg_editors_tinymce.sys.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_article.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_article.sys.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_image.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_image.sys.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_pagebreak.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_pagebreak.sys.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_readmore.ini</filename>
-		<filename>ru-RU.plg_editors-xtd_readmore.sys.ini</filename>
 		<filename>ru-RU.plg_extension_joomla.ini</filename>
 		<filename>ru-RU.plg_extension_joomla.sys.ini</filename>
 		<filename>ru-RU.plg_finder_categories.ini</filename>
@@ -145,8 +158,18 @@
 		<filename>ru-RU.plg_finder_content.sys.ini</filename>
 		<filename>ru-RU.plg_finder_newsfeeds.ini</filename>
 		<filename>ru-RU.plg_finder_newsfeeds.sys.ini</filename>
+		<filename>ru-RU.plg_finder_tags.ini</filename>
+		<filename>ru-RU.plg_finder_tags.sys.ini</filename>
 		<filename>ru-RU.plg_finder_weblinks.ini</filename>
 		<filename>ru-RU.plg_finder_weblinks.sys.ini</filename>
+		<filename>ru-RU.plg_installer_folderinstaller.ini</filename>
+		<filename>ru-RU.plg_installer_folderinstaller.sys.ini</filename>
+		<filename>ru-RU.plg_installer_packageinstaller.ini</filename>
+		<filename>ru-RU.plg_installer_packageinstaller.sys.ini</filename>
+		<filename>ru-RU.plg_installer_urlinstaller.ini</filename>
+		<filename>ru-RU.plg_installer_urlinstaller.sys.ini</filename>
+		<filename>ru-RU.plg_installer_webinstaller.ini</filename>
+		<filename>ru-RU.plg_installer_webinstaller.sys.ini</filename>
 		<filename>ru-RU.plg_quickicon_extensionupdate.ini</filename>
 		<filename>ru-RU.plg_quickicon_extensionupdate.sys.ini</filename>
 		<filename>ru-RU.plg_quickicon_joomlaupdate.ini</filename>
@@ -159,6 +182,8 @@
 		<filename>ru-RU.plg_search_content.sys.ini</filename>
 		<filename>ru-RU.plg_search_newsfeeds.ini</filename>
 		<filename>ru-RU.plg_search_newsfeeds.sys.ini</filename>
+		<filename>ru-RU.plg_search_tags.ini</filename>
+		<filename>ru-RU.plg_search_tags.sys.ini</filename>
 		<filename>ru-RU.plg_search_weblinks.ini</filename>
 		<filename>ru-RU.plg_search_weblinks.sys.ini</filename>
 		<filename>ru-RU.plg_system_cache.ini</filename>
@@ -183,17 +208,28 @@
 		<filename>ru-RU.plg_system_remember.sys.ini</filename>
 		<filename>ru-RU.plg_system_sef.ini</filename>
 		<filename>ru-RU.plg_system_sef.sys.ini</filename>
+		<filename>ru-RU.plg_system_stats.ini</filename>
+		<filename>ru-RU.plg_system_stats.sys.ini</filename>
+		<filename>ru-RU.plg_system_updatenotification.ini</filename>
+		<filename>ru-RU.plg_system_updatenotification.sys.ini</filename>
+		<filename>ru-RU.plg_twofactorauth_totp.ini</filename>
+		<filename>ru-RU.plg_twofactorauth_totp.sys.ini</filename>
+		<filename>ru-RU.plg_twofactorauth_yubikey.ini</filename>
+		<filename>ru-RU.plg_twofactorauth_yubikey.sys.ini</filename>
 		<filename>ru-RU.plg_user_contactcreator.ini</filename>
 		<filename>ru-RU.plg_user_contactcreator.sys.ini</filename>
 		<filename>ru-RU.plg_user_joomla.ini</filename>
 		<filename>ru-RU.plg_user_joomla.sys.ini</filename>
 		<filename>ru-RU.plg_user_profile.ini</filename>
 		<filename>ru-RU.plg_user_profile.sys.ini</filename>
-		<filename>ru-RU.tpl_bluestork.ini</filename>
-		<filename>ru-RU.tpl_bluestork.sys.ini</filename>
 		<filename>ru-RU.tpl_hathor.ini</filename>
-		<filename>ru-RU.tpl_hathor.sys.ini</filename>	
-		<filename file="meta">ru-RU.xml</filename>
+		<filename>ru-RU.tpl_hathor.sys.ini</filename>
+		<filename>ru-RU.tpl_isis.ini</filename>
+		<filename>ru-RU.tpl_isis.sys.ini</filename>
 		<filename file="meta">install.xml</filename>
+		<filename file="meta">ru-RU.xml</filename>
 	</files>
-</install>
+
+
+	<params />
+</extension>

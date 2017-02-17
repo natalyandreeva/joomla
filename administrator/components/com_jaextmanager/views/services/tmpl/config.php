@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -18,7 +18,7 @@ $item=$this->item;
 <div style="width:500px; margin:0 auto;">
 <fieldset>
 <form name="adminForm" id="adminForm" action="index.php" method="post">
-  <input type="hidden" name="option" value="<?php echo JACOMPONENT; ?>" />
+  <input type="hidden" name="option" value="com_jaextmanager" />
   <input type="hidden" name="view" value="services" />
   <input type="hidden" name="task" value="saveConfig" />
   <input type="hidden" name="tmpl" value="component" />

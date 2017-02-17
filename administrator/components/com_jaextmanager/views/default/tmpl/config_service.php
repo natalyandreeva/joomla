@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -36,11 +36,22 @@ Joomla.submitbutton = function(pressbutton) {
 <fieldset>
 <legend><?php echo JText::_("GENERAL_SETTINGS");?></legend>
 <form action="index.php" method="post" name="adminForm" id="adminForm">
-  <input type="hidden" name="option" value="<?php echo JACOMPONENT; ?>" />
+  <input type="hidden" name="option" value="com_jaextmanager" />
   <input type="hidden" name="task" value="" />
   <input type="hidden" name="layout" value="config_service" />
   <input type="hidden" name="view" value="default" />
     <table class="admintable">
+      <tr>
+        <td class="key" align="right"><label for="title"> <?php echo JText::_('Hide None-JA Extensions' ); ?>: </label>
+        </td>
+        <td>
+        <?php $hideNoneJA = (int) $this->params->get("HIDE_NONJA", 0); ?>
+        <input type="radio" name="params[HIDE_NONJA]" value="0" id="hide_nonja_0" <?php if(!$hideNoneJA) echo 'checked="checked"' ?> />
+        <label for="hide_nonja_0"><?php echo JText::_('JNO' ); ?></label>
+        <input type="radio" name="params[HIDE_NONJA]" value="1" id="hide_nonja_1" <?php if($hideNoneJA) echo 'checked="checked"' ?> />
+        <label for="hide_nonja_1"><?php echo JText::_('JYES' ); ?></label>
+        </td>
+      </tr>
       <tr>
         <td class="key" align="right"><label for="title"> <?php echo JText::_('LOCAL_REPOSITORY_PATH' ); ?>: </label>
         </td>
@@ -51,6 +62,12 @@ Joomla.submitbutton = function(pressbutton) {
         <td class="key" align="right"><label for="title"> <?php echo JText::_('MYSQL_PATH' ); ?>: </label>
         </td>
         <td><input type="text" value="<?php echo $this->params->get("MYSQL_PATH", "mysql");?>" size="80" name="params[MYSQL_PATH]" />
+        </td>
+      </tr>
+      <tr>
+        <td class="key" align="right"><label for="title"> <?php echo JText::_('MYSQL_DUMP_PATH' ); ?>: </label>
+        </td>
+        <td><input type="text" value="<?php echo $this->params->get("MYSQLDUMP_PATH", "mysqldump");?>" size="80" name="params[MYSQLDUMP_PATH]" />
         </td>
       </tr>
       <tr>

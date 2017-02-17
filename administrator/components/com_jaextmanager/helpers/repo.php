@@ -50,7 +50,7 @@ class RepoHelper
 	 */
 	function canUpload($file, &$err)
 	{
-		$params = &JComponentHelper::getParams(JACOMPONENT);
+		$params = JComponentHelper::getParams(JACOMPONENT);
 		
 		if (empty($file['name'])) {
 			$err = 'Please input a file for upload';

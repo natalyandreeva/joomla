@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@ defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.application.component.model');
 
-class JaextmanagerModelServices extends JModel
+class JaextmanagerModelServices extends JAEMModel
 {
 	
 	var $_pagination = NULL;
@@ -24,7 +24,7 @@ class JaextmanagerModelServices extends JModel
 
 	function getRow($cid = array(0))
 	{
-		$table = &$this->getTable('services', 'Table');
+		$table = $this->getTable('services', 'Table');
 		// Load the current item if it has been defined
 		$edit = JRequest::getVar('edit', true);
 		if (!$cid || @!$cid[0]) {
@@ -44,7 +44,7 @@ class JaextmanagerModelServices extends JModel
 
 	function getRow2($cid)
 	{
-		$table = &$this->getTable('services', 'Table');
+		$table = $this->getTable('services', 'Table');
 		$table->load($cid);
 		return $table;
 	}
@@ -52,7 +52,7 @@ class JaextmanagerModelServices extends JModel
 
 	function getList($cond = '', $order = '', $limitstart = 0, $limit = 20)
 	{
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$services = array();
 		
 		if ($order != '') {
@@ -73,7 +73,7 @@ class JaextmanagerModelServices extends JModel
 
 	function getTotal($cond)
 	{
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = "
 				SELECT COUNT(*)  
 				FROM #__jaem_services AS t
@@ -88,15 +88,15 @@ class JaextmanagerModelServices extends JModel
 	function getListServiceMode()
 	{
 		$aData = array();
-		$aData[] = JHTML::_('select.option', 'local', JText::_('LOCAL'));
-		$aData[] = JHTML::_('select.option', 'remote', JText::_('REMOTE'));
+		$aData[] = JHtml::_('select.option', 'local', JText::_('LOCAL'));
+		$aData[] = JHtml::_('select.option', 'remote', JText::_('REMOTE'));
 		return $aData;
 	}
 
 
 	function store()
 	{
-		$row = & $this->getRow();
+		$row = $this->getRow();
 		$post = $this->getState('request');
 		
 		if (!$row->id) {
@@ -168,7 +168,7 @@ class JaextmanagerModelServices extends JModel
 
 	function setDefault()
 	{
-		$db = & JFactory::getDBO();
+		$db = JFactory::getDbo();
 		
 		$ids = JRequest::getVar('cid', array());
 		$ids = implode(',', $ids);
@@ -187,7 +187,7 @@ class JaextmanagerModelServices extends JModel
 
 	function resetDefault($defaultId)
 	{
-		$db = & JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$query = "UPDATE #__jaem_services SET ws_default = 0 WHERE id <> {$defaultId}";
 		$db->setQuery($query);
 		$db->query();

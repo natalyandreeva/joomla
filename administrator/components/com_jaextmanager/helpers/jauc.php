@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -16,6 +16,7 @@ defined('_JEXEC') or die('Restricted access');
 jimport('joomla.application.component.helper');
 jimport('joomla.filesystem.file');
 
+jimport('joomla.filesystem.folder');
 class JaextmanagerHelper extends JComponentHelper
 {
 	var $params;
@@ -23,7 +24,7 @@ class JaextmanagerHelper extends JComponentHelper
 	var $defaultService;
 
 
-	function JaextmanagerHelper($params, $services)
+	function __construct($params, $services)
 	{
 		$this->params = $params;
 		$this->services = $services;
@@ -114,7 +115,7 @@ class JaextmanagerHelper extends JComponentHelper
 	function _loadModule($obj)
 	{
 		$installDir = ($obj->client_id) ? JPATH_ADMINISTRATOR : JPATH_ROOT;
-		$installDir .= DS . 'modules' . DS . $obj->extKey . DS;
+		$installDir .= '/modules/' . $obj->extKey . '/';
 		$installDir = JPath::clean($installDir);
 		if (JFolder::exists($installDir) === false) {
 			return false;
@@ -129,7 +130,7 @@ class JaextmanagerHelper extends JComponentHelper
 	{
 		//new stuture for plugins folder from 1.6
 		//each plugin will be stored at individual folder
-		$installDir = JPATH_ROOT . DS . 'plugins' . DS . $obj->folder . DS . $obj->extKey . DS;
+		$installDir = JPATH_ROOT . '/plugins/' . $obj->folder . '/' . $obj->extKey . '/';
 		if (JFile::exists($installDir . $obj->extKey . ".php") === false) {
 			return false;
 		}
@@ -142,7 +143,7 @@ class JaextmanagerHelper extends JComponentHelper
 	function _loadTemplate($obj)
 	{
 		$installDir = ($obj->client_id) ? JPATH_ADMINISTRATOR : JPATH_ROOT;
-		$installDir .= DS . 'templates' . DS . $obj->extKey . DS;
+		$installDir .= '/templates/' . $obj->extKey . '/';
 		$installDir = JPath::clean($installDir);
 		if (JFolder::exists($installDir) === false) {
 			return false;
@@ -156,8 +157,8 @@ class JaextmanagerHelper extends JComponentHelper
 	function _loadComponent($obj)
 	{
 		/* Get the component base directory */
-		$adminDir = JPATH_ADMINISTRATOR . DS . 'components' . DS . $obj->extKey . DS;
-		$siteDir = JPATH_SITE . DS . 'components' . DS . $obj->extKey . DS;
+		$adminDir = JPATH_ADMINISTRATOR . '/components/' . $obj->extKey . '/';
+		$siteDir = JPATH_SITE . '/components/' . $obj->extKey . '/';
 		
 		$xmlfiles = JFolder::files($adminDir, '.xml$', 1, true);
 		$found = false;

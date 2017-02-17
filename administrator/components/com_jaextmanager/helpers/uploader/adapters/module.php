@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -13,7 +13,8 @@
 defined('JPATH_BASE') or die();
 
 jimport('joomla.base.adapterinstance');
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 /**
  * Module uploader
  *
@@ -113,7 +114,7 @@ class jaExtUploaderModule extends JObject
 			}
 		}
 		if (!empty($element)) {
-			//$this->parent->setPath('extension_root', $basePath.DS.'modules'.DS.$element);
+			//$this->parent->setPath('extension_root', $basePath.'/modules/'.$element);
 		} else {
 			$this->parent->abort(JText::sprintf('JLIB_INSTALLER_ABORT_MOD_INSTALL_NOFILE', JText::_('JLIB_INSTALLER_' . $this->route)));
 			return false;
@@ -123,7 +124,7 @@ class jaExtUploaderModule extends JObject
 		
 		if ($jaProduct !== false) {
 			//path for install, we dont need it on upload to local reposiotry :)
-			//$this->parent->setPath('extension_root', $basePath.DS.'modules'.DS.$mname);
+			//$this->parent->setPath('extension_root', $basePath.'/modules/'.$mname);
 			$storePath = $jauc->getLocalVersionPath($jaProduct, false);
 			$this->parent->setPath('extension_root', $storePath);
 		} else {
@@ -200,7 +201,7 @@ class jaExtUploaderModule extends JObject
 		
 		// Load module language file
 		/*$lang =& JFactory::getLanguage();
-		$lang->load($row->module, JPATH_BASE.DS.'..');*/
+		$lang->load($row->module, dirname(JPATH_BASE));*/
 		
 		$this->parent->setResult($jaProduct, false, '', $this->parent->getPath('extension_root'));
 		return true;

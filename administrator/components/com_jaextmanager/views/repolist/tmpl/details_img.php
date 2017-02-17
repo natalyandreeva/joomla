@@ -26,8 +26,8 @@ defined('_JEXEC') or die;
 				<?php echo RepoHelper::parseSize($this->_tmp_img->size); ?>
 			</td>
 			<td>
-				<a class="delete-item" href="index.php?option=<?php echo JACOMPONENT; ?>&amp;view=file&amp;task=delete&amp;tmpl=component&amp;<?php echo JUtility::getToken(); ?>=1&amp;folder=<?php echo $this->state->folder; ?>&amp;rm[]=<?php echo $this->_tmp_img->name; ?>" rel="<?php echo $this->_tmp_img->name; ?>">
-                <img src="components/<?php echo JACOMPONENT; ?>/assets/images/icons/remove.png" width="16" height="16" border="0" alt="<?php echo JText::_('DELETE' ); ?>" />
+				<a class="delete-item" href="index.php?option=com_jaextmanager&amp;view=file&amp;task=delete&amp;tmpl=component&amp;<?php echo JSession::getFormToken(); ?>=1&amp;folder=<?php echo $this->state->folder; ?>&amp;rm[]=<?php echo $this->_tmp_img->name; ?>" rel="<?php echo $this->_tmp_img->name; ?>">
+                <img src="components/com_jaextmanager/assets/images/icons/remove.png" width="16" height="16" border="0" alt="<?php echo JText::_('DELETE' ); ?>" />
                 </a>
 				<input type="checkbox" name="rm[]" value="<?php echo $this->_tmp_img->name; ?>" />
 			</td>

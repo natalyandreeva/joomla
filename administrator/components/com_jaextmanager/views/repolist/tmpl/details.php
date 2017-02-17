@@ -10,9 +10,9 @@
 // No direct access.
 defined('_JEXEC') or die;
 ?>
-<form action="index.php?option=<?php echo JACOMPONENT; ?>&amp;view=folder&amp;tmpl=component&amp;folder=<?php echo $this->state->folder; ?>" method="post" id="mediamanager-form" name="mediamanager-form">
+<form action="index.php?option=com_jaextmanager&amp;view=folder&amp;tmpl=component&amp;folder=<?php echo $this->state->folder; ?>" method="post" id="mediamanager-form" name="mediamanager-form">
 	<div class="manager">
-	<table width="100%" cellspacing="0">
+	<table class="adminlist table table-striped" width="100%" cellspacing="0">
 	<thead>
 		<tr>
 			<th><?php echo JText::_('PREVIEW' ); ?></th>

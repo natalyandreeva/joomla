@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -12,8 +12,9 @@
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
  
-define('JA_WORKING_DATA_FOLDER', PATH_ROOT . DS . "jaextmanager_data" . DS);
-
+define('JA_WORKING_DATA_FOLDER', PATH_ROOT."/jaextmanager_data/");
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 
 function jaucRaiseMessage($message, $error = false)
 {
@@ -26,12 +27,12 @@ function jaucRaiseMessage($message, $error = false)
 
 $errMsg = "";
 if (!JFolder::exists(JA_WORKING_DATA_FOLDER)) {
-	if (!JFolder::create(JA_WORKING_DATA_FOLDER, 0777)) {
+	if (!JFolder::create(JA_WORKING_DATA_FOLDER, 0755)) {
 		$errMsg .= "JA Updater can not create below folder automatically. Please manual create and chmod it to wriable!" . "<br />";
 		$errMsg .= "<i>" . JA_WORKING_DATA_FOLDER . "</i>";
 	}
 } elseif (!is_writeable(JA_WORKING_DATA_FOLDER)) {
-	if (!chmod(JA_WORKING_DATA_FOLDER, 0777)) {
+	if (!chmod(JA_WORKING_DATA_FOLDER, 0755)) {
 		$errMsg .= "JA Updater can not automatically chmod for below folder to wriable. Please manual chmod it to wriable!" . "<br />";
 		$errMsg .= "<i>" . JA_WORKING_DATA_FOLDER . "</i>";
 	}

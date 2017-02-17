@@ -8,7 +8,8 @@
  * 
  * @version 1.0
  */
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 class CreateZipFile {
 
 	var $compressedData = array();
@@ -16,7 +17,7 @@ class CreateZipFile {
 	var $endOfCentralDirectory = "\x50\x4b\x05\x06\x00\x00\x00\x00"; //end of Central directory record
 	var $oldOffset = 0;
 	
-	function CreateZipFile() {
+	function __construct() {
 		
 	}
 

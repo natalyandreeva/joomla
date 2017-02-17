@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -13,9 +13,8 @@
 //no direct access
 defined( '_JEXEC' ) or die( 'Retricted Access' );
 
-global $mainframe, $option, $jauc;
-
-$checkLog = JaextmanagerModelDefault::getListExtensionSettings();
+$JaextmanagerModelDefault = new JaextmanagerModelDefault();
+$checkLog = $JaextmanagerModelDefault->getListExtensionSettings();
 ?>
 <script language="javascript">
 // Proccess for check update button
@@ -55,9 +54,9 @@ Joomla.submitbutton = function(pressbutton) {
         <td align="left"><?php 
 		$tipid = uniqid("ja-tooltip-");
 		$linkRepo = "<a href=\"#\" id=\"{$tipid}\" class=\"ja-tips-title\" title=\"\">".JText::_("JA_REPOSITORY")."</a>";
-		$linkEditRepo = "<a href=\"index.php?option=".JACOMPONENT."&view=default&layout=config_service\" title=\"\">".JText::_("EDIT")."</a>";
+		$linkEditRepo = "<a href=\"index.php?option=com_jaextmanager&view=default&layout=config_service\" title=\"\">".JText::_("EDIT")."</a>";
 		$linkUpload = "<a href=\"#\" onclick=\"jaOpenUploader(); return false;\" title=\"".JText::_("UPLOAD")."\" class=\"highlight\">".JText::_("UPLOAD")."</a> ";
-		$linkHelp = "<a href=\"index.php?option=".JACOMPONENT."&view=default&layout=help_support\" title=\"".JText::_("HELP_AND_SUPPORT")."\" class=\"highlight\">".JText::_("HELP_AND_SUPPORT")."</a>";
+		$linkHelp = "<a href=\"index.php?option=com_jaextmanager&view=default&layout=help_support\" title=\"".JText::_("HELP_AND_SUPPORT")."\" class=\"highlight\">".JText::_("HELP_AND_SUPPORT")."</a>";
 		$intro = "All versions of extensions are stored in %s (%s), to start using auto update of supported extension, %s new version of the extension now.<br /> Please read %s for more information.<br />";
 		$intro = JText::sprintf($intro, $linkRepo, $linkEditRepo, $linkUpload, $linkHelp);
 		echo $intro;
@@ -72,8 +71,11 @@ Joomla.submitbutton = function(pressbutton) {
 		/*]]>*/
 		</script>
         </td>
-        <td align="right" valign="top" width="300"><?php echo JText::_("FILTER");?>:
-          <input type="text" class="text_area" value="<?php echo JRequest::getVar('search');?>" id="search" name="search"/>
+        <td align="right" valign="top" width="260">
+	        <?php echo JText::_("FILTER");?>:
+			<input type="text" class="text_area" value="<?php echo $this->lists['search']; ?>" id="search" name="search"/>
+        </td>
+        <td align="right" valign="top" width="260">
           <?php echo $this->boxType;?>
           <input type="button" onclick="this.form.submit();" value="<?php echo JText::_('GO'); ?>" />
         </td>
@@ -86,26 +88,22 @@ Joomla.submitbutton = function(pressbutton) {
   <?php echo $this->loadTemplate('message'); ?>
   <?php endif; ?>
   <?php if (count($this->listExtensions)) : ?>
-  <table class="adminlist ja-uc" cellspacing="1">
+  <table class="adminlist table table-striped ja-uc" cellspacing="0" width="100%">
     <thead>
       <tr>
         <th width="10"><?php echo JText::_('NUM' ); ?></th>
-        <th width="20"> <input type="checkbox" name="toggle" value="" onclick="checkAll(<?php echo count($this->listExtensions); ?>, 'cId');" />        </th>
+        <th width="20"> <input type="checkbox" name="checkall-toggle" value="" onclick="Joomla.checkAll(this, 'cId');" />        </th>
         <th width="200" style="text-align: left;" nowrap="nowrap"> <?php echo JText::_('EXTENSION_NAME' ); ?> </th>
         <th style="text-align: left;"><?php echo JText::_('AUTHOR' ); ?></th>
-        <th width="25">&nbsp;</th>
-        <th width="25"><?php echo JText::_('TYPE' ); ?></th>
+        <th><?php echo JText::_('TYPE' ); ?></th>
         <th width="80"> <?php echo JText::_('VERSION' ); ?> </th>
         <th> <?php echo JText::_('CREATED_DATE' ); ?> </th>
-        <th width="100"><?php echo JText::_('SERVICE' ); ?></th>
+        <th width="150"><?php echo JText::_('SERVICE' ); ?></th>
       </tr>
     </thead>
     <tbody>
       <?php
       $index = 0;
-	 /* echo "<pre>";
-	  print_r($this->listExtensions);
-	  echo "</pre>";*/
       foreach ($this->listExtensions as $key=>$obj):
         $obj->index = $index++;
 		
@@ -127,9 +125,9 @@ Joomla.submitbutton = function(pressbutton) {
 		
 		$diffDate = $this->nicetime($obj->creationDate);
     ?>
-      <tr>
+      <tr class="row1" style="border-bottom:1px solid #CCC;">
         <td valign="top"><?php echo $this->pagination->getRowOffset( $obj->index ); ?></td>
-        <td valign="top"><input type="checkbox" id="cId<?php echo $obj->index;?>" name="cId[]" value="<?php echo $extID; ?>" onclick="isChecked(this.checked);" <?php echo $obj->cbd; ?> /></td>
+        <td valign="top"><input type="checkbox" id="cId<?php echo $obj->index;?>" name="cId[]" value="<?php echo $extID; ?>" onclick="Joomla.isChecked(this.checked);" <?php echo $obj->cbd; ?> /></td>
         <td valign="top"><strong class="addon-name"><?php echo $obj->name; ?></strong> </td>
         <td valign="top"><?php 
 			//fix url
@@ -151,13 +149,15 @@ Joomla.submitbutton = function(pressbutton) {
                 });
             });
             /*]]>*/
-            </script>        </td>
+            </script>        
+        </td>
         <td valign="top" align="left">
-        <?php if($obj->coreVersion != 'j25' && $obj->coreVersion != 'j17' && $obj->coreVersion != 'j16'): ?>
+        <span class="icon-<?php echo $obj->type; ?>" title="<?php echo JText::_($obj->type); ?>"><?php echo JText::_($obj->type); ?></span>
+        
+        <?php if($obj->coreVersion == 'j15'): ?>
         <span class="joomla-legacy">&nbsp;</span>
         <?php endif; ?>
         </td>
-        <td valign="top" align="left"><span class="icon-<?php echo $obj->type; ?>" title="<?php echo JText::_($obj->type); ?>"><?php echo JText::_($obj->type); ?></span></td>
         <td valign="top" align="center"><?php echo (isset($obj->version) && $obj->version != '') ? $obj->version : '&nbsp;'; ?></td>
         <td valign="top" align="center"><?php echo $obj->creationDate; ?>
           <?php if($diffDate !== false): ?>
@@ -167,12 +167,12 @@ Joomla.submitbutton = function(pressbutton) {
       </tr>
       <tr>
         <td>&nbsp;</td>
-        <td valign="top">&nbsp;<img src="<?php echo JURI::root().'administrator/components/'.JACOMPONENT.'/assets/css/images/arrow_point_right.gif'; ?>" alt="" /></td>
+        <td valign="top">&nbsp;<img src="<?php echo JURI::root().'administrator/components/com_jaextmanager/assets/css/images/arrow_point_right.gif'; ?>" alt="" /></td>
         <td valign="top">
         <div class="clearfix"> 
             <a class="check-update" title="Check Update" href="#" onclick="checkNewVersion('<?php echo $extID;?>', 'LastCheckStatus_<?php echo $extID;?>'); return false;"><?php echo JText::_('CHECK_UPDATE'); ?></a> 
             <a class="recovery" title="<?php echo JText::_('ROLLBACK'); ?>" href="#" onclick="recoveryItem('<?php echo $extID;?>', 'LastCheckStatus_<?php echo $extID;?>'); return false;"><?php echo JText::_('ROLLBACK'); ?></a>        </div>        </td>
-        <td colspan="6" class="checkstatus" id="LastCheckStatus_<?php echo $extID; ?>"><?php echo JaextmanagerModelDefault::getLastCheckStatus($checkLog, $extID);?></td>
+        <td colspan="6" class="checkstatus" id="LastCheckStatus_<?php echo $extID; ?>"><?php echo $JaextmanagerModelDefault->getLastCheckStatus($checkLog, $extID);?></td>
       </tr>
       <?php endforeach; ?>
     </tbody>
@@ -185,13 +185,13 @@ Joomla.submitbutton = function(pressbutton) {
   <?php else : ?>
   <?php echo JText::_('DATA_NOT_FOUND' ); ?>
   <?php endif; ?>
-  <input type="hidden" name="option" value="<?php echo JACOMPONENT; ?>" />
+  <input type="hidden" name="option" value="com_jaextmanager" />
   <input type="hidden" name="view" value="<?php echo JRequest::getVar("view", "default")?>" />
   <input type="hidden" name="task" value="" />
   <input type="hidden" name="boxchecked" value="0" />
   <input type="hidden" name="Itemid" value="<?php echo JRequest::getVar( 'Itemid');?>" />
   <input type="hidden" name="service_id" id="service_id" value="" />
   <input type="hidden" name="service_name" id="service_name" value="" />
-  <?php echo JHTML::_( 'form.token'); ?>
+  <?php echo JHtml::_( 'form.token'); ?>
   </fieldset>
 </form>

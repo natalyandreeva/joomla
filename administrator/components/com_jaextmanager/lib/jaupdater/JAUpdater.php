@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,8 +11,9 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
-
-defined("DS") or define("DS", DIRECTORY_SEPARATOR);
+if(!defined("DS")){
+	define("DS", DIRECTORY_SEPARATOR);
+}
 define("_JAUPDATER_ROOT", realpath(dirname(__FILE__)));
 
 // disable all notice and warning for product release
@@ -25,15 +26,15 @@ define("_JAUPDATER_ROOT", realpath(dirname(__FILE__)));
 // -/-
 
 
-require_once ("core" . DS . "XmlParser.php");
-require_once ("core" . DS . "helper" . DS . "VPackageHelper.php");
+require_once ("core/XmlParser.php");
+require_once ("core/helper/VPackageHelper.php");
+$VPackageHelper = new VPackageHelper();
+$VPackageHelper->importRecursive(_JAUPDATER_ROOT."/../xlib");
 
-VPackageHelper::importRecursive(_JAUPDATER_ROOT . DS . ".." . DS . "xlib");
-
-VPackageHelper::importAll(_JAUPDATER_ROOT . DS . "core");
-VPackageHelper::importAll(_JAUPDATER_ROOT . DS . "core" . DS . "php5");
-VPackageHelper::import("core.bean.InfoObject");
-VPackageHelper::import("core.bean.Message");
-VPackageHelper::import("core.bean.Products"); //2010-01-20
-VPackageHelper::importAll(_JAUPDATER_ROOT . DS . "core" . DS . "checksum");
-VPackageHelper::importAll(_JAUPDATER_ROOT . DS . "core" . DS . "helper");
+$VPackageHelper->importAll(_JAUPDATER_ROOT."/core");
+$VPackageHelper->importAll(_JAUPDATER_ROOT."/core/php5");
+$VPackageHelper->import("core.bean.InfoObject");
+$VPackageHelper->import("core.bean.Message");
+$VPackageHelper->import("core.bean.Products");
+$VPackageHelper->importAll(_JAUPDATER_ROOT."/core/checksum");
+$VPackageHelper->importAll(_JAUPDATER_ROOT."/core/helper");

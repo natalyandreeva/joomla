@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,12 +11,13 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
- 
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 // This file will hold configuration for UpdaterClient
 global $config;
 
 $jConfig = new JConfig();
-$params = &JComponentHelper::getParams(JACOMPONENT);
+$params = JComponentHelper::getParams(JACOMPONENT);
 $defaultService = jaGetDefaultService();
 
 $data_folder = jaucGetDataFolder($params->get("DATA_FOLDER", "jaextmanager_data"));
@@ -40,9 +41,10 @@ function jaucRaiseMessage($message, $error = false)
 
 function jaucGetDataFolder($path)
 {
-	$path = FileSystemHelper::clean($path . DS);
-	$rootPath = FileSystemHelper::clean($_SERVER['DOCUMENT_ROOT']);
-	return (strpos($path, $rootPath) === 0) ? $path : JPATH_ROOT . DS . $path;
+	$FileSystemHelper = new FileSystemHelper();
+	$path = $FileSystemHelper->clean($path.'/');
+	$rootPath = $FileSystemHelper->clean($_SERVER['DOCUMENT_ROOT']);
+	return (strpos($path, $rootPath) === 0) ? $path : JPATH_ROOT.'/'.$path;
 }
 
 
@@ -51,12 +53,12 @@ function jaucValidServiceSettings($params)
 {
 	$errMsg = "";
 	if (!JFolder::exists(JA_WORKING_DATA_FOLDER)) {
-		if (!JFolder::create(JA_WORKING_DATA_FOLDER, 0777)) {
+		if (!JFolder::create(JA_WORKING_DATA_FOLDER, 0755)) {
 			$errMsg .= JText::_("JA_UPDATER_CAN_NOT_CREATE_BELOW_FOLDER_AUTOMATICALLY_PLEASE_MANUAL_DO_IT") . "<br />";
 			$errMsg .= "<i>" . JA_WORKING_DATA_FOLDER . "</i>";
 		}
 	} elseif (!is_writeable(JA_WORKING_DATA_FOLDER)) {
-		if (!chmod(JA_WORKING_DATA_FOLDER, 0777)) {
+		if (!chmod(JA_WORKING_DATA_FOLDER, 0755)) {
 			$errMsg .= JText::_("JA_UPDATER_CAN_NOT_AUTOMATICALLY_CHMOD_FOR_BELOW_FOLDER_TO_WRIABLE_PLEASE_MANUAL_DO_IT") . "<br />";
 			$errMsg .= "<i>" . JA_WORKING_DATA_FOLDER . "</i>";
 		}
@@ -79,7 +81,7 @@ function jaucValidServiceSettings($params)
 		if (JRequest::getVar('layout') == 'config_service') {
 			jaucRaiseMessage($errMsg, true);
 		}
-		/*$errMsg .= "<a href=\"index.php?option=".JACOMPONENT."&view=default&layout=config_service\" title=\"\">".JText::_('CLICK_HERE_TO_EDIT_SETTINGS')."</a>";
+		/*$errMsg .= "<a href=\"index.php?option=com_jaextmanager&view=default&layout=config_service\" title=\"\">".JText::_('CLICK_HERE_TO_EDIT_SETTINGS')."</a>";
 		 JError::raiseWarning(100, $errMsg);*/
 	}
 }
@@ -98,7 +100,7 @@ $config = new UpdaterConfig(
 			"WS_PASS"	=> $defaultService->ws_pass,
 			//root path to installed product (is root path of website)
 			//it is different from the concept of repo path on server
-			"REPO_PATH" => JPATH_ROOT . DS,
+			"REPO_PATH" => JPATH_ROOT . '/',
 			// MySQL info
 			"MYSQL_HOST" 	=> $jConfig->host,
 			"MYSQL_USER" 	=> $jConfig->user,

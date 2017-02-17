@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -12,10 +12,11 @@
 
 // no direct access
 defined('_JEXEC') or die('Restricted access');
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 
 function isJAProduct($extname)
-{
+{	
 	//Eg: jat3
 	if (preg_match("/^ja/i", $extname)) {
 		return true;
@@ -34,22 +35,21 @@ function jaGetCoreVersion($jVersion, $extname = '')
 {
 	$isJAProduct = isJAProduct($extname);
 	
-	if (preg_match("/2\.5.*/i", $jVersion)) {
-		$coreVersion = $isJAProduct ? 'j16' : 'j25';
-	} elseif (preg_match("/1\.7.*/i", $jVersion)) {
-		$coreVersion = $isJAProduct ? 'j16' : 'j17';
-	} elseif (preg_match("/1\.6.*/i", $jVersion)) {
-		$coreVersion = 'j16';
+	if($isJAProduct) {
+		$coreVersion = (preg_match("/^1\.5/", $jVersion)) ? 'j15' : 'j16';
 	} else {
-		$coreVersion = 'j15';
+		$versions = explode('.', $jVersion);
+		array_splice($versions, 2);
+		$coreVersion = 'j'.implode('', $versions);
 	}
+	
 	return $coreVersion;
 }
 
 
 function jaGetListServices()
 {
-	$db = JFactory::getDBO();
+	$db = JFactory::getDbo();
 	
 	$sql = "SELECT * FROM #__jaem_services AS t WHERE 1 ORDER BY t.ws_name";
 	$db->setQuery($sql);
@@ -109,9 +109,9 @@ function jaEMTooltips($tipid, $title)
  */
 function jaTempnam($dir, $prefix)
 {
-	$dir = JPath::clean($dir . DS);
+	$dir = JPath::clean($dir . '/');
 	if (!JFolder::exists($dir)) {
-		$dir = JPath::clean(ja_sys_get_temp_dir() . DS);
+		$dir = JPath::clean(ja_sys_get_temp_dir() . '/');
 	}
 	
 	$sand = md5(microtime());
@@ -130,4 +130,6 @@ function jaTempnam($dir, $prefix)
 	return $file;
 }
 
-?>
+function jaIsJoomla3x() {
+	return version_compare(JVERSION, '3.0', 'ge');
+}

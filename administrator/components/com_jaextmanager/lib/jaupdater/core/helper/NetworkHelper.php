@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -20,7 +20,8 @@ defined ( '_JEXEC' ) or die ( 'Restricted access' );
  $prefix = (PHP_SHLIB_SUFFIX === 'dll') ? 'php_' : '';
  @dl($prefix . 'curl.' . PHP_SHLIB_SUFFIX);
  }*/
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 class NetworkHelper
 {
 	
@@ -39,7 +40,7 @@ class NetworkHelper
 	 *
 	 * @return {array("savePath"=>$savePath, "error"=>curl_error(), "info"=>curl_getinfo())}
 	 */
-	function downloadFile($savePath, $url, $data, $options = null)
+	public static function downloadFile($savePath, $url, $data, $options = null)
 	{
 		if (substr($savePath, -1) == '/' || JFolder::exists($savePath)) {
 			$targetDir = $savePath;
@@ -76,7 +77,7 @@ class NetworkHelper
 	 *
 	 * @return {array("content"=>curl_exec($ch), "error"=>curl_error(), "info"=>curl_getinfo())}
 	 */
-	function doGET($url, $options = null)
+	public static function doGET($url, $options = null)
 	{
 		if (!function_exists('curl_version')) {
 			$result = NetworkHelper::socket_getdata($url, "", 'GET');
@@ -97,7 +98,7 @@ class NetworkHelper
 	 *
 	 * @return {array("content"=>curl_exec($ch), "error"=>curl_error(), "info"=>curl_getinfo())}
 	 */
-	function doPOST($url, $data, $options = array())
+	public static function doPOST($url, $data, $options = array())
 	{
 		if (!function_exists('curl_version')) {
 			$result = NetworkHelper::socket_getdata($url, $data, 'POST');
@@ -108,7 +109,7 @@ class NetworkHelper
 	}
 
 
-	function curl_getdata($url, $request, $method = 'GET', $port = 80)
+	public static function curl_getdata($url, $request, $method = 'GET', $port = 80)
 	{
 		$post = (strtoupper($method) == 'POST') ? 1 : 0;
 		$ch = curl_init();
@@ -135,7 +136,7 @@ class NetworkHelper
 	 * @param unknown_type $req
 	 * @return unknown
 	 */
-	function socket_getdata($url, $request, $method = 'GET', $port = 80)
+	public static function socket_getdata($url, $request, $method = 'GET', $port = 80)
 	{
 		$aURL = parse_url($url);
 		if (!isset($aURL['query']))

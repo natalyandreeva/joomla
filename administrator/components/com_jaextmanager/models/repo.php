@@ -8,7 +8,8 @@
 defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.application.component.model');
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 /**
  * Weblinks Component Weblink Model
  *
@@ -16,11 +17,11 @@ jimport('joomla.application.component.model');
  * @subpackage	Content
  * @since 1.5
  */
-class JaextmanagerModelRepo extends JModel
+class JaextmanagerModelRepo extends JAEMModel
 {
 
 
-	function getState($property = null)
+	function getState($property = null,$default = null)
 	{
 		static $set;
 		
@@ -46,8 +47,6 @@ class JaextmanagerModelRepo extends JModel
 	 */
 	function getFolderList($base = null)
 	{
-		global $mainframe;
-		
 		// Get some paths from the request
 		if (empty($base)) {
 			$base = JA_WORKING_DATA_FOLDER;
@@ -58,19 +57,19 @@ class JaextmanagerModelRepo extends JModel
 		$folders = JFolder::folders($base, '.', 5, true);
 		
 		// Load appropriate language files
-		$lang = & JFactory::getLanguage();
+		$lang = JFactory::getLanguage();
 		$lang->load(JRequest::getCmd('option'), JPATH_ADMINISTRATOR);
 		
-		$document = & JFactory::getDocument();
+		$document = JFactory::getDocument();
 		$document->setTitle(JText::_('INSERT_IMAGE'));
 		
 		// Build the array of select options for the folder list
-		$options[] = JHTML::_('select.option', "", "/");
+		$options[] = JHtml::_('select.option', "", "/");
 		foreach ($folders as $folder) {
 			$folder = str_replace(JA_WORKING_DATA_FOLDER, "", $folder);
 			$value = substr($folder, 1);
 			$text = str_replace(DS, "/", $folder);
-			$options[] = JHTML::_('select.option', $value, $text);
+			$options[] = JHtml::_('select.option', $value, $text);
 		}
 		
 		// Sort the folder list array
@@ -79,7 +78,7 @@ class JaextmanagerModelRepo extends JModel
 		}
 		
 		// Create the drop-down folder select list
-		$list = JHTML::_('select.genericlist', $options, 'folderlist', "class=\"inputbox\" size=\"1\" onchange=\"ImageManager.setFolder(this.options[this.selectedIndex].value)\" ", 'value', 'text', $base);
+		$list = JHtml::_('select.genericlist', $options, 'folderlist', "class=\"inputbox\" size=\"1\" onchange=\"ImageManager.setFolder(this.options[this.selectedIndex].value)\" ", 'value', 'text', $base);
 		return $list;
 	}
 
@@ -90,7 +89,7 @@ class JaextmanagerModelRepo extends JModel
 		if (empty($base)) {
 			$base = JA_WORKING_DATA_FOLDER;
 		}
-		$base = JPath::clean($base . DS);
+		$base = JPath::clean($base.'/');
 		$mediaBase = str_replace(DS, '/', $base);
 		
 		// Get the list of folders

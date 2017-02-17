@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,7 @@
 var JATooltips = new Class({
 	initialize: function (elements, options) {
 		//var test = new options();
-		this.options = $extend({
+		this.options = Object.append({
 			title: '',
 			content: '',
 			style: 'default',
@@ -96,8 +96,8 @@ var JATooltips = new Class({
 		}).inject(
 		new Element('div', {
 			'class': 'top1'
-		}).injectTop(
-		this.toolTipInner))));
+		}).inject(
+		this.toolTipInner,'top'))));
 		new Element('div', {
 			'class': 'bot4'
 		}).inject(
@@ -113,7 +113,7 @@ var JATooltips = new Class({
 		this.toolTipInner))));
 
 		this.listener.addEvent(this.options.showwhen, function () {
-			$clear(this.hidetimer);
+			clearTimeout(this.hidetimer);
 		}.bind(this));
 		switch (this.options.hidewhen) {
 		case 'overclosebutton':
@@ -125,7 +125,7 @@ var JATooltips = new Class({
 		case 'mouseout':
 		default:
 			this.toolTip.addEvent('mouseenter', function () {
-				$clear(this.hidetimer);
+				clearTimeout(this.hidetimer);
 			}.bind(this));
 			this.toolTip.addEvent('mouseleave', function (event) {
 				this.end(event);
@@ -163,6 +163,10 @@ var JATooltips = new Class({
 
 		if (el.$tmp.myTitle && el.$tmp.myTitle.length > this.options.maxTitleChars) el.$tmp.myTitle = el.$tmp.myTitle.substr(0, this.options.maxTitleChars - 1) + "&hellip;";
 		el.addEvent(this.options.showwhen, function (event) {
+			var $defined = function(obj){
+				return (obj != undefined);
+			};
+ 
 			if (!$defined(event.page)) event = new Event(event);
 			this.listener.el = el;
 			var pos = el.getPosition();
@@ -195,12 +199,12 @@ var JATooltips = new Class({
 				'class': this.options.className + '-text'
 			}).inject(this.wrapper)).set("html", el.$tmp.myText);
 		}
-		$clear(this.timer);
+		clearTimeout(this.timer);
 		this.timer = this.show.delay(this.options.showDelay, this);
 	},
 
 	end: function (event) {
-		$clear(this.hidetimer);
+		clearTimeout(this.hidetimer);
 		this.hidetimer = this.hide.delay(this.options.hideDelay, this);
 	},
 
@@ -239,7 +243,7 @@ var JATooltips = new Class({
 
 	hide: function () {
 		//this.fireEvent('onHide', [this.toolTip]);
-		$clear(this.timer);
+		clearTimeout(this.timer);
 		this.hideFade(this.toolTip);
 		this.listener.setStyle('display', 'none');
 	},
@@ -272,6 +276,7 @@ var JATooltips = new Class({
 		if (!tip.fx) tip.fx = new Fx.Tween(tip);
 		tip.fx.pause();
 		var curopac = tip.getStyle('opacity');
+		tip.fx.set('left', -9999);
 		tip.fx.start('opacity', curopac, 0);
 	}
 });

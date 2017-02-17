@@ -16,11 +16,12 @@ defined('_JEXEC') or die();
 jimport('joomla.application.component.model');
 jimport('joomla.installer.installer');
 jimport('joomla.installer.helper');
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 /**
  * @desc modify from "Extension Manager Install Model" of "Installer Component"
  */
-class JaextmanagerModelUploader extends JModel
+class JaextmanagerModelUploader extends JAEMModel
 {
 	/** @var object JTable object */
 	var $_table = null;
@@ -73,7 +74,7 @@ class JaextmanagerModelUploader extends JModel
 		}
 		
 		// Get an ja extension uploader instance
-		$uploader = & jaExtUploader::getInstance();
+		$uploader = jaExtUploader::getInstance();
 		$result = $uploader->upload($package['dir']);
 		if (!$result) {
 			// There was an error uploading the package
@@ -89,7 +90,7 @@ class JaextmanagerModelUploader extends JModel
 		// Cleanup the install files
 		if (!JFile::exists($package['packagefile'])) {
 			$config = JFactory::getConfig();
-			$package['packagefile'] = $config->get('tmp_path') . DS . $package['packagefile'];
+			$package['packagefile'] = $config->get('tmp_path').'/'.$package['packagefile'];
 		}
 		
 		JInstallerHelper::cleanupInstall($package['packagefile'], $package['extractdir']);
@@ -134,12 +135,12 @@ class JaextmanagerModelUploader extends JModel
 		
 		// Build the appropriate paths
 		$config = JFactory::getConfig();
-		$tmp_dest = $config->get('tmp_path') . DS . $userfile['name'];
+		$tmp_dest = $config->get('tmp_path').'/'.$userfile['name'];
 		$tmp_src = $userfile['tmp_name'];
 		
 		// Move uploaded file
 		jimport('joomla.filesystem.file');
-		$uploaded = JFile::upload($tmp_src, $tmp_dest);
+		$uploaded = JFile::upload($tmp_src, $tmp_dest,false,true);
 		
 		// Unpack the downloaded package file
 		$package = JInstallerHelper::unpack($tmp_dest);
@@ -217,7 +218,7 @@ class JaextmanagerModelUploader extends JModel
 		$tmp_dest = $config->get('tmp_path');
 		
 		// Unpack the downloaded package file
-		$package = JInstallerHelper::unpack($tmp_dest . DS . $p_file);
+		$package = JInstallerHelper::unpack($tmp_dest.'/'.$p_file);
 		
 		return $package;
 	}

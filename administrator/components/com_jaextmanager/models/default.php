@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -22,9 +22,8 @@ jimport('joomla.filesystem.file');
  * @subpackage  Updater
  * @since   1.5
  */
-class JaextmanagerModelDefault extends JModel
+class JaextmanagerModelDefault extends JAEMModel
 {
-	
 	var $_components = array();
 	var $_updateComponents = array();
 	var $_updateExtensions = array();
@@ -184,6 +183,9 @@ class JaextmanagerModelDefault extends JModel
 		$lists = $this->_getUsListExtensions();
 		$keyword = empty($lists['search']) ? '' : $lists['search'];
 		
+		$params = $this->getComponentParams();
+		$hideNoneJA = (int) $params->get("HIDE_NONJA", 0);
+		
 		//default filter
 		$filter = " AND protected <> 1 AND `element` <> '' ";
 		
@@ -195,6 +197,10 @@ class JaextmanagerModelDefault extends JModel
 		
 		//filter by keyword
 		$filter .= "AND (name LIKE '%{$keyword}%' OR '' = '{$keyword}') ";
+		
+		if($hideNoneJA) {
+			$filter .= "AND manifest_cache LIKE '%author\":\"JoomlArt%' ";
+		}
 		
 		//filter by extension id
 		$cIds = JRequest::getVar('cId', array(), '', 'array');
@@ -215,13 +221,14 @@ class JaextmanagerModelDefault extends JModel
 	 */
 	function _getTotalExtensions($lists)
 	{
-		$db = & JFactory::getDBO();
+		$db = JFactory::getDbo();
 		$type = (JRequest::getVar('type', '') != '') ? JRequest::getVar('type') : $lists['extionsion_type'];
 		$sFilter = $this->_getFilterExtensions();
 		
 		$query = "
 			SELECT COUNT(extension_id) FROM #__extensions 
 			WHERE (`type` = " . $db->Quote($type) . " OR '' = " . $db->Quote($type) . ")
+			AND `element` NOT LIKE '%jaupdater.%'
 			{$sFilter}
 		";
 		$db->setQuery($query);
@@ -247,7 +254,7 @@ class JaextmanagerModelDefault extends JModel
 		$type = (JRequest::getVar('type', '') != '') ? JRequest::getVar('type') : $lists['extionsion_type'];
 		$sFilter = $this->_getFilterExtensions();
 		
-		$db = & JFactory::getDBO();
+		$db = JFactory::getDbo();
 		
 		$query = "
 				SELECT 
@@ -256,9 +263,10 @@ class JaextmanagerModelDefault extends JModel
 					element, client_id, folder 
 				FROM #__extensions 
 				WHERE (`type` = " . $db->Quote($type) . " OR '' = " . $db->Quote($type) . ")
-				{$sFilter} 
+				AND `element` NOT LIKE '%jaupdater.%'
+				{$sFilter}
 				GROUP BY extension_id
-				ORDER BY `type`, name
+				ORDER BY `type`, `name`
 				LIMIT {$limitstart}, {$limit}";
 		//echo nl2br($query);
 		//die($query);
@@ -285,11 +293,11 @@ class JaextmanagerModelDefault extends JModel
 	function getListExtensionType()
 	{
 		$aData = array();
-		$aData[] = JHTML::_('select.option', '', JText::_('ALL'));
-		$aData[] = JHTML::_('select.option', 'component', JText::_('COMPONENTS'));
-		$aData[] = JHTML::_('select.option', 'module', JText::_('MODULES'));
-		$aData[] = JHTML::_('select.option', 'plugin', JText::_('PLUGINS'));
-		$aData[] = JHTML::_('select.option', 'template', JText::_('TEMPLATES'));
+		$aData[] = JHtml::_('select.option', '', JText::_('ALL'));
+		$aData[] = JHtml::_('select.option', 'component', JText::_('COMPONENTS'));
+		$aData[] = JHtml::_('select.option', 'module', JText::_('MODULES'));
+		$aData[] = JHtml::_('select.option', 'plugin', JText::_('PLUGINS'));
+		$aData[] = JHtml::_('select.option', 'template', JText::_('TEMPLATES'));
 		return $aData;
 	}
 
@@ -397,7 +405,7 @@ class JaextmanagerModelDefault extends JModel
 					if (isset($vInfo->changelogUrl) && !empty($vInfo->changelogUrl)) {
 						$status .= ' <a href="' . $vInfo->changelogUrl . '" title="' . JText::_('SHOW_CHANGE_LOG') . '" target="_blank" >' . JText::_('CHANGE_LOG') . '</a>';
 					}
-					$status .= ' - <a href="index.php?option=' . JACOMPONENT . '&view=default&task=compare&cId[]=' . $extID . '&version=' . $v . '" title="' . JText::_('VIEW_DIFFERENCE_BETWEEN_TWO_VERSIONS') . '">' . JText::_('COMPARE') . '</a>';
+					$status .= ' - <a href="index.php?option=com_jaextmanager&view=default&task=compare&cId[]=' . $extID . '&version=' . $v . '" title="' . JText::_('VIEW_DIFFERENCE_BETWEEN_TWO_VERSIONS') . '">' . JText::_('COMPARE') . '</a>';
 					$status .= ' - <a href="#" onclick="doUpgrade(\'' . $extID . '\', \'' . $v . '\', \'LastCheckStatus_' . $extID . '\'); return false;" title="' . JText::_('UPGARDE_TO_NEW_VERSION_NOW') . '">' . JText::_('UPGRADE_NOW') . '</a>';
 				}
 				/*if ( $more ) {
@@ -445,7 +453,7 @@ class JaextmanagerModelDefault extends JModel
 	 */
 	function storeLastCheck($objID, $status)
 	{
-		$db = & JFactory::getDBO();
+		$db = JFactory::getDbo();
 		
 		$query = "
 			INSERT INTO #__jaem_log (ext_id, check_date, check_info)
@@ -478,7 +486,7 @@ class JaextmanagerModelDefault extends JModel
 	{
 		static $aSettings = null;
 		if (is_null($aSettings)) {
-			$db = & JFactory::getDBO();
+			$db = JFactory::getDbo();
 			
 			$query = "SELECT * FROM #__jaem_log WHERE 1";
 			$db->setQuery($query);
@@ -692,9 +700,26 @@ class JaextmanagerModelDefault extends JModel
 			$message = JText::_("YOU_HAVE_SUCCESSFULLY_UPGRADED_FROM_VERSION_FROM_VERSION_TO_VERSION_TO_VERSION_AT_TIME");
 			$message = str_replace(array('{from_version}', '{to_version}', '{time}'), array($obj->version, $version, date('d M Y, H:i:s')), $message);
 			$this->storeLastCheck($obj->extId, $message);
+			
+			$this->refresh($obj->id);
 			return $version;
 		}
 		return $version;
+	}
+	/**
+	 * Refreshes the cached manifest information for an extension.
+	 *
+	 * @param	int		extension identifier (key in #__extensions)
+	 * @return	boolean	result of refresh
+	 */
+	function refresh($eid)
+	{
+		jimport('joomla.installer.installer');
+
+		// Get an installer object for the extension type
+		$installer = JInstaller::getInstance();
+		$result = $installer->refreshManifestCache($eid);
+		return $result;
 	}
 
 
@@ -775,6 +800,7 @@ class JaextmanagerModelDefault extends JModel
 			return false;
 		} else {
 			$this->storeLastCheck($obj->extId, JText::_("YOU_ARE_SUCCESSFULLY_ROLLBACK_AT") . date('d M Y, H:i:s'));
+			$this->refresh($obj->id);
 			return $result;
 		}
 	}
@@ -824,7 +850,7 @@ class JaextmanagerModelDefault extends JModel
 		$params = $this->getComponentParams();
 		//get mysql variables
 		if (substr(PHP_OS, 0, 3) == 'WIN') {
-			$db = & JFactory::getDBO();
+			$db = JFactory::getDbo();
 			$query = 'SHOW VARIABLES';
 			$db->setQuery($query);
 			$rs = $db->loadObjectList();
@@ -832,8 +858,8 @@ class JaextmanagerModelDefault extends JModel
 			foreach ($rs as $row) {
 				$aMysqlVariables[$row->Variable_name] = $row->Value;
 			}
-			$pathMysql = (isset($aMysqlVariables['basedir'])) ? $aMysqlVariables['basedir'] . 'bin' . DS . 'mysql' : 'mysql';
-			$pathMysqldump = (isset($aMysqlVariables['basedir'])) ? $aMysqlVariables['basedir'] . 'bin' . DS . 'mysqldump' : 'mysqldump';
+			$pathMysql = (isset($aMysqlVariables['basedir'])) ? $aMysqlVariables['basedir'] . '/bin/mysql' : 'mysql';
+			$pathMysqldump = (isset($aMysqlVariables['basedir'])) ? $aMysqlVariables['basedir'] . '/bin/mysqldump' : 'mysqldump';
 		} else {
 			$pathMysql = 'mysql';
 			$pathMysqldump = 'mysqldump';
@@ -870,15 +896,15 @@ class JaextmanagerModelDefault extends JModel
 
 	function getComponentParams()
 	{
-		$params = &JComponentHelper::getParams(JACOMPONENT);
+		$params = JComponentHelper::getParams(JACOMPONENT);
 		return $params;
 	}
 
 
 	function storeComponentParams($data)
 	{
-		$db = & JFactory::getDBO();
-		$query = "SELECT params FROM #__extensions WHERE `element` = '" . JACOMPONENT . "'";
+		$db = JFactory::getDbo();
+		$query = "SELECT params FROM #__extensions WHERE `element` = 'com_jaextmanager'";
 		$db->setQuery($query);
 		$arr = $db->loadAssoc();
 		$stdObject = json_decode($arr['params']);
@@ -890,7 +916,7 @@ class JaextmanagerModelDefault extends JModel
 		}
 		$sConfig = json_encode($stdObject);
 		
-		$query = "UPDATE #__extensions SET params =" . $db->Quote($sConfig) . " WHERE `element` = '" . JACOMPONENT . "'";
+		$query = "UPDATE #__extensions SET params =" . $db->Quote($sConfig) . " WHERE `element` = 'com_jaextmanager'";
 		$db->setQuery($query);
 		$result = $db->query();
 		return $result;
@@ -900,7 +926,7 @@ class JaextmanagerModelDefault extends JModel
 	function storeExtensionSettings($data)
 	{
 		if (is_array($data) && count($data)) {
-			$db = & JFactory::getDBO();
+			$db = JFactory::getDbo();
 			
 			foreach ($data as $extId => $service_id) {
 				$query = "

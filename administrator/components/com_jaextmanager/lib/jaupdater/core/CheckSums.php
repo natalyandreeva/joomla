@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,8 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
- 
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 class CheckSums
 {
 	
@@ -78,10 +79,10 @@ class CheckSums
 		
 		foreach ($entries as $entry) {
 			if ($entry != '.' && $entry != '..' && !$this->isIgnore($entry, $ignore)) {
-				if (JFolder::exists($path . DS . $entry)) {
-					$fileCheckSum[$entry] = $this->dumpCRC($path . DS . $entry, $ignore);
+				if (JFolder::exists($path.'/'.$entry)) {
+					$fileCheckSum[$entry] = $this->dumpCRC($path.'/'.$entry, $ignore);
 				} else {
-					$fileCheckSum[$entry] = $this->getCheckSum($path . DS . $entry);
+					$fileCheckSum[$entry] = $this->getCheckSum($path.'/'.$entry);
 				}
 			}
 		}
@@ -102,7 +103,8 @@ class CheckSums
 	 */
 	function dumpCRCObject($path, $ignore = null)
 	{
-		$path = FileSystemHelper::clean($path);
+		$FileSystemHelper = new FileSystemHelper();
+		$path = $FileSystemHelper->clean($path);
 		if ($this->isIgnore(basename($path), $ignore)) {
 			return false;
 		}
@@ -124,10 +126,10 @@ class CheckSums
 		$entries = $this->_scanDir($path, 0);
 		foreach ($entries as $entry) {
 			if (!$this->isIgnore($entry, $ignore)) {
-				if (JFolder::exists($path . DS . $entry)) {
-					$fileCheckSum->$entry = $this->dumpCRCObject($path . DS . $entry, $ignore);
+				if (JFolder::exists($path.'/'.$entry)) {
+					$fileCheckSum->$entry = $this->dumpCRCObject($path.'/'.$entry, $ignore);
 				} else {
-					$fileCheckSum->$entry = $this->getCheckSum($path . DS . $entry);
+					$fileCheckSum->$entry = $this->getCheckSum($path.'/'.$entry);
 				}
 			}
 		}
@@ -156,7 +158,7 @@ class CheckSums
 			if ($entry == '.' || $entry == '..') {
 				continue;
 			}
-			if (JFolder::exists($path . DS . $entry)) {
+			if (JFolder::exists($path.'/'.$entry)) {
 				$aFolders[] = $entry;
 			} else {
 				$aFiles[] = $entry;
@@ -308,7 +310,7 @@ class CheckSums
 		$retVal = true;
 		if (JFolder::exists($path) && is_object($crc)) {
 			foreach ($crc as $name => $value) {
-				$cPath = $path . DS . $name;
+				$cPath = $path.'/'.$name;
 				if (file_exists($cPath)) {
 					if (is_object($value) && JFolder::exists($cPath)) {
 						$rNew = null;

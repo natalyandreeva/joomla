@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -20,14 +20,13 @@ jimport('joomla.application.component.view');
  *
  * @package    jauc
  */
-class JaextmanagerViewDefault extends JView
+class JaextmanagerViewDefault extends JAEMView
 {
 	var $num;
 
 
 	function __construct($config = array())
 	{
-		global $option;
 		$this->num = 1;
 		parent::__construct($config);
 	}
@@ -37,7 +36,7 @@ class JaextmanagerViewDefault extends JView
 	{
 		// Display menu
 		if (!JRequest::getVar("ajax") && JRequest::getVar('tmpl') != 'component' && JRequest::getVar('viewmenu', 1) != 0) {
-			$file = JPATH_COMPONENT_ADMINISTRATOR . DS . "views" . DS . "default" . DS . "tmpl" . DS . "menu_header.php";
+			$file = JPATH_COMPONENT_ADMINISTRATOR."/views/default/tmpl/menu_header.php";
 			if (@file_exists($file))
 				require_once ($file);
 		}
@@ -114,7 +113,7 @@ class JaextmanagerViewDefault extends JView
 		
 		// Display footer
 		if (!JRequest::getVar("ajax") && JRequest::getVar('tmpl') != 'component' && JRequest::getVar('viewmenu', 1) != 0) {
-			$file = JPATH_COMPONENT_ADMINISTRATOR . DS . "views" . DS . "default" . DS . "tmpl" . DS . "menu_footer.php";
+			$file = JPATH_COMPONENT_ADMINISTRATOR."/views/default/tmpl/menu_footer.php";
 			if (@file_exists($file))
 				require_once ($file);
 		}
@@ -148,10 +147,11 @@ class JaextmanagerViewDefault extends JView
 
 	function displayConfigService($tpl = null)
 	{
-		JToolBarHelper::save("config_service");
+		JToolBarHelper::save("config_service","SAVE");
 		// Initialize variables
-		$model = &$this->getModel('default');
-		$this->assignRef('params', $model->getConfigService());
+		$model = $this->getModel('default');
+		$getConfigService = $model->getConfigService();
+		$this->assignRef('params', $getConfigService);
 		parent::display($tpl);
 	}
 
@@ -170,7 +170,7 @@ class JaextmanagerViewDefault extends JView
 	{
 		JToolBarHelper::save("config_extensions");
 		// Initialize variables
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$extension = $model->_getProduct();
 		
 		$a = $model->getComponentParams();
@@ -195,12 +195,6 @@ class JaextmanagerViewDefault extends JView
 	 */
 	function displayListItems($tpl = null)
 	{
-		global $app, $option, $jauc;
-		
-		/*
-		* Set toolbar items for the page
-		*/
-		
 		$services = jaGetListServices();
 		foreach ($services as $service) {
 			JToolBarHelper::custom('config_extensions_' . $service->id, 'default', 'default', $service->ws_name, true);
@@ -210,22 +204,23 @@ class JaextmanagerViewDefault extends JView
 		// JToolBarHelper::preferences(JACOMPONENT);
 		
 
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		
 		//$components = &$this->get("components");
+		$lists = $model->_getUsListExtensions();
 		$listExtensions = $model->getListExtensions();
 		$state = $this->get('State');
 		$pagination = $model->getPagination();
 		
-		$boxType = JHTML::_('select.genericlist', $model->getListExtensionType(), 'extionsion_type', 'class="inputbox"', 'value', 'text', JRequest::getVar('extionsion_type'));
-		
+		$boxType = JHtml::_('select.genericlist', $model->getListExtensionType(), 'extionsion_type', 'class="inputbox"', 'value', 'text', JRequest::getVar('extionsion_type'));
+		$comUri = $this->get("comUri");
 		//$this->assignRef('components',   $components);
 		$this->assignRef('services', $services);
 		$this->assignRef('listExtensions', $listExtensions);
 		$this->assignRef('pagination', $pagination);
 		$this->assignRef('boxType', $boxType);
-		
-		$this->assignRef('comUri', $this->get("comUri"));
+		$this->assignRef('comUri', $comUri);
+		$this->assignRef('lists', $lists);
 		
 		parent::display($tpl);
 	}
@@ -236,12 +231,10 @@ class JaextmanagerViewDefault extends JView
 	 */
 	function displayCheckUpdate($tpl = null)
 	{
-		global $option;
-		
 		// Toolbar
 		JToolBarHelper::cancel();
 		
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		die($model->getNewVersions());
 	}
 
@@ -251,14 +244,12 @@ class JaextmanagerViewDefault extends JView
 	 */
 	function displayUpgrade($tpl = null)
 	{
-		global $option;
-		
 		// Toolbar
 		JToolBarHelper::back();
 		
-		$model = &$this->getModel();
+		$model = $this->getModel();
 		$components = $model->upgradeComponent();
-		$pagination = &$this->get('Pagination');
+		$pagination = $this->get('Pagination');
 		
 		$this->assignRef('pagination', $pagination);
 		$this->assignRef("components", $components);
@@ -270,11 +261,11 @@ class JaextmanagerViewDefault extends JView
 	function displayRecovery($tpl = null)
 	{
 		// Toolbar
-		$model = &$this->getModel();
+		$model = $this->getModel();
 		$obj = $model->_getProduct('default');
 		
-		$model = &$this->getModel();
-		$listRecoveryFiles = &$this->get("ListRecoveryFiles");
+		$model = $this->getModel();
+		$listRecoveryFiles = $this->get("ListRecoveryFiles");
 		if ($listRecoveryFiles) {
 			$this->assignRef("obj", $obj);
 			$this->assignRef("listRecoveryFiles", $listRecoveryFiles);
@@ -293,7 +284,7 @@ class JaextmanagerViewDefault extends JView
 		$cIds = JRequest::getVar('cId', array(), '', 'array');
 		$cIds = $cIds[0];
 		
-		$model = &$this->getModel();
+		$model = $this->getModel();
 		$versionRollback = $model->doRecoveryFile();
 		if ($versionRollback !== false) {
 			echo JText::sprintf("SUCCESSFULLY_ROLLBACKED_TO_VERSION_S_PLEASE_REFRESH_THIS_PAGE_TO_SEE_THE_VERSION_UPDATE", $versionRollback);
@@ -307,15 +298,13 @@ class JaextmanagerViewDefault extends JView
 	function displayListBackupConflicted($tpl = null)
 	{
 		// Toolbar
-		
-
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$product = $model->_getProduct();
 		if ($product === false) {
 			echo JText::_("EXTENSION_NOT_FOUND");
 			exit();
 		}
-		$listConflicted = &$this->get("ListBackupConflicted");
+		$listConflicted = $this->get("ListBackupConflicted");
 		
 		if ($listConflicted) {
 			
@@ -338,12 +327,11 @@ class JaextmanagerViewDefault extends JView
 
 	function displayFilesConflicted($tpl = null)
 	{
-		global $options;
 		
 		// Toolbar
 		JToolBarHelper::back();
 		
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$obj = $model->getBackupConflicted();
 		
 		if ($obj !== false) {
@@ -356,7 +344,7 @@ class JaextmanagerViewDefault extends JView
 
 	function displayDiffFilesConflicted($tpl = null)
 	{
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$obj = $model->getDiffFilesConflicted();
 		
 		if ($obj !== false) {
@@ -371,10 +359,11 @@ class JaextmanagerViewDefault extends JView
 	{
 		$paths = new stdClass();
 		$paths->first = '';
-		
+		$state = $this->get('state');
 		$this->assignRef('paths', $paths);
-		$this->assignRef('state', $this->get('state'));
-		$this->assignRef('uploadResult', JRequest::getVar('uploadResult', '', 'post', 'none', JREQUEST_ALLOWRAW));
+		$this->assignRef('state', $state);
+		$uploadResult = JRequest::getVar('uploadResult', '', 'post', 'none', JREQUEST_ALLOWRAW);
+		$this->assignRef('uploadResult', $uploadResult);
 		
 		parent::display($tpl);
 	}
@@ -382,13 +371,11 @@ class JaextmanagerViewDefault extends JView
 
 	function displayDiffView($tpl = null)
 	{
-		global $options;
-		
 		// Toolbar
 		JToolBarHelper::apply("upgrade", "Upgrade");
 		JToolBarHelper::cancel();
 		
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$obj = $model->getDiffView();
 		
 		if ($obj !== false) {
@@ -409,7 +396,7 @@ class JaextmanagerViewDefault extends JView
 	function displayDiffFiles($tpl = null)
 	{
 		
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$obj = $model->getDiffFiles();
 		
 		if ($obj !== false) {
@@ -433,7 +420,7 @@ class JaextmanagerViewDefault extends JView
 		$app = JFactory::getApplication('administrator');
 		$backUrl = JURI::current() . "?" . $_SERVER['QUERY_STRING'];
 		$backUrl = urlencode($backUrl);
-		$url = "index.php?tmpl=component&option=" . JACOMPONENT . "&view=services&viewmenu=0&task=config&cid[]=" . $obj->ws_id . "&number=1&backUrl=" . $backUrl;
+		$url = "index.php?tmpl=component&option=com_jaextmanager&view=services&viewmenu=0&task=config&cid[]=" . $obj->ws_id . "&number=1&backUrl=" . $backUrl;
 		$app->redirect($url, $message, $messageType);
 	}
 
@@ -446,7 +433,7 @@ class JaextmanagerViewDefault extends JView
 
 	function displayViewSource($tpl = null)
 	{
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$source = $model->getSourceCode();
 		if ($source !== false) {
 			$source = htmlentities($source);
@@ -460,7 +447,7 @@ class JaextmanagerViewDefault extends JView
 
 	function displayViewRemoteSource($tpl = null)
 	{
-		$model = &$this->getModel('default');
+		$model = $this->getModel('default');
 		$source = $model->getRemoteSourceCode();
 		if ($source !== false) {
 			$source = htmlentities($source);

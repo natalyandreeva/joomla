@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -78,6 +78,21 @@ function doUpgrade(etxId, version, resultID) {
 				},
 				success: function (msg) {
 					jQuery("#" + resultID).html(msg);
+				},
+				error: function (xhr, ajaxOptions, thrownError) {
+					var txt = '<span style="color:red;font-weight:bold;">' +xhr.status + ' - ' + thrownError+'</span><br />';
+					var content = jQuery(xhr.responseText).filter('#content-box').html();
+					if(content) {
+						txt += content;
+					} else {
+						//J!3.x
+						var content = jQuery(xhr.responseText).filter('#content').html();
+						if(content) {
+							txt += content;
+						}
+					}
+					
+					jQuery("#" + resultID).html(txt);
 				}
 			});
 		}
@@ -188,6 +203,6 @@ function showMoreOlderVersion(linkObj, regionID) {
 function configExtensions(element, extId) {
 	var offset = jQuery(element).offset();
 	var top = offset.top - jQuery(window).scrollTop() - 30;
-	jaCreatePopup('index.php?option=com_jaextmanager&tmpl=component&view=default&layout=config_extensions&cId[]=' + extId, 370, 200, jQuery(element).attr('title'));
+	jaCreatePopup('index.php?option=com_jaextmanager&tmpl=component&view=default&layout=config_extensions&cId[]=' + extId, 370, 250, jQuery(element).attr('title'));
 	//jQuery('#jaForm').css({'top': top, 'left': offset.left - 370});
 }

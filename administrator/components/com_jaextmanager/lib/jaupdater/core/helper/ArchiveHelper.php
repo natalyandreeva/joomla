@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,8 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
- 
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 /**
  * Helper for archive action: compress, uncompress
  *
@@ -29,7 +30,7 @@ class ArchiveHelper
 	 *
 	 * @return  boolean true if success, false if failure
 	 */
-	function zip($zipFile, $path, $rmPath = false)
+	public static function zip($zipFile, $path, $rmPath = false)
 	{
 		$oZip = new CreateZipFile();
 		
@@ -44,12 +45,12 @@ class ArchiveHelper
 				$fileContents = file_get_contents($path);
 				$oZip->addFile($fileContents, basename($path));
 			} elseif (JFolder::exists($path)) {
-				$outputDir = str_replace(array(dirname($path), DS, '/'), '', $path) . DS;
+				$outputDir = str_replace(array(dirname($path), DS, '/'), '', $path).'/';
 				$oZip->zipDirectory($path, $outputDir);
 			}
 		}
-		
-		$out = JFile::write($zipFile, $oZip->getZippedfile());
+		$getZippedfile = $oZip->getZippedfile();
+		$out = JFile::write($zipFile, $getZippedfile);
 		
 		return $out;
 	}
@@ -63,7 +64,7 @@ class ArchiveHelper
 	 *
 	 * @return  boolean true if success, false if failure
 	 */
-	function unZip($zipFile, $extractPath)
+	 public static function unZip($zipFile, $extractPath)
 	{
 		jimport('joomla.filesystem.archive');
 		

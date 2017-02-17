@@ -54,9 +54,9 @@ defined( '_JEXEC' ) or die( 'Restricted access' ); ?>
   <input type="hidden" name="task" value="doUpload" />
   <input type="hidden" name="tmpl" value="component" />
   <input type="hidden" name="view" value="default" />
-  <input type="hidden" name="option" value="<?php echo JACOMPONENT; ?>" />
+  <input type="hidden" name="option" value="com_jaextmanager" />
   <input type="hidden" value="1" id="hasFileUpload" name="hasFileUpload" />
-  <?php echo JHTML::_( 'form.token' ); ?>
+  <?php echo JHtml::_( 'form.token' ); ?>
   <table align="center">
     <tr>
       <td>

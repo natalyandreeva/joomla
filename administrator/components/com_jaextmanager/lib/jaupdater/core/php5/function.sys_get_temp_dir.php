@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,13 +11,14 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
  //if ( !function_exists('sys_get_temp_dir') ) {
 function ja_sys_get_temp_dir()
 {
 	// Try to get from environment variable
-	if (defined('JPATH_ROOT') && JFolder::exists(JPATH_ROOT . DS . 'tmp' . DS)) {
-		return JPATH_ROOT . DS . 'tmp' . DS;
+	if (defined('JPATH_ROOT') && JFolder::exists(JPATH_ROOT.'/tmp/')) {
+		return JPATH_ROOT.'/tmp/';
 	} elseif (!empty($_ENV['TMPDIR'])) {
 		return realpath($_ENV['TMPDIR']);
 	} elseif (!empty($_ENV['TEMP'])) {

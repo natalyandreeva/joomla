@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,8 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
- 
+ jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 /**
  * Helper for FileSystem functions
  *
@@ -51,7 +52,7 @@ class FileSystemHelper
 	 */
 	function createDirRecursive($path, $mod = 0700)
 	{
-		$path = $path . DS;
+		$path = $path.'/';
 		$path = FileSystemHelper::clean($path, DS);
 		JFolder::create($path, $mod);
 		return $path;
@@ -78,7 +79,7 @@ class FileSystemHelper
 		if (!JFolder::exists($tmpName)) {
 			JFolder::create($tmpName, $mod);
 		}
-		return FileSystemHelper::clean($tmpName . DS);
+		return FileSystemHelper::clean($tmpName.'/');
 	}
 
 
@@ -101,7 +102,7 @@ class FileSystemHelper
 				if ($entry == "." || $entry == "..") {
 					continue;
 				}
-				$entry = FileSystemHelper::clean($path . DS . $entry);
+				$entry = FileSystemHelper::clean($path.'/'.$entry);
 				if (JFolder::exists($entry) && $recursive === true) {
 					if (FileSystemHelper::rm($entry, $recursive) === false) {
 						$retVal = false;
@@ -143,7 +144,7 @@ class FileSystemHelper
 			$retVal = JFolder::copy($src, $dst, '', true);
 		} elseif (JFile::exists($src)) {
 			/*if(JFolder::exists($dst)) {
-			 $dst = FileSystemHelper::clean($dst . DS) . basename($src);
+			 $dst = FileSystemHelper::clean($dst.'/') . basename($src);
 			 }*/
 			$retVal = JFile::copy($src, $dst);
 		}
@@ -208,7 +209,7 @@ class FileSystemHelper
 		$handle = opendir($path);
 		while (($file = readdir($handle)) !== false) {
 			if (($file != '.') && ($file != '..') && (!in_array($file, $exclude))) {
-				$dir = $path . DS . $file;
+				$dir = $path.'/'.$file;
 				$isDir = JFolder::exists($dir);
 				if ($isDir) {
 					if ($recurse) {
@@ -223,7 +224,7 @@ class FileSystemHelper
 				} else {
 					if (preg_match("/$filter/", $file)) {
 						if ($fullpath) {
-							$arr[] = $path . DS . $file;
+							$arr[] = $path.'/'.$file;
 						} else {
 							$arr[] = $file;
 						}

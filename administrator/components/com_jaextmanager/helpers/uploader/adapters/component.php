@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -12,7 +12,8 @@
 // No direct access
 defined('JPATH_BASE') or die();
 jimport('joomla.base.adapterinstance');
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 class jaExtUploaderComponent extends JObject
 {
 
@@ -74,8 +75,8 @@ class jaExtUploaderComponent extends JObject
 		if ($jaProduct !== false) {
 			//path for install, we dont need it on upload to local reposiotry :)
 			// Set the installation target paths
-			//$this->parent->setPath('extension_site', JPath::clean(JPATH_SITE.DS.'components'.DS.$this->get('element')));
-			//$this->parent->setPath('extension_administrator', JPath::clean(JPATH_ADMINISTRATOR.DS.'components'.DS.$this->get('element')));
+			//$this->parent->setPath('extension_site', JPath::clean(JPATH_SITE.'/components/'.$this->get('element')));
+			//$this->parent->setPath('extension_administrator', JPath::clean(JPATH_ADMINISTRATOR.'/components/'.$this->get('element')));
 			
 
 			$storePath = $jauc->getLocalVersionPath($jaProduct, false);
@@ -176,9 +177,9 @@ class jaExtUploaderComponent extends JObject
 		
 		if ($installFile) {
 			// Make sure it hasn't already been copied (this would be an error in the xml install file)
-			if (!file_exists($this->parent->getPath('extension_administrator') . DS . $installFile) || $this->parent->getOverwrite()) {
-				$path['src'] = $this->parent->getPath('source') . DS . $installFile;
-				$path['dest'] = $this->parent->getPath('extension_administrator') . DS . $installFile;
+			if (!file_exists($this->parent->getPath('extension_administrator').'/'.$installFile) || $this->parent->getOverwrite()) {
+				$path['src'] = $this->parent->getPath('source').'/'.$installFile;
+				$path['dest'] = $this->parent->getPath('extension_administrator').'/'.$installFile;
 				
 				if (!$this->parent->copyFiles(array($path))) {
 					// Install failed, rollback changes
@@ -197,9 +198,9 @@ class jaExtUploaderComponent extends JObject
 		
 		if ($uninstallFile) {
 			// Make sure it hasn't already been copied (this would be an error in the xml install file)
-			if (!file_exists($this->parent->getPath('extension_administrator') . DS . $uninstallFile) || $this->parent->getOverwrite()) {
-				$path['src'] = $this->parent->getPath('source') . DS . $uninstallFile;
-				$path['dest'] = $this->parent->getPath('extension_administrator') . DS . $uninstallFile;
+			if (!file_exists($this->parent->getPath('extension_administrator').'/'.$uninstallFile) || $this->parent->getOverwrite()) {
+				$path['src'] = $this->parent->getPath('source').'/'.$uninstallFile;
+				$path['dest'] = $this->parent->getPath('extension_administrator').'/'.$uninstallFile;
 				
 				if (!$this->parent->copyFiles(array($path))) {
 					// Install failed, rollback changes
@@ -211,8 +212,8 @@ class jaExtUploaderComponent extends JObject
 		
 		// If there is a manifest script, lets copy it.
 		if ($this->get('manifest_script')) {
-			$path['src'] = $this->parent->getPath('source') . DS . $this->get('manifest_script');
-			$path['dest'] = $this->parent->getPath('extension_administrator') . DS . $this->get('manifest_script');
+			$path['src'] = $this->parent->getPath('source').'/'.$this->get('manifest_script');
+			$path['dest'] = $this->parent->getPath('extension_administrator').'/'.$this->get('manifest_script');
 			
 			if (!file_exists($path['dest']) || $this->parent->getOverwrite()) {
 				if (!$this->parent->copyFiles(array($path))) {

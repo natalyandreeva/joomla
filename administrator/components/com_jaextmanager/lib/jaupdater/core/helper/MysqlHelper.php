@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,8 @@ defined ( '_JEXEC' ) or die ( 'Restricted access' );
 
 define('JA_BACKUP_ALL', 0); //backup all tables if no specific tables provied
 
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 class jaMysqlHelper
 {
 	var $_host = "localhost";
@@ -41,7 +42,7 @@ class jaMysqlHelper
 	 * @param unknown_type $mysql - path to mysql bin
 	 * @param unknown_type $mysqlDump - path to mysqldump bin
 	 */
-	function jaMysqlHelper($host, $user, $pass, $db, $prefix, $mysql = 'mysql', $mysqlDump = 'mysqldump')
+	function __construct($host, $user, $pass, $db, $prefix, $mysql = 'mysql', $mysqlDump = 'mysqldump')
 	{
 		@set_time_limit(0); // No time limit
 		$this->_host = $host;
@@ -63,7 +64,8 @@ class jaMysqlHelper
 	 */
 	function dump($backupFile, $aTables = array())
 	{
-		$backupFile = FileSystemHelper::clean($backupFile);
+		$FileSystemHelper	= new FileSystemHelper();
+		$backupFile = $FileSystemHelper->clean($backupFile);
 		
 		if (count($aTables) == 0 && !JA_BACKUP_ALL) {
 			return false;
@@ -89,13 +91,14 @@ class jaMysqlHelper
 	 */
 	function restore($backupFile)
 	{
-		$backupFile = FileSystemHelper::clean($backupFile);
+		$FileSystemHelper	= new FileSystemHelper();
+		$backupFile = $FileSystemHelper->clean($backupFile);
 		
 		if (!JFile::exists($backupFile)) {
 			return false;
 		}
 		//create temp file with replaced #__ by db prefix
-		$tmpDir = FileSystemHelper::tmpDir(null, 'ja', 0777);
+		$tmpDir = $FileSystemHelper->tmpDir(null, 'ja', 0755);
 		$tmpFile = $tmpDir . basename($backupFile);
 		$sql = file_get_contents($backupFile);
 		$sql = preg_replace('/\`\#__([a-zA-Z_0-9]*)\`/', "`" . $this->_prefix . "$1`", $sql);

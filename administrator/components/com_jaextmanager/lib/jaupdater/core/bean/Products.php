@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -11,7 +11,8 @@
  */
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' );
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 class jaProducts
 {
 	var $isSupported = 1;
@@ -40,11 +41,11 @@ class jaProducts
 	var $ignores = array("^\..*", "jabk", "jaupdater");
 
 
-	function jaProducts(&$row, $config, $refresh = false)
+	function __construct(&$row, $config, $refresh = false)
 	{
 		$this->config = $config;
 		
-		$this->setRepoPath($config->get("REPO_PATH") . DS);
+		$this->setRepoPath($config->get("REPO_PATH").'/');
 		$infoRequired = array('type', 'name', 'extKey', 'version');
 		
 		foreach ($infoRequired as $info) {
@@ -65,6 +66,9 @@ class jaProducts
 		//create unique key
 		if (!isset($row->uniqueKey) || empty($row->uniqueKey)) {
 			$this->uniqueKey = "{$this->extKey}_{$this->coreVersion}";
+			if(!empty($this->folder)) {
+				$this->uniqueKey = $this->folder . '_' . $this->uniqueKey;
+			}
 		}
 		
 		$this->setInfo($refresh);
@@ -87,10 +91,6 @@ class jaProducts
 		$xml->loadFile($fileInfo);
 		$obj = $xml->toObject();
 		$parentNode = $obj->japroduct->children;
-		
-		/*$this->date 	= (string) $parentNode->type->value;
-		$this->version 	= (string) $parentNode->version->value;
-		$this->name 	= (string) $parentNode->name->value;*/
 		$this->extKey = (string) $parentNode->extKey->value;
 		$this->crc = (string) $parentNode->crc->value;
 		
@@ -141,7 +141,8 @@ class jaProducts
 
 	function setRepoPath($path)
 	{
-		$this->repo = FileSystemHelper::clean($path . DS);
+		$FileSystemHelper = new FileSystemHelper();
+		$this->repo = $FileSystemHelper->clean($path.'/');
 	}
 
 
@@ -205,7 +206,7 @@ class jaProducts
 					$path = $location['location'];
 				break;
 			case 'plugin':
-				$path = dirname($location[$this->extKey . ".php"]) . DS;
+				$path = dirname($location['location']).'/';
 				break;
 			case 'template':
 				if (isset($location['location']))
@@ -284,6 +285,8 @@ XML;
 	 */
 	function doUpgrade($upgradePackage, $upgradeVersion)
 	{
+		$FileSystemHelper = new FileSystemHelper();
+		
 		$config = $this->config;
 		
 		if (!JFile::exists($upgradePackage)) {
@@ -293,13 +296,13 @@ XML;
 		$fileBackup = $this->doBackup();
 		
 		//upgrade process
-		$workingDir = FileSystemHelper::tmpDir(null, 'ja', 0777);
+		$workingDir = $FileSystemHelper->tmpDir(null, 'ja', 0755);
 		$zipFile = $workingDir . $this->extKey . ".zip";
 		JFile::copy($upgradePackage, $zipFile);
 		
 		ArchiveHelper::unZip($zipFile, $workingDir);
 		//upgrade
-		$workingDir = $workingDir . $this->extKey . DS;
+		$workingDir = $workingDir . $this->extKey.'/';
 		
 		$jsonFile = $workingDir . "jaupdater.info.json";
 		if (!JFile::exists($jsonFile)) {
@@ -307,11 +310,10 @@ XML;
 		}
 		$upgradeInfo = file_get_contents($jsonFile);
 		$objectFilter = json_decode($upgradeInfo);
-		//JFile::delete($jsonFile);
 		
 
 		//backup conflicted files
-		$folderBackup = FileSystemHelper::stripExt($fileBackup);
+		$folderBackup = $FileSystemHelper->stripExt($fileBackup);
 		$this->doBackupConflictedFiles($upgradeVersion, $folderBackup);
 		//
 		$this->_applyPackage($workingDir, $objectFilter, 'upgrade');
@@ -328,20 +330,21 @@ XML;
 	function doRecovery($product, $folder, $file)
 	{
 		global $jauc;
+		$FileSystemHelper = new FileSystemHelper();
 		//auto backup when recovery
 		$this->doBackup();
 		// upgrade process
-		$workingDir = FileSystemHelper::tmpDir(null, 'ja', 0777);
+		$workingDir = $FileSystemHelper->tmpDir(null, 'ja', 0755);
 		$zipFile = $folder . $file;
 		
 		ArchiveHelper::unZip($zipFile, $workingDir);
-		$workingDir = $workingDir . $this->extKey . DS;
+		$workingDir = $workingDir . $this->extKey.'/';
 		
 		$objectFilter = new stdClass();
 		$this->_applyPackage($workingDir, $objectFilter, 'rollback');
 		
 		//get backup info
-		$fileInfo = $folder . FileSystemHelper::stripExt($file) . ".txt";
+		$fileInfo = $folder . $FileSystemHelper->stripExt($file) . ".txt";
 		if (($data = $jauc->_parseBackupInfo($fileInfo)) !== false) {
 			return $data["version"];
 		} else {
@@ -357,31 +360,43 @@ XML;
 		//it will support for downgrade purpose
 		$aVersions = $this->_parseListVersions();
 		//
-		
+		$FileSystemHelper = new FileSystemHelper();
 
 		$locations = $this->getLocation();
 		switch ($this->type) {
 			case 'module':
 				$xmlinstall = $src . $this->extKey . ".xml";
-				FileSystemHelper::cp($src, $locations['location'], true);
+				$FileSystemHelper->cp($src, $locations['location'], true);
 				$this->_applyFileRemoved($objectFilter, $locations['location']);
 				break;
 			case 'template':
 				$xmlinstall = $src . "templateDetails.xml";
-				FileSystemHelper::cp($src, $locations['location'], true);
+				$FileSystemHelper->cp($src, $locations['location'], true);
 				$this->_applyFileRemoved($objectFilter, $locations['location']);
 				break;
 			case 'component':
 				if (isset($locations['admin']) && JFolder::exists($src . 'admin')) {
-					FileSystemHelper::cp($src . 'admin', $locations['admin'], true);
+					$FileSystemHelper->cp($src . 'admin', $locations['admin'], true);
 					if (isset($objectFilter->admin)) {
 						$this->_applyFileRemoved($objectFilter->admin, $locations['admin']);
 					}
 				}
 				if (isset($locations['site']) && JFolder::exists($src . 'site')) {
-					FileSystemHelper::cp($src . 'site', $locations['site'], true);
+					$FileSystemHelper->cp($src . 'site', $locations['site'], true);
 					if (isset($objectFilter->site)) {
 						$this->_applyFileRemoved($objectFilter->site, $locations['site']);
+					}
+				}
+				
+				//Fix xml file remove com_
+				$xmlfileold = basename($this->configFile);
+				$xmlfilenew = str_replace('com_','',$xmlfileold);
+				if (isset($objectFilter->$xmlfileold) && isset($objectFilter->$xmlfilenew)) {
+					if($objectFilter->$xmlfileold == 'removed' && $objectFilter->$xmlfilenew=='new'){
+						if(JFile::exists($locations['admin'].$xmlfileold)){
+							@rename($this->configFile, $locations['admin'].$xmlfilenew);
+							$this->configFile = str_replace($xmlfileold,$xmlfilenew,$this->configFile);
+						}
 					}
 				}
 				//exception: xml config file for component
@@ -390,32 +405,24 @@ XML;
 				$xmlinstall = '';
 				if (JFile::exists($src . $xmlfile)) {
 					$xmlinstall = $src . $xmlfile;
-				} elseif (JFile::exists($src . 'admin' . DS . $xmlfile)) {
-					$xmlinstall = $src . 'admin' . DS . $xmlfile;
-				} elseif (JFile::exists($src . 'site' . DS . $xmlfile)) {
-					$xmlinstall = $src . 'site' . DS . $xmlfile;
+				} elseif (JFile::exists($src . 'admin/'.$xmlfile)) {
+					$xmlinstall = $src . 'admin/'.$xmlfile;
+				} elseif (JFile::exists($src . 'site/'.$xmlfile)) {
+					$xmlinstall = $src . 'site/'.$xmlfile;
 				}
 				if (JFile::exists($xmlinstall)) {
-					FileSystemHelper::cp($xmlinstall, $this->configFile, true);
+					$FileSystemHelper->cp($xmlinstall, $this->configFile, true);
 				}
 				break;
 			case 'plugin':
-				if (isset($locations[$this->extKey]) && JFolder::exists($src . $this->extKey)) {
-					FileSystemHelper::cp($src . $this->extKey, $locations[$this->extKey], true);
-					$extKey = $this->extKey;
-					
-					if (isset($objectFilter->$extKey)) {
-						$this->_applyFileRemoved($objectFilter->$extKey, $locations[$extKey]);
+				$xmlinstall = $src . $this->extKey . ".xml";
+				if (isset($locations['location']) && JFolder::exists($src)) {
+					$FileSystemHelper->cp($src, $locations['location'], true);
+					if (isset($objectFilter)) {
+						$this->_applyFileRemoved($objectFilter, $locations['location']);
 					}
 				}
-				$file = $this->extKey . ".php";
-				if (JFile::exists($src . $file))
-					FileSystemHelper::cp($src . $file, $locations[$file], true);
-				$file = $this->extKey . ".xml";
-				if (JFile::exists($src . $file)) {
-					$xmlinstall = $src . $file;
-					FileSystemHelper::cp($src . $file, $locations[$file], true);
-				}
+				
 				break;
 		}
 		
@@ -424,17 +431,17 @@ XML;
 		if ($context == 'rollback') {
 			$languageBak = 'en-GB';
 			//admin
-			$srcLangPath = $src . 'lang' . DS . 'admin';
+			$srcLangPath = $src . 'lang/admin';
 			if (JFolder::exists($srcLangPath)) {
-				$client = & JApplicationHelper::getClientInfo(1);
-				$dstLangPath = $client->path . DS . 'language' . DS . $languageBak;
+				$client = JApplicationHelper::getClientInfo(1);
+				$dstLangPath = $client->path.'/language/'.$languageBak;
 				JFolder::copy($srcLangPath, $dstLangPath, '', true);
 			}
 			//site
-			$srcLangPath = $src . 'lang' . DS . 'site';
+			$srcLangPath = $src . 'lang/site';
 			if (JFolder::exists($srcLangPath)) {
-				$client = & JApplicationHelper::getClientInfo(0);
-				$dstLangPath = $client->path . DS . 'language' . DS . $languageBak;
+				$client = JApplicationHelper::getClientInfo(0);
+				$dstLangPath = $client->path.'/language/'.$languageBak;
 				JFolder::copy($srcLangPath, $dstLangPath, '', true);
 			}
 		} else {
@@ -498,7 +505,7 @@ XML;
 			
 			//must check action, because user can rollback to point with newer version
 			$action = ($jauc->isNewerVersion($afterVersion, $beforeVersion, false) ? 'upgrade' : 'rollback');
-			//echo "{$action}: - {$beforeVersion} - {$afterVersion}<br />";
+			
 			
 
 			if ($action == 'upgrade') {
@@ -515,15 +522,16 @@ XML;
 	{
 		//remove file base on $objectFilter
 		//important note: do not remove sql files (for rollback db)
+		$FileSystemHelper = new FileSystemHelper();
 		if (count($objectFilter) > 0) {
 			foreach ($objectFilter as $entry => $status) {
-				$element = FileSystemHelper::clean($applyLocation . DS . $entry);
+				$element = $FileSystemHelper->clean($applyLocation.'/'.$entry);
 				if (is_object($status)) {
 					//is folder? => remove recusive
 					$this->_applyFileRemoved($objectFilter->$entry, $element);
 				} else {
-					if ($status == 'removed' && FileSystemHelper::getExt($entry) != 'sql') {
-						FileSystemHelper::rm($element);
+					if ($status == 'removed' && $FileSystemHelper->getExt($entry) != 'sql') {
+						$FileSystemHelper->rm($element);
 					}
 				}
 			}
@@ -576,7 +584,7 @@ XML;
 		}
 		
 		//rollback db
-		$backupFile = $src . "db" . DS . "backup.sql";
+		$backupFile = $src . "db/backup.sql";
 		if (!JFile::exists($backupFile)) {
 			$backupFile = $src . "backup.sql";
 		}
@@ -589,14 +597,13 @@ XML;
 	function _importDbScript($file)
 	{
 		$config = $this->config;
-		
-		$file = FileSystemHelper::clean($file);
+		$FileSystemHelper = new FileSystemHelper();
+		$file = $FileSystemHelper->clean($file);
 		if (!JFile::exists($file)) {
 			return false;
 		}
 		$ext = strtolower(substr($file, strrpos($file, '.') + 1));
 		if ($ext == 'sql') {
-			//echo $file;
 			$oDb = new jaMysqlHelper($config->get("MYSQL_HOST"), $config->get("MYSQL_USER"), $config->get("MYSQL_PASS"), $config->get("MYSQL_DB"), $config->get("MYSQL_DB_PREFIX"), $config->get("MYSQL_PATH"), $config->get("MYSQLDUMP_PATH"));
 			$oDb->restore($file);
 		} elseif ($ext == 'php') {
@@ -636,7 +643,7 @@ XML;
 		 *
 		 * 'languages' Files are copied to JPATH_BASE/language/ folder
 		 */
-		$destination = $client->path . DS . 'language';
+		$destination = $client->path.'/language';
 		
 		/*
 		 * Here we set the folder we are going to copy the files from.
@@ -648,8 +655,8 @@ XML;
 		 * copying files.
 		 */
 		$folder = (string) $element->attributes()->folder;
-		if ($folder && JFolder::exists($pathSrc . DS . $folder)) {
-			$source = $pathSrc . DS . $folder;
+		if ($folder && JFolder::exists($pathSrc.'/'.$folder)) {
+			$source = $pathSrc.'/'.$folder;
 		} else {
 			$source = $pathSrc;
 		}
@@ -667,14 +674,14 @@ XML;
 			 * already exists.
 			 */
 			if ((string) $file->attributes()->tag != '') {
-				$path['src'] = $source . DS . $file;
+				$path['src'] = $source.'/'.$file;
 				if ((string) $file->attributes()->client != '') {
 					// override the client
 					$langclient = JApplicationHelper::getClientInfo((string) $file->attributes()->client, true);
-					$path['dest'] = $langclient->path . DS . 'language' . DS . $file->attributes()->tag . DS . basename((string) $file);
+					$path['dest'] = $langclient->path.'/language/'.$file->attributes()->tag.'/'.basename((string) $file);
 				} else {
 					// use the default client
-					$path['dest'] = $destination . DS . $file->attributes()->tag . DS . basename((string) $file);
+					$path['dest'] = $destination.'/'.$file->attributes()->tag.'/'.basename((string) $file);
 				}
 				
 				// If the language folder is not present, then the core pack hasn't been installed... ignore
@@ -682,8 +689,8 @@ XML;
 					continue;
 				}
 			} else {
-				$path['src'] = $source . DS . $file;
-				$path['dest'] = $destination . DS . $file;
+				$path['src'] = $source.'/'.$file;
+				$path['dest'] = $destination.'/'.$file;
 			}
 			
 			/*
@@ -791,13 +798,14 @@ XML;
 	function doBackupConflictedFiles($upgradeVersion, $folder)
 	{
 		global $jauc;
+		$FileSystemHelper = new FileSystemHelper();
 		$backupDir = $jauc->getLocalConflictPath($this->getInfo(), $folder);
 		$upgradeInfo = $jauc->buildDiff($this->getFullInfo(), $upgradeVersion);
 		if ($backupDir !== false && $upgradeInfo !== false) {
 			$conflicted = $this->_doBackupConflictedFiles($backupDir, "", $upgradeInfo);
 			if (!$conflicted) {
 				//dont have any conflicted files
-				FileSystemHelper::rm($backupDir, true);
+				$FileSystemHelper->rm($backupDir, true);
 				return false;
 			} else {
 				return $folder;
@@ -810,11 +818,12 @@ XML;
 	function _doBackupConflictedFiles($path, $relativePath, $data)
 	{
 		$conflicted = false;
+		$FileSystemHelper = new FileSystemHelper();
 		foreach ($data as $k => $item) {
 			if (is_object($item)) {
-				$subPath = $path . $k . DS;
+				$subPath = $path . $k.'/';
 				$relativeSubPath = $relativePath . $k . "/";
-				FileSystemHelper::createDirRecursive($subPath, 0777);
+				$FileSystemHelper->createDirRecursive($subPath, 0755);
 				
 				$subConflicted = $this->_doBackupConflictedFiles($subPath, $relativeSubPath, $item);
 				if ($subConflicted) {
@@ -828,7 +837,7 @@ XML;
 					$destPath = $path . $k;
 					$relativeFile = $relativePath . $k;
 					$srcPath = $this->getFilePath($relativeFile);
-					FileSystemHelper::cp($srcPath, $destPath);
+					$FileSystemHelper->cp($srcPath, $destPath);
 				}
 			}
 		}
@@ -839,10 +848,10 @@ XML;
 	function doBackup()
 	{
 		$config = $this->config;
-		
-		$workingDir = FileSystemHelper::tmpDir(null, 'ja', 0777);
-		$workingDir .= $this->extKey . DS;
-		if (JFolder::create($workingDir, 0777) === false) {
+		$FileSystemHelper = new FileSystemHelper();
+		$workingDir = $FileSystemHelper->tmpDir(null, 'ja', 0755);
+		$workingDir .= $this->extKey.'/';
+		if (JFolder::create($workingDir, 0755) === false) {
 			return false;
 		}
 		$backupDir = $this->getBackupPath();
@@ -854,9 +863,9 @@ XML;
 		$cnt = count($locations);
 		foreach ($locations as $name => $path) {
 			if ($name != 'location')
-				FileSystemHelper::cp($path, $workingDir . $name, true, 0777);
+				$FileSystemHelper->cp($path, $workingDir . $name, true, 0755);
 			else
-				FileSystemHelper::cp($path, $workingDir, true, 0777);
+				$FileSystemHelper->cp($path, $workingDir, true, 0755);
 		}
 		
 		$this->_backupLanguages($workingDir);
@@ -868,7 +877,7 @@ XML;
 		$fileNameBak = $fileName . ".zip";
 		$fileBak = $backupDir . $fileNameBak;
 		ArchiveHelper::zip($fileBak, $workingDir, true);
-		//
+		
 		$comment = (string) (isset($this->message) ? $this->message : "");
 		$info = "extKey={$this->extKey}" . "\r\n";
 		$info .= "version={$this->version}" . "\r\n";
@@ -877,7 +886,7 @@ XML;
 		
 		$fileInfo = $backupDir . $fileName . ".txt";
 		JFile::write($fileInfo, $info);
-		//
+		
 		return $fileNameBak;
 	}
 
@@ -886,8 +895,8 @@ XML;
 	{
 		jimport('joomla.application.helper');
 		$languageBak = 'en-GB';
-		$clientSite = & JApplicationHelper::getClientInfo(0);
-		$clientAdmin = & JApplicationHelper::getClientInfo(1);
+		$clientSite = JApplicationHelper::getClientInfo(0);
+		$clientAdmin = JApplicationHelper::getClientInfo(1);
 		
 		//get language files filter pattern
 		$prefix = '';
@@ -919,20 +928,20 @@ XML;
 		
 
 		//backup front-end language files
-		$srcFile = $clientSite->path . DS . 'language' . DS . $languageBak . DS . $languageFile;
+		$srcFile = $clientSite->path.'/language/'.$languageBak.'/'.$languageFile;
 		if (JFile::exists($srcFile)) {
-			$dstFolder = $workingDir . "lang" . DS . "site" . DS;
+			$dstFolder = $workingDir . "lang/site/";
 			$dstFile = $dstFolder . $languageFile;
-			if (JFolder::create($dstFolder, 0777) !== false) {
+			if (JFolder::create($dstFolder, 0755) !== false) {
 				JFile::copy($srcFile, $dstFile);
 			}
 		}
 		//backup back-end language files
-		$srcFile = $clientAdmin->path . DS . 'language' . DS . $languageBak . DS . $languageFile;
+		$srcFile = $clientAdmin->path.'/language/'.$languageBak.'/'.$languageFile;
 		if (JFile::exists($srcFile)) {
-			$dstFolder = $workingDir . "lang" . DS . "admin" . DS;
+			$dstFolder = $workingDir . "lang/admin/";
 			$dstFile = $dstFolder . $languageFile;
-			if (JFolder::create($dstFolder, 0777) !== false) {
+			if (JFolder::create($dstFolder, 0755) !== false) {
 				JFile::copy($srcFile, $dstFile);
 			}
 		}
@@ -945,8 +954,8 @@ XML;
 		$config = $this->config;
 		
 		if ($this->type == 'component') {
-			if (JFolder::create($workingDir . "db", 0777) !== false) {
-				$workingDir .= "db" . DS;
+			if (JFolder::create($workingDir . "db", 0755) !== false) {
+				$workingDir .= "db/";
 			}
 			
 			$tables = $this->_parseListTables();
@@ -967,7 +976,7 @@ XML;
 	function _parseListVersions($xmlFile = false)
 	{
 		$arrVer = array();
-		
+		$FileSystemHelper = new FileSystemHelper();
 		if ($xmlFile !== false) {
 			$configFile = $xmlFile;
 		} else {
@@ -1003,8 +1012,8 @@ XML;
 		$listVersions = $versions->children->version;
 		
 		$side = (isset($versions->attributes) && isset($versions->attributes->folder)) ? $versions->attributes->folder : '';
-		$path = $side == 'site' ? '' : 'administrator' . DS;
-		$path = $this->getRepoPath() . $path . "components" . DS . $this->extKey . DS;
+		$path = $side == 'site' ? '' : 'administrator/';
+		$path = $this->getRepoPath() . $path . "components/".$this->extKey.'/';
 		
 		$listVer = array();
 		if (!is_array($listVersions)) {
@@ -1020,10 +1029,10 @@ XML;
 			$arrVer[$id]['version_name'] = $id;
 			
 			if (isset($ver->children->upgrade)) {
-				$arrVer[$id]['upgrade'] = FileSystemHelper::clean($path . $ver->children->upgrade->value);
+				$arrVer[$id]['upgrade'] = $FileSystemHelper->clean($path . $ver->children->upgrade->value);
 			}
 			if (isset($ver->children->rollback)) {
-				$arrVer[$id]['rollback'] = FileSystemHelper::clean($path . $ver->children->rollback->value);
+				$arrVer[$id]['rollback'] = $FileSystemHelper->clean($path . $ver->children->rollback->value);
 			}
 			if (isset($ver->children->changelogUrl)) {
 				$arrVer[$id]['changelogUrl'] = $ver->children->changelogUrl->value;
@@ -1094,11 +1103,11 @@ XML;
 		
 		switch ($this->type) {
 			case 'component':
-				$pathAdmin = $path . "administrator" . DS . "components" . DS . $this->extKey . DS;
+				$pathAdmin = $path . "administrator/components/".$this->extKey.'/';
 				if (JFolder::exists($pathAdmin)) {
 					$location['admin'] = $pathAdmin;
 				}
-				$pathSite = $path . "components" . DS . $this->extKey . DS;
+				$pathSite = $path . "components/".$this->extKey.'/';
 				if (JFolder::exists($pathSite)) {
 					$location['site'] = $pathSite;
 				}
@@ -1107,35 +1116,26 @@ XML;
 				break;
 			case 'module':
 				if (isset($this->client_id) && $this->client_id) {
-					$path .= "administrator" . DS;
+					$path .= "administrator/";
 				}
-				$location['location'] = $path . "modules" . DS . $this->extKey . DS;
+				$location['location'] = $path . "modules/".$this->extKey.'/';
 				break;
 			case 'plugin':
 				//new stuture for plugins folder from 1.6
 				//each plugin will be stored at individual folder
-				$basePath = $path . "plugins" . DS . $this->folder . DS . $this->extKey . DS;
-				if (JFolder::exists($basePath . $this->extKey . DS)) {
-					$location[$this->extKey] = $basePath . $this->extKey . DS;
-				}
-				$file = $this->extKey . ".php";
-				$location[$file] = $basePath . $file;
-				$file = $this->extKey . ".xml";
-				$location[$file] = $basePath . $file;
+				$basePath = $path . "plugins/".$this->folder.'/'.$this->extKey.'/';
+				$location['location'] = $basePath;
+				
 				break;
 			case 'template':
-				$location['location'] = $path . "templates" . DS . $this->extKey . DS;
+				$location['location'] = $path . "templates/".$this->extKey.'/';
 				break;
 			default:
 				//not match any type
 				return false;
 				break;
 		}
-		/*foreach ($location as $id => $part) {
-			if(!JFolder::exists($part)) {
-				unset($location[$id]);
-			}
-		}*/
+		
 		
 		if (count($location) > 0) {
 			return $location;
@@ -1151,6 +1151,7 @@ XML;
 	function getFilePath($file)
 	{
 		$location = $this->getLocation();
+		$FileSystemHelper = new FileSystemHelper();
 		if ($location === false) {
 			return false;
 		}
@@ -1176,14 +1177,14 @@ XML;
 						break;
 					}
 				} else {
-					$fileTmp = FileSystemHelper::clean($path . $file);
+					$fileTmp = $FileSystemHelper->clean($path . $file);
 					if (JFile::exists($fileTmp)) {
 						$file = $fileTmp;
 						break;
 					} else {
 						//exception case (with plugin)
-						$path2 = dirname($path) . DS;
-						$fileTmp2 = FileSystemHelper::clean($path2 . $file);
+						$path2 = dirname($path).'/';
+						$fileTmp2 = $FileSystemHelper->clean($path2 . $file);
 						if (JFile::exists($fileTmp2)) {
 							$file = $fileTmp2;
 							break;
@@ -1192,7 +1193,7 @@ XML;
 				}
 			}
 		}
-		return FileSystemHelper::clean($file);
+		return $FileSystemHelper->clean($file);
 	}
 
 

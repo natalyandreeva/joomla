@@ -17,7 +17,7 @@ jimport('joomla.application.component.view');
  * @subpackage	com_media
  * @since 1.0
  */
-class JaextmanagerViewRepolist extends JView
+class JaextmanagerViewRepolist extends JAEMView
 {
 
 
@@ -35,7 +35,7 @@ class JaextmanagerViewRepolist extends JView
 		JHtml::_('behavior.framework', true);
 		
 		$document = JFactory::getDocument();
-		$document->addStyleSheet('components/' . JACOMPONENT . '/assets/repo_manager/repolist-' . $style . '.css');
+		$document->addStyleSheet('components/com_jaextmanager/assets/repo_manager/repolist-' . $style . '.css');
 		
 		$document->addScriptDeclaration("
 		window.addEvent('domready', function() {
@@ -47,12 +47,15 @@ class JaextmanagerViewRepolist extends JView
 				});
 			});
 		});");
-		
+		$images 	= $this->get('images');
+		$documents 	= $this->get('documents');
+		$folders	= $this->get('folders');
+		$state		= $this->get('state');
 		$this->assign('baseURL', JURI::root());
-		$this->assignRef('images', $this->get('images'));
-		$this->assignRef('documents', $this->get('documents'));
-		$this->assignRef('folders', $this->get('folders'));
-		$this->assignRef('state', $this->get('state'));
+		$this->assignRef('images', $images);
+		$this->assignRef('documents', $documents);
+		$this->assignRef('folders', $folders);
+		$this->assignRef('state', $state);
 		
 		parent::display($tpl);
 	}

@@ -1,7 +1,7 @@
 <?php
 defined( '_JEXEC' ) or die( 'Retricted Access' );
 
-global $mainframe, $option, $jauc;
+global $jauc;
 
 $diffInfo = $this->obj->diffInfo;
 ?>

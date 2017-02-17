@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -15,7 +15,7 @@ defined('_JEXEC') or die('Restricted access');
 
 jimport('joomla.application.component.view');
 
-class JaextmanagerViewServices extends JView
+class JaextmanagerViewServices extends JAEMView
 {
 
 
@@ -23,7 +23,7 @@ class JaextmanagerViewServices extends JView
 	{
 		// Display menu
 		if (!JRequest::getVar("ajax") && JRequest::getVar('tmpl') != 'component' && JRequest::getVar('viewmenu', 1) != 0) {
-			$file = JPATH_COMPONENT_ADMINISTRATOR . DS . "views" . DS . "default" . DS . "tmpl" . DS . "menu_header.php";
+			$file = JPATH_COMPONENT_ADMINISTRATOR."/views/default/tmpl/menu_header.php";
 			if (@file_exists($file))
 				require_once ($file);
 		}
@@ -46,7 +46,7 @@ class JaextmanagerViewServices extends JView
 		
 		// Display footer
 		if (!JRequest::getVar("ajax") && JRequest::getVar('tmpl') != 'component' && JRequest::getVar('viewmenu', 1) != 0) {
-			$file = JPATH_COMPONENT_ADMINISTRATOR . DS . "views" . DS . "default" . DS . "tmpl" . DS . "menu_footer.php";
+			$file = JPATH_COMPONENT_ADMINISTRATOR."/views/default/tmpl/menu_footer.php";
 			if (@file_exists($file))
 				require_once ($file);
 		}
@@ -57,9 +57,9 @@ class JaextmanagerViewServices extends JView
 	function displayList()
 	{
 		
-		JHTML::_('behavior.calendar');
+		JHtml::_('behavior.calendar');
 		
-		$model = & JModel::getInstance('services', 'JaextmanagerModel');
+		$model =  JAEMModel::getInstance('services', 'JaextmanagerModel');
 		
 		$lists = $model->_getVars_admin();
 		
@@ -83,7 +83,7 @@ class JaextmanagerViewServices extends JView
 		$pageNav = new JPagination($total, $lists['limitstart'], $lists['limit']);
 		
 		//$services = $model->getList ('', 't.ws_name ASC', $lists ['limitstart'], $lists ['limit'] );
-		$services = $model->getList('', '', $lists['limitstart'], $limit);
+		$services = $model->getList('', 't.id asc', $lists['limitstart'], $limit);
 		
 		$this->assign('services', $services);
 		
@@ -96,7 +96,7 @@ class JaextmanagerViewServices extends JView
 	function edit($item = null)
 	{
 		
-		JHTML::_('behavior.calendar');
+		JHtml::_('behavior.calendar');
 		
 		$model = $this->getModel('services');
 		
@@ -116,10 +116,10 @@ class JaextmanagerViewServices extends JView
 		
 		$number = JRequest::getVar('number', 0);
 		
-		$listMode = JHTML::_('select.radiolist', $model->getListServiceMode(), 'ws_mode', 'class="inputbox"', 'value', 'text', $item->ws_mode);
+		$listMode = JHtml::_('select.radiolist', $model->getListServiceMode(), 'ws_mode', 'class="inputbox"', 'value', 'text', $item->ws_mode);
 		
 		$isDefault = ($item->ws_default == 1) ? 1 : 0;
-		$ws_default = JHTML::_('select.booleanlist', 'ws_default', 'class="inputbox"', $isDefault);
+		$ws_default = JHtml::_('select.booleanlist', 'ws_default', 'class="inputbox"', $isDefault);
 		
 		$this->assignRef('listMode', $listMode);
 		$this->assignRef('ws_default', $ws_default);
@@ -148,10 +148,10 @@ class JaextmanagerViewServices extends JView
 		
 		$number = JRequest::getVar('number', 0);
 		
-		$listMode = JHTML::_('select.radiolist', $model->getListServiceMode(), 'ws_mode', 'class="inputbox"', 'value', 'text', $item->ws_mode);
+		$listMode = JHtml::_('select.radiolist', $model->getListServiceMode(), 'ws_mode', 'class="inputbox"', 'value', 'text', $item->ws_mode);
 		
 		$isDefault = ($item->ws_default == 1) ? 1 : 0;
-		$ws_default = JHTML::_('select.booleanlist', 'ws_default', 'class="inputbox"', $isDefault);
+		$ws_default = JHtml::_('select.booleanlist', 'ws_default', 'class="inputbox"', $isDefault);
 		
 		$this->assignRef('listMode', $listMode);
 		$this->assignRef('ws_default', $ws_default);
@@ -162,7 +162,7 @@ class JaextmanagerViewServices extends JView
 
 	function response()
 	{
-		$model = & JModel::getInstance('services', 'JaextmanagerModel');
+		$model = JAEMModel::getInstance('services', 'JaextmanagerModel');
 		$type = JRequest::getVar('type', 'admin_response');
 		if (!isset($item)) {
 			$item = $model->getAdmin_response();

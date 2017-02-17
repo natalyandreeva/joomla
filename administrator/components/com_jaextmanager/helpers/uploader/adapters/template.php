@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -14,7 +14,8 @@ defined('JPATH_BASE') or die();
 
 jimport('joomla.installer.extension');
 jimport('joomla.base.adapterinstance');
-
+jimport('joomla.filesystem.file');
+jimport('joomla.filesystem.folder');
 /**
  * Template uploader
  */
@@ -80,7 +81,7 @@ class jaExtUploaderTemplate extends JObject
 		if ($jaProduct !== false) {
 			//path for install, we dont need it on upload to local reposiotry :)
 			// Set the template root path
-			//$this->parent->setPath('extension_root', $basePath.DS.'templates'.DS.strtolower(str_replace(" ", "_", $this->get('name'))));
+			//$this->parent->setPath('extension_root', $basePath.'/templates/'.strtolower(str_replace(" ", "_", $this->get('name'))));
 			$storePath = $jauc->getLocalVersionPath($jaProduct, false);
 			$this->parent->setPath('extension_root', $storePath);
 		} else {

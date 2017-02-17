@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -29,7 +29,7 @@ class InfoObject
 	 * @param $location  string
 	 * @param $data JSON object to load into instead of load from description file
 	 */
-	function InfoObject($name, $version, $location = null, $data = null)
+	function __construct($name, $version, $location = null, $data = null)
 	{
 		if (!empty($data)) {
 			$this->loadData($data);

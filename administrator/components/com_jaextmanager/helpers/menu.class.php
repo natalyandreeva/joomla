@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -33,17 +33,20 @@ if (!defined('_JA_BASE_MENU_CLASS')) {
 		function _loadMenu()
 		{
 			jimport('joomla.utilities.simplexml');
-			$xmlfile = dirname(__FILE__) . DS . 'menu.xml';
+			$xmlfile = dirname(__FILE__) .  '/menu.xml';
 			
 			$xml = new JSimpleXML();
 			$xml->loadFile($xmlfile);
+			//$xml = JFactory::getXML($xmlfile);
+			//print_r($xml);
+			
 			if (!$xml->document) {
 				echo "Cannot load menu xml: $xmlfile";
 				return;
 			}
 			$this->_menu = $xml->document;
 			//include the dynamic menu
-		//include (dirname(__FILE__).DS.'dynamic_menu.php');
+			//include (dirname(__FILE__).'/dynamic_menu.php');
 		}
 
 

@@ -1,6 +1,6 @@
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -18,13 +18,16 @@ function jaCreatePopup(target, jaWidth, jaHeight, title, dsave, titlesave, locat
 	if (!titlesave) titlesave = 'Save';
 
 	//message holder
-	if (jQuery('#system-message').size() == 0) {
+	if (jQuery('#system-message-container').size() == 0) {
 		jQuery('<div>').attr({
-			'id': 'system-message',
+			'id': 'system-message-container',
 			'style': ''
 		}).html(' ').appendTo('#toolbar-box');
 	}
-	//
+	// when popup created but user still click to edit button
+	if (jQuery('#ja-wrap-content').length) {
+		jQuery('#ja-wrap-content').remove();
+	}
 	var Obj = document.getElementById('jaForm');
 	if (!Obj) {
 		var content = jQuery('<div>').attr({
@@ -237,12 +240,12 @@ function jaCreatePopup(target, jaWidth, jaHeight, title, dsave, titlesave, locat
 			left: event.offsetX
 		});
 	});
-
-
+	
+	jQuery( document ).trigger( "afterCreatePopup" );
 }
 
 function hiddenMessage() {
-	jQuery('#system-message', window.parent.document).html('');
+	jQuery('#system-message-container #system-message', window.parent.document).html('');
 }
 
 function jaGetUrlParams(url) {
@@ -357,6 +360,7 @@ function checkError() {
 
 function submitbuttonAdmin() {
 	var flag = checkError();
+	
 	if (flag) {
 		jQuery('#japopup-wait').css({
 			'display': ''
@@ -367,12 +371,14 @@ function submitbuttonAdmin() {
 			iframe.find("#adminForm").submit();
 			return false;
 		}
-
-		jQuery.post("index.php", iframe.find("#adminForm").serialize(), function (res) {
-			jaFormHideIFrame();
-			//window.parent.document.location.reload();
-			parseData_admin(res);
-		}, 'json');
+		if (iframe.find("#adminForm").length > 0) {
+			jQuery.post("index.php", iframe.find("#adminForm").serialize(), function (res) {
+				jaFormHideIFrame();
+				window.parent.document.location.reload();
+				parseData_admin(res);
+			}, 'json');
+		}
+		
 	} else {
 		alert("Invalid data! Please insert information again!");
 	}
@@ -381,10 +387,12 @@ function submitbuttonAdmin() {
 function parseData_admin(response) {
 	//jQuery(document, window.parent.document).ready(function(){
 	var reload = 0;
+	
 	jQuery.each(response.data, function (i, item) {
 		var divId = item.id;
 		var type = item.type;
 		var value = item.value;
+		
 		if (jQuery(divId, window.parent.document) != undefined) {
 			if (type == 'html') {
 				if (jQuery(divId, window.parent.document)) jQuery(divId, window.parent.document).html(value);

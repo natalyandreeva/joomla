@@ -24,14 +24,14 @@ jimport('joomla.application.component.controller');
  * @subpackage	Media
  * @version 1.5
  */
-class JaextmanagerControllerRepolist extends JController
+class JaextmanagerControllerRepolist extends JAEMController
 {
 
 
 	/**
 	 * Display the view
 	 */
-	function display()
+	function display($cachable = false, $urlparams = false)
 	{
 		$mainframe = JFactory::getApplication('administrator');
 		
@@ -64,14 +64,14 @@ class JaextmanagerControllerRepolist extends JController
 				break;
 		}
 		
-		$document = &JFactory::getDocument();
+		$document = JFactory::getDocument();
 		$vType = $document->getType();
 		
 		// Get/Create the view
-		$view = &$this->getView($vName, $vType);
+		$view = $this->getView($vName, $vType);
 		
 		// Get/Create the model
-		if ($model = &$this->getModel($mName)) {
+		if ($model = $this->getModel($mName)) {
 			// Push the model into the view (as default)
 			$view->setModel($model, true);
 		}

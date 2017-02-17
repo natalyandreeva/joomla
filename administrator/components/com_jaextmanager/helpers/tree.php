@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -12,7 +12,7 @@
 // no direct access
 defined ( '_JEXEC' ) or die ( 'Restricted access' ); 
 
-define('JA_DTREE_IMG_PATH', 'components/' . JACOMPONENT . '/assets/dtree/img/');
+define('JA_DTREE_IMG_PATH', 'components/com_jaextmanager/assets/dtree/img/');
 
 jimport('joomla.filesystem.file');
 jimport('joomla.filesystem.folder');
@@ -56,7 +56,7 @@ function _printTreeConflicted($product, $parent, $folder, $path = "")
 				$str .= "d.add(" . $treeNode . "," . $parent . ",' " . $entry . "','#', 'folder'); \r\n";
 				$aFolder[$treeNode] = array();
 				$aFolder[$treeNode]['parent'] = $parent;
-				$str .= _printTreeConflicted($product, $treeNode, $item . DS, $path . $entry . "/");
+				$str .= _printTreeConflicted($product, $treeNode, $item . '/', $path . $entry . "/");
 			} else {
 				$location = $path . $entry;
 				$fileLive = $product->getFilePath($location);

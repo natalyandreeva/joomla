@@ -1,7 +1,7 @@
 <?php
 /**
  * ------------------------------------------------------------------------
- * JA Extenstion Manager Component for Joomla 2.5
+ * JA Extenstion Manager Component for J3.x
  * ------------------------------------------------------------------------
  * Copyright (C) 2004-2011 J.O.O.M Solutions Co., Ltd. All Rights Reserved.
  * @license - GNU/GPL, http://www.gnu.org/licenses/gpl.html
@@ -19,7 +19,7 @@ class JAFormHelpers
 {
 
 
-	function JAFormHelpers()
+	function __construct()
 	{
 	
 	}
@@ -35,10 +35,9 @@ class JAFormHelpers
 
 	function message($iserror = 1, $messages)
 	{
+		$content = '<div id="system-message">';
 		if ($iserror) {
-			$content = '<dt class="error">Error</dt>
-					<dd class="error message fade">
-						<ul id="jav-error">';
+			$content .= '<dt class="error">Error</dt><dd class="error message"><ul id="jav-error">';
 			if ($messages && is_array($messages)) {
 				foreach ($messages as $message) {
 					$content .= '<li>' . $message . '</li>';
@@ -46,12 +45,9 @@ class JAFormHelpers
 			} else {
 				$content .= '<li>' . $messages . '</li>';
 			}
-			$content .= '			</ul>
-					</dd>';
+			$content .= '</ul></dd>';
 		} else {
-			$content = '<dt class="message">Message</dt>
-						<dd class="message message fade">
-						<ul>';
+			$content = '<div id="system-message"><dt class="message">Message</dt><dd class="message message"><ul id="jav-error">';
 			if ($messages && is_array($messages)) {
 				foreach ($messages as $message) {
 					$content .= '<li>' . $message . '</li>';
@@ -59,9 +55,9 @@ class JAFormHelpers
 			} else {
 				$content .= '<li>' . $messages . '</li>';
 			}
-			$content .= '			</ul>
-					</dd>';
+			$content .= '</ul></dd></div>';
 		}
+		$content .= '</div>';
 		return $content;
 	}
 
@@ -70,7 +66,7 @@ class JAFormHelpers
 	{
 		if (!$objects)
 			return;
-		$db = JFactory::getDBO();
+		$db = JFactory::getDbo();
 		
 		$html = '';
 		$item_tem = array();
@@ -79,7 +75,7 @@ class JAFormHelpers
 			$item_tem[$i] = '{';
 			foreach ($row as $k => $value) {
 				//$value = $db->Quote($value);
-				$tem[$i][] = "'$k' : " . $db->Quote($value) . "";
+				$tem[$i][] = "\"$k\" : \"" . $db->escape($value) . "\"";
 			}
 			$item_tem[$i] .= implode(',', $tem[$i]);
 			$item_tem[$i] .= '}';

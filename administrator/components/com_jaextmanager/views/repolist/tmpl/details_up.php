@@ -12,11 +12,11 @@ defined('_JEXEC') or die;
 ?>
 		<tr>
 			<td class="imgTotal">
-				<a href="index.php?option=<?php echo JACOMPONENT; ?>&amp;view=repolist&amp;tmpl=component&amp;folder=<?php echo $this->state->parent; ?>" target="folderframe">
-					<img src="components/<?php echo JACOMPONENT; ?>/assets/images/icons/folderup_16.png" width="16" height="16" border="0" alt=".." /></a>
+				<a href="index.php?option=com_jaextmanager&amp;view=repolist&amp;tmpl=component&amp;folder=<?php echo $this->state->parent; ?>" target="folderframe">
+					<img src="components/com_jaextmanager/assets/images/icons/folderup_16.png" width="16" height="16" border="0" alt=".." /></a>
 			</td>
 			<td class="description">
-				<a href="index.php?option=<?php echo JACOMPONENT; ?>&amp;view=repolist&amp;tmpl=component&amp;folder=<?php echo $this->state->parent; ?>" target="folderframe">..</a>
+				<a href="index.php?option=com_jaextmanager&amp;view=repolist&amp;tmpl=component&amp;folder=<?php echo $this->state->parent; ?>" target="folderframe">..</a>
 			</td>
 			<td>&#160;</td>
 			<td>&#160;</td>

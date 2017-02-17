@@ -24,17 +24,15 @@ jimport('joomla.application.component.controller');
  * @subpackage	Media
  * @version 1.5
  */
-class JaextmanagerControllerRepo extends JController
+class JaextmanagerControllerRepo extends JAEMController
 {
 
 
 	/**
 	 * Display the view
 	 */
-	function display()
-	{
-		global $mainframe;
-		
+	function display($cachable = false, $urlparams = false)
+	{	
 		$vName = JRequest::getCmd('view', 'media');
 		switch ($vName) {
 			case 'images':
@@ -51,7 +49,6 @@ class JaextmanagerControllerRepo extends JController
 			
 			case 'repolist':
 				$mName = 'repolist';
-				//$vLayout = $mainframe->getUserStateFromRequest('media.list.layout', 'layout', 'details', 'word');
 				$vLayout = "details";
 				
 				break;
@@ -64,14 +61,14 @@ class JaextmanagerControllerRepo extends JController
 				break;
 		}
 		
-		$document = &JFactory::getDocument();
+		$document = JFactory::getDocument();
 		$vType = $document->getType();
 		
 		// Get/Create the view
-		$view = &$this->getView($vName, $vType);
+		$view = $this->getView($vName, $vType);
 		
 		// Get/Create the model
-		if ($model = &$this->getModel($mName)) {
+		if ($model = $this->getModel($mName)) {
 			// Push the model into the view (as default)
 			$view->setModel($model, true);
 		}

@@ -53,7 +53,7 @@ class JaextmanagerControllerFolder extends JaextmanagerController
 					continue;
 				}
 				
-				$fullPath = JPath::clean(JA_WORKING_DATA_FOLDER . DS . $folder . DS . $path);
+				$fullPath = JPath::clean(JA_WORKING_DATA_FOLDER .'/'. $folder .'/'. $path);
 				if (JFile::exists($fullPath)) {
 					$ret |= !JFile::delete($fullPath);
 				} else if (JFolder::exists($fullPath)) {
@@ -82,9 +82,9 @@ class JaextmanagerControllerFolder extends JaextmanagerController
 		}
 		if ($tmpl == 'component') {
 			// We are inside the iframe
-			$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $folder . '&tmpl=component');
+			$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $folder . '&tmpl=component');
 		} else {
-			$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $folder);
+			$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $folder);
 		}
 	}
 
@@ -113,19 +113,19 @@ class JaextmanagerControllerFolder extends JaextmanagerController
 		JRequest::setVar('folder', $parent);
 		
 		if (($folderCheck !== null) && ($folder !== $folderCheck)) {
-			$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $parent, JText::_('WARNDIRNAME'));
+			$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $parent, JText::_('WARNDIRNAME'));
 		}
 		
 		if (strlen($folder) > 0) {
-			$path = JPath::clean(JA_WORKING_DATA_FOLDER . DS . $parent . DS . $folder);
+			$path = JPath::clean(JA_WORKING_DATA_FOLDER .'/'. $parent .'/'. $folder);
 			if (!JFolder::exists($path) && !JFile::exists($path)) {
 				jimport('joomla.filesystem.*');
 				JFolder::create($path);
 				$content = "<html>\n<body bgcolor=\"#FFFFFF\">\n</body>\n</html>";
-				JFile::write($path . DS . "index.html", $content);
+				JFile::write($path ."/index.html", $content);
 			}
 			JRequest::setVar('folder', ($parent) ? $parent . '/' . $folder : $folder);
 		}
-		$mainframe->redirect('index.php?option=' . JACOMPONENT . '&view=repolist&folder=' . $parent);
+		$mainframe->redirect('index.php?option=com_jaextmanager&view=repolist&folder=' . $parent);
 	}
 }
