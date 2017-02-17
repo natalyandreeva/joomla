@@ -476,6 +476,7 @@ class VmMediaHandler {
 			}
 		}
 
+
 		if($this->file_is_forSale){
 			$toChk = $this->file_url;
 		} else {
