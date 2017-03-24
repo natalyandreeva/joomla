@@ -1,80 +1,134 @@
 <?php
 /**
- * Log view
+ * @package     CSVI
+ * @subpackage  Logdetails
  *
- * The logger needs to record several messages. These are:
- * - Successful imported records
- * - Failed imported records
- * - Status messages
- * - Warning messages
- *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: view.html.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
-
-jimport( 'joomla.application.component.view' );
+defined('_JEXEC') or die;
 
 /**
- * Log View
+ * Log Details view.
  *
-* @package CSVI
+ * @package     CSVI
+ * @subpackage  Logdetails
+ * @since       6.0
  */
-class CsviViewLogdetails extends JView {
+class CsviViewLogdetails extends JViewLegacy
+{
+	/**
+	 * The run ID
+	 *
+	 * @var    int
+	 * @since  6.6.0
+	 */
+	protected $runId;
 
 	/**
-	* Items to be displayed
-	*/
+	 * List of log results
+	 *
+	 * @var    array
+	 * @since  6.6.0
+	 */
+	protected $logResult = array();
+
+	/**
+	 * The items to display.
+	 *
+	 * @var    array
+	 * @since  6.6.0
+	 */
 	protected $items;
 
 	/**
-	* Pagination for the items
-	*/
+	 * The pagination object
+	 *
+	 * @var    JPagination
+	 * @since  6.6.0
+	 */
 	protected $pagination;
 
 	/**
-	* User state
-	*/
+	 * The user state.
+	 *
+	 * @var    JObject
+	 * @since  6.6.0
+	 */
 	protected $state;
 
 	/**
-	* Log view display method
-	* @return void
-	*/
-	function display($tpl = null) {
-		// Load the items to display
-		$this->logmessage = $this->get('Items');
-		$this->setModel(JModel::getInstance('log', 'CsviModel'));
-		$this->logresult = $this->get('Stats', 'log');
+	 * Form with filters
+	 *
+	 * @var    array
+	 * @since  6.6.0
+	 */
+	public $filterForm = array();
 
-		// Load the pagination
-		$this->pagination = $this->get('Pagination');
+	/**
+	 * List of active filters
+	 *
+	 * @var    array
+	 * @since  6.6.0
+	 */
+	public $activeFilters = array();
 
-		// Load the user state
-		$this->state = $this->get('State');
+	/**
+	 * The return URL
+	 *
+	 * @var    int
+	 * @since  6.6.0
+	 */
+	protected $returnUrl;
 
-		// Set the Run ID
-		$jinput = JFactory::getApplication()->input;
-		$this->run_id = $jinput->get('run_id', 0, 'int');
+	/**
+	 * Executes before rendering the page for the Browse task.
+	 *
+	 * @param   string  $tpl  Subtemplate to use
+	 *
+	 * @return  boolean  Return true to allow rendering of the page
+	 *
+	 * @throws  Exception
+	 */
+	public function display($tpl = null)
+	{
+		$this->runId = JFactory::getApplication()->input->getInt('run_id', 0);
+		$this->returnUrl = JFactory::getApplication()->input->get('return', '', 'string');
 
-		// Set the actions
-		$this->list['actions'] = $this->get('Actions');
-		$this->list['results'] = $this->get('Results');
+		if (!$this->runId)
+		{
+			JFactory::getApplication()->redirect('index.php?option=com_csvi&view=logs');
+		}
 
-		// Get the panel
-		$this->loadHelper('panel');
+		$model               = $this->getModel();
+		$this->logResult     = $model->getStats($this->runId);
+		$this->items         = $this->get('Items');
+		$this->pagination    = $this->get('Pagination');
+		$this->state         = $this->get('State');
+		$this->filterForm    = $this->get('FilterForm');
+		$this->activeFilters = $this->get('ActiveFilters');
 
-		// Add toolbar
-		JToolBarHelper::title(JText::_('COM_CSVI_LOG_DETAILS'), 'csvi_logdetails_48');
-		JToolBarHelper::custom('logdetails.cancel', 'csvi_cancel_32', 'csvi_cancel_32', JText::_('COM_CSVI_BACK'), false);
+		// Show the toolbar
+		$this->toolbar();
 
 		// Display it all
-		parent::display($tpl);
+		return parent::display($tpl);
+	}
+
+	/**
+	 * Displays a toolbar for a specific page.
+	 *
+	 * @return  void.
+	 *
+	 * @since   6.6.0
+	 */
+	private function toolbar()
+	{
+		JToolbarHelper::title(JText::_('COM_CSVI') . ' - ' . JText::_('COM_CSVI_TITLE_LOGDETAILS'), 'lamp');
+
+		JToolbarHelper::custom('logdetails.cancel', 'arrow-left', 'arrow-left', JText::_('COM_CSVI_BACK'), false);
 	}
 }
-?>

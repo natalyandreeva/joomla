@@ -1,50 +1,76 @@
 <?php
 /**
- * Front-end interface
+ * @package     CSVI
+ * @subpackage  Frontend
  *
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: csvi.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
+defined('_JEXEC') or die;
 
 $jinput = JFactory::getApplication()->input;
 
-// Make sure we are coming in via raw format
-$format = $jinput->get('format');
-if ($format != 'raw') {
-	$app = JFactory::getApplication();
-	$uri = JFactory::getURI();
-	$uri->setVar('format', 'raw');
-	$app->redirect(JRoute::_($uri->toString()));
-}
-
-// Load the logger
-require_once (JPATH_COMPONENT_ADMINISTRATOR.'/helpers/log.php');
-
-// Load the general helper
-require_once (JPATH_COMPONENT_ADMINISTRATOR.'/helpers/csvi.php');
+// Set CLI mode
+define('CSVI_CLI', false);
 
 // Define the tmp folder
 $config = JFactory::getConfig();
-$tmp_path = $config->getValue('config.tmp_path');
-if (!defined('CSVIPATH_TMP')) define('CSVIPATH_TMP', JPath::clean($tmp_path.'/com_csvi', '/'));
-if (!defined('CSVIPATH_DEBUG')) define('CSVIPATH_DEBUG', JPath::clean($tmp_path.'/com_csvi/debug', '/'));
 
-// Set the global settings
-require_once(JPATH_COMPONENT_ADMINISTRATOR.'/helpers/settings.php');
-$settings = new CsviSettings();
-$jinput->set('settings', $settings);
+if (!defined('CSVIPATH_TMP'))
+{
+	define('CSVIPATH_TMP', JPath::clean(JPATH_SITE . '/tmp/com_csvi', '/'));
+}
 
-// Include dependancies
-jimport('joomla.application.component.controller');
-$jinput->set('task', 'export.export');
+if (!defined('CSVIPATH_DEBUG'))
+{
+	define('CSVIPATH_DEBUG', JPath::clean(JPATH_SITE . '/logs/', '/'));
+}
 
+// Setup the autoloader
+JLoader::registerPrefix('Csvi', JPATH_ADMINISTRATOR . '/components/com_csvi');
+JLoader::registerPrefix('Rantai', JPATH_ADMINISTRATOR . '/components/com_csvi/rantai');
 
-// Create the controller
-$controller = JController::getInstance('csvi');
-$controller->execute($jinput->get('task'));
-$controller->redirect();
+// All Joomla loaded, set our exception handler
+require_once JPATH_BASE . '/administrator/components/com_csvi/rantai/error/exception.php';
+
+// Execute CSVI
+try
+{
+	// Check if we have an old style URL
+	$task = $jinput->get('task');
+
+	if (strpos($task, '.') === false)
+	{
+		// We have an old style task, let's change it
+		$view = $jinput->get('view');
+
+		$jinput->set('task', $view . '.' . $task);
+		$jinput->set('view', '');
+	}
+
+	// Load the defaults
+	require_once JPATH_ADMINISTRATOR . '/components/com_csvi/controllers/default.php';
+	require_once JPATH_ADMINISTRATOR . '/components/com_csvi/models/default.php';
+	require_once JPATH_ADMINISTRATOR . '/components/com_csvi/tables/default.php';
+
+	// Load administrator language files
+	$language    = JFactory::getLanguage();
+	$adminDir    = JPATH_ADMINISTRATOR . '/components/com_csvi';
+	$languageTag = $language->getTag();
+	$language->load('com_csvi', $adminDir, $languageTag, true);
+
+	// Add the path of the form location
+	JFormHelper::addFormPath(JPATH_ADMINISTRATOR . '/components/com_csvi/models/forms/');
+	JFormHelper::addFieldPath(JPATH_ADMINISTRATOR . '/components/com_csvi/models/fields/');
+
+	$controller = JControllerLegacy::getInstance('csvi');
+	$controller->execute($jinput->get('task'));
+	$controller->redirect();
+}
+catch (Exception $e)
+{
+	JFactory::getApplication()->redirect('index.php', $e->getMessage(), 'error');
+}

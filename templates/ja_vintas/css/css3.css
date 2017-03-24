@@ -74,36 +74,6 @@ input[type="reset"]:hover,input[type="reset"]:focus, input[type="reset"]:active,
 	box-shadow: 0 0px 1px #fff inset;
 }
 
-/* Search ---*/
-#ja-search:hover form {
-	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-	-webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-}
-
-#ja-search .inputbox {
-	box-shadow: 0 0 3px #111 inset;
-	-webkit-box-shadow: 0 0 3px #111 inset;
-}
-
-#ja-search .inputbox:hover {
-	box-shadow: 0 0 3px #111 inset;
-	-webkit-box-shadow: 0 0 3px #111 inset;
-}
-
-#ja-search .inputbox:focus {
-  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
-}
-
-/* MODULE STYLES
---------------------------------------------------------- */
-div.ja-moduletable h3, div.moduletable h3 {
-	text-shadow: 1px 1px 0 #F0E5DB, 1px 2px 0 #B1B1B2;
-}
-
-/* Menu Module ---*/
-div.moduletable_menu h3 {
-	text-shadow: 1px 1px 0 #E3575A, 1px 2px 0 #8a3a3c;
-}
 
 /* SPOTLIGHT
 --------------------------------------------------------- */
@@ -131,26 +101,27 @@ div.moduletable_menu h3 {
 /* Acymailing ---*/
 table.acymailing_form input.inputbox,
 div.acymailing_form p.onefield input.inputbox {
-	box-shadow: 0 0 3px #111 inset;
-	-webkit-box-shadow: 0 0 3px #111 inset;
+	box-shadow: none !important;
+	-webkit-box-shadow: none !important;
 }
 
 table.acymailing_form input.inputbox:hover,
 div.acymailing_form p.onefield input.inputbox:hover {
-	box-shadow: 0 0 3px #111 inset;
-	-webkit-box-shadow: 0 0 3px #111 inset;
+	box-shadow: none;
+	-webkit-box-shadow: none;
 }
 
 table.acymailing_form input.inputbox:focus,
 textarea:focus,
 div.acymailing_form p.onefield input.inputbox:focus {
- box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(227, 87, 90, 0.4);
+	box-shadow: none;
+	-webkit-box-shadow: none;
 }
 
 table.acymailing_form input.button:hover, table.acymailing_form input.button:active,
 div.acymailing_form p.acysubbuttons input.button:hover, div.acymailing_form p.acysubbuttons input.button:active {
-	box-shadow: 0 0px 1px #fff inset;
-	-webkit-box-shadow: 0 0px 1px #fff inset;
+	box-shadow: none;
+	-webkit-box-shadow: none;
 }
 
 #ja-botsl3 .acymailing_module a{
@@ -312,14 +283,9 @@ div.pagination ul li.pagination-end a:active {
 	text-shadow: 1px 1px 0 #F0E5DB, 1px 2px 0 #B1B1B2;
 }
 /* Mega Menu ----*/
-.ja-megamenu ul.level0 li.mega a.mega {
-	text-shadow: 0px 1px 1px rgba(0,0,0,0.5);
-}
 
 .ja-megamenu ul.level0 li.mega a.mega:hover,
-.ja-megamenu ul.level0 li.mega a.mega:focus,
-.ja-megamenu ul.level0 li.mega a.mega:active,
-.ja-megamenu ul.level0 li.mega a.mega.active {
+.ja-megamenu ul.level0 li.mega a.mega:focus {
 	text-shadow: 0px 1px 1px rgba(255,255,255,0.5);
 }
 

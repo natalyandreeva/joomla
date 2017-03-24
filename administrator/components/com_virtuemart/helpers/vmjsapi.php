@@ -393,7 +393,7 @@ class vmJsApi{
 
 	static function jSite() {
 		if (!VmConfig::get ('jsite', TRUE) and !self::isAdmin()) {
-			return FALSE;
+		//	return FALSE;
 		}
 		self::addJScript('vmsite',false,false);
 	}

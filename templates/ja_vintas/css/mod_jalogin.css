@@ -12,7 +12,7 @@
 
 #ja-login {
 	float: right;
-	margin-right: 5px;
+	margin-right: 58px;
 }
 
 #ja-login > ul {
@@ -22,17 +22,16 @@
 #ja-login > ul > li {
 	display: inline-block;
 	float: left;
-	background: url(../images/line.gif) no-repeat right center; 
 }
 
 #ja-login > ul > li > a {
-	color: #999;
+	color: #ffffff;
 	display: inline-block;
 	z-index: 1000;
-	padding: 0px 10px;
-	height: 40px;
-	line-height: 40px;
+	padding: 8px 5px;
+	height: 24px;
 	text-transform: uppercase;
+	font-size: .9em;
 }
 
 #ja-login > ul > li > a:hover,
@@ -61,8 +60,15 @@
  
 .logout-button {
 	float: right;
-	margin-top: 13px;
+	margin-top: 8px;
 	margin-right: 10px;
+	background-color: #6bc72a;
+    border-radius: 0px 50px 50px 0px;
+    width: 82px;
+    display: inline-block;
+    line-height: 25px;
+    padding: 5px 0px;
+    text-align: center;
 }
 
 .logout-button input.button {
@@ -98,7 +104,7 @@
 	z-index: 1000;
 	top: 41px;
 	background: url(../images/bg-login.png) repeat left top;
-	border: solid 5px #e3575a;
+	border: solid 5px #f7941e;
 	font-size: 125%;
 }
 
@@ -149,14 +155,16 @@
 }
 
 #ja-user-login input.button, #ja-user-register button {
-	background:	url(../images/pattern-red.gif) repeat left top;
-	border: solid 1px #e3575a;
+	background:	#f7941e;
+	border: none;
+	text-transform: uppercase;
 }
 
 #ja-user-login input.button:hover, #ja-user-register button:hover,
 #ja-user-login input.button:focus, #ja-user-register button:focus {
-	background:	url(../images/pattern-gray.gif);
-	border-color: #7E7E7E;
+	background:	#f7941e;
+	color: #7e7e7e;
+	border:none;
 }
 
 #ja-user-login #modlgn-remember {
@@ -192,7 +200,7 @@
 
 #ja-user-login form label, #ja-user-register form label {
 	font-weight: bold;
-	color: #999;
+	color: #fff;
 	font-size: 90%;
 	margin-bottom: 3px;
 }

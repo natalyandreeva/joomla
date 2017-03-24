@@ -206,7 +206,8 @@ class VirtueMartModelConfig extends VmModel {
 			}
 		}
 
-		$result = '';
+		//$result = '';
+		$result = array();
 
 		foreach($dirs as $dir){
 			if ($handle = opendir($dir)) {
@@ -231,8 +232,8 @@ class VirtueMartModelConfig extends VmModel {
 	 */
 	function getCurrencyConverterList() {
 		$dir = VMPATH_ADMIN.DS.'plugins'.DS.'currency_converter';
-		$result = '';
-
+//		$result = '';
+$result = array();
 		if ($handle = opendir($dir)) {
 			while (false !== ($file = readdir($handle))) {
 				if ($file != "." && $file != ".." && $file != '.svn') {

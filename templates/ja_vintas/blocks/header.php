@@ -22,7 +22,7 @@ $app = JFactory::getApplication();
 $siteName = $app->getCfg('sitename');
 if ($this->getParam('logoType', 'image')=='image'): ?>
 <h1 class="logo">
-    <a href="<?php JURI::base(true) ?>" title="<?php echo $siteName; ?>"><span><?php echo $siteName; ?></span></a>
+    <a href="<?php echo $this->baseurl; ?>" title="<?php echo $siteName; ?>"><span><?php echo $siteName; ?></span></a>
 </h1>
 <?php else:
 $logoText = (trim($this->getParam('logoText'))=='') ? $siteName : JText::_(trim($this->getParam('logoText')));
@@ -41,11 +41,17 @@ $sloganText = JText::_(trim($this->getParam('sloganText'))); ?>
 		<jdoc:include type="modules" name="hotline" style="raw" />
 	</div>
 	<?php endif; ?>
-	
+		
 	<?php if ($this->countModules('vm-cart')): ?>
 	<div id="ja-cart">
 		<jdoc:include type="modules" name="vm-cart" style="raw" />
 	</div>
 	<?php endif; ?>
 </div>
+<?php endif; ?>
+
+<?php if($this->countModules('search')) : ?>
+	<div id="ja-search">
+		<jdoc:include type="modules" name="search" />
+	</div>
 <?php endif; ?>

@@ -1,17 +1,15 @@
 <?php
 /**
- * Export file
+ * @package     CSVI
+ * @subpackage  Export
  *
- * @package 	CSVI
- * @subpackage 	Export
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: default.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
+defined('_JEXEC') or die;
 
 $jinput = JFactory::getApplication()->input;
 $csvilog = $jinput->get('csvilog', null, null);

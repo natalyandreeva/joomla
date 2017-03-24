@@ -63,13 +63,16 @@
 	z-index: 1101;
 	outline: none;
 	display: none;
+	width: 400px !important;
+
 }
 
 #fancybox-outer {
 	position: relative;
 	width: 100%;
 	height: 100%;
-	background: #fff;
+	background: #eeeeee;
+	border: 1px solid #737373;;
 }
 
 #fancybox-content {
@@ -80,7 +83,21 @@
 	position: relative;
 	overflow: hidden;
 	z-index: 1102;
-	border: 0px solid #fff;
+	font-size: 1.8em;
+    font-weight: 400;
+    line-height: 33px;
+    width: 320px !important;
+    text-align: center;
+    color: #737373;
+    padding: 24px 40px 13px 40px;
+
+}
+#fancybox-content h4{
+	text-transform: none;
+	font-weight: 400;
+}
+#fancybox-content span.fanb-productname {
+	color: #000000;
 }
 
 #fancybox-hide-sel-frame {
@@ -357,3 +374,39 @@
 .fancybox-ie #fancybox-bg-sw { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/fancybox/fancy_shadow_sw.png', sizingMethod='scale'); }
 .fancybox-ie #fancybox-bg-w { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/fancybox/fancy_shadow_w.png', sizingMethod='scale'); }
 .fancybox-ie #fancybox-bg-nw { filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='../images/fancybox/fancy_shadow_nw.png', sizingMethod='scale'); }
+
+/* Added to Cart box */
+.btn-contunueShopping {
+	margin-top: 23px;
+	float: left;
+    width: 120px;
+    height:50px;
+    background: #8cc63f;
+    font-size: 17px;
+    font-weight: 400;
+    color: #ffffff;
+    display: block;
+    line-height: 1;
+    text-align: center;
+    vertical-align: middle;
+}
+.btn-contunueShopping a.continue_link {
+	color: #ffffff;
+}
+.btn-showCart {
+	margin-top: 23px;
+	float: right;
+    width: 120px;
+    height:50px;
+    background: #f7941e;
+    font-size: 17px;
+    font-weight: 400;
+    color: #ffffff;
+    display: block;
+    line-height: 1;
+    text-align: center;
+    vertical-align: middle;	
+}
+.btn-showCart a.showcart {
+	color: #ffffff;
+}

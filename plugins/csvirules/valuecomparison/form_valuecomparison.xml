@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<form>
+	<fields name="pluginform">
+		<fieldset name="valuecomparison">
+			<field name="comparison"
+			       type="list"
+			       size="1"
+			       required="true"
+			       class="advancedSelect"
+			       default="text">
+				<option value="equalto">COM_CSVI_PLUGINFORM_VALUECOMPARISON_EQUALTO</option>
+				<option value="greaterthan">COM_CSVI_PLUGINFORM_VALUECOMPARISON_GREATERTHAN</option>
+				<option value="greaterthanequalto">COM_CSVI_PLUGINFORM_VALUECOMPARISON_GREATERTHAN_EQUALTO</option>
+				<option value="lessthan">COM_CSVI_PLUGINFORM_VALUECOMPARISON_LESSTHAN</option>
+				<option value="lessthanequalto">COM_CSVI_PLUGINFORM_VALUECOMPARISON_LESSTHAN_EQUALTO</option>
+			</field>
+
+			<field name="oldvalue"
+				   type="text"
+				   required="true"
+				   class="input-normal" />
+
+			<field name="newvalue"
+				   type="text"
+				   required="true"
+				   class="input-normal" />
+		</fieldset>
+	</fields>
+</form>

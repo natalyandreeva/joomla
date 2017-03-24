@@ -1,25 +1,23 @@
 <?php
 /**
- * Csvi controller
+ * @package     CSVI
+ * @subpackage  ControlPanel
  *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: csvi.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
-
-jimport('joomla.application.component.controller');
+defined('_JEXEC') or die;
 
 /**
- * Csvi Controller
+ * Control panel controller.
  *
- * @package    CSVI
+ * @package     CSVI
+ * @subpackage  ControlPanel
+ * @since       6.0
  */
-class CsviControllerCsvi extends JController {
-	
+class CsviControllerCsvi extends JControllerLegacy
+{
 }
-?>

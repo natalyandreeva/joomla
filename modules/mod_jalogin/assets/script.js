@@ -13,7 +13,7 @@ var jaboxoverlay = null;
 showBox = function (box,focusobj, caller, e) {
 	//Add overlay
 	if (!jaboxoverlay) {
-		jaboxoverlay = new Element ('div', {id:"jabox-overlay"}).injectBefore ($(box));
+		jaboxoverlay = new Element ('div', {id:"jabox-overlay"}).inject($(box), 'before');
 		jaboxoverlay.setStyle ('opacity', 0.01);
 		jaboxoverlay.addEvent ('click', function (e) {
 			jaboxes.each(function(box){

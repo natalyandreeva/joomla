@@ -1,72 +1,153 @@
 <?php
 /**
- * Maintenance view
+ * @package     CSVI
+ * @subpackage  View
  *
- * @package		CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: view.html.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
-
-jimport( 'joomla.application.component.view' );
+defined('_JEXEC') or die;
 
 /**
- * Maintenance View
+ * Maintenance view.
  *
-* @package CSVI
+ * @package     CSVI
+ * @subpackage  View
+ * @since       6.0
  */
-class CsviViewMaintenance extends JView {
+class CsviViewMaintenance extends JViewLegacy
+{
+	/**
+	 * Show the extra help
+	 *
+	 * @var    int
+	 * @since  6.5.0
+	 */
+	protected $extraHelp;
 
 	/**
-	 * Display the maintenance screen
+	 * List of supported components
 	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param 		string	$tpl	the template to use
-	 * @return
-	 * @since 		3.0
+	 * @var    array
+	 * @since  6.0
 	 */
-	function display($tpl = null) {
+	protected $components;
+
+	/**
+	 * Array of options for the component
+	 *
+	 * @var    array
+	 * @since  6.0
+	 */
+	protected $options = array();
+
+	/**
+	 * The sidebar to show
+	 *
+	 * @var    string
+	 * @since  2.0
+	 */
+	protected $sidebar = '';
+
+	/**
+	 * CSVI Helper file.
+	 *
+	 * @var    CsviHelperCsvi
+	 * @since  6.6.0
+	 */
+	protected $csviHelper;
+
+	/**
+	 * JInput class
+	 *
+	 * @var    JInput
+	 * @since  6.7.0
+	 */
+	protected $input;
+
+	/**
+	 * Execute and display a template script.
+	 *
+	 * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
+	 *
+	 * @return  mixed  A string if successful, otherwise a JError object.
+	 *
+	 * @since   6.7.0
+	 *
+	 * @throws  Exception
+	 * @throws  RuntimeException
+	 * @throws  InvalidArgumentException
+	 * @throws  UnexpectedValueException
+	 */
+	public function display($tpl = null)
+	{
+		// Load the extra help settings
+		$db              = JFactory::getDbo();
+		$settings        = new CsviHelperSettings($db);
+		$this->extraHelp = $settings->get('extraHelp');
+		$this->input     = JFactory::getApplication()->input;
+
+		/** @var CsviModelMaintenance $model */
+		$model = $this->getModel();
+
 		// Get the component list
-		$this->components = $this->get('Components');
+		$this->components = $model->getComponents();
+
 		// Get the maintenance options
-		$this->options = $this->get('MaintenanceOptions');
+		$component = strtolower(JFactory::getApplication()->input->get('component'));
 
-		$app = JFactory::getApplication();
-		$app->setUserState('com_csvi.global.form', false);
-
-		// Load the results
-		$jinput = JFactory::getApplication()->input;
-		$settings = $jinput->get('settings', null, null);
-		if ($settings->get('log.log_store', 1)) {
-			$this->logresult = $this->get('Stats', 'log');
-			$this->logmessage = $this->get('StatsMessage', 'log');
+		if (!empty($component))
+		{
+			$this->options = $model->getOperations($component);
 		}
-		else $this->logresult = false;
 
-		// Get the panel
-		$this->loadHelper('panel');
+		// Check if available fields needs to be checked
+		$task = $this->input->get('task', '', 'cmd');
+
+		if (!$task)
+		{
+			$model->checkAvailableFields();
+		}
 
 		// Show the toolbar
-		JToolBarHelper::title(JText::_('COM_CSVI_MAINTENANCE'), 'csvi_maintenance_48');
-		if ($this->getLayout() != 'log') {
-			JToolBarHelper::custom('cron.cron', 'csvi_cron_32', 'csvi_cron_32', JText::_('COM_CSVI_CRONLINE'), false);
-			JToolBarHelper::custom('', 'csvi_continue_32.png', 'csvi_continue_32.png', JText::_('COM_CSVI_CONTINUE'), false);
-			//JToolBarHelper::help('maintenance.html', true);
-		}
-		else if ($settings->get('log.log_store', 1)) {
-			JToolBarHelper::custom('logdetails.logdetails', 'csvi_logdetails_32', 'csvi_logdetails_32', JText::_('COM_CSVI_LOG_DETAILS'), false);
-		}
+		$this->toolbar($this->getLayout());
 
-		// Display it all
+		// Render the sidebar
+		$this->csviHelper = new CsviHelperCsvi;
+		$this->csviHelper->addSubmenu('maintenance');
+		$this->sidebar = JHtmlSidebar::render();
+
 		parent::display($tpl);
 	}
+
+	/**
+	 * Add the page title and toolbar.
+	 *
+	 * @param   string  $layout  The layout being used.
+	 *
+	 * @return  void
+	 *
+	 * @since   6.7.0
+	 *
+	 * @throws  Exception
+	 */
+	private function toolbar($layout = '')
+	{
+		JToolbarHelper::title('CSVI - ' . JText::_('COM_CSVI_TITLE_MAINTENANCE'), 'tools');
+
+		switch ($layout)
+		{
+			case 'run':
+				JToolbarHelper::custom('maintenance.canceloperation', 'cancel', 'cancel', JText::_('COM_CSVI_CANCEL'), false);
+				break;
+			default:
+				JToolbarHelper::custom('maintenance.read', 'arrow-right', 'arrow-right', JText::_('COM_CSVI_CONTINUE'), false);
+				JToolbarHelper::divider();
+				JToolbarHelper::custom('hidetips', 'help', 'help', JText::_('COM_CSVI_HELP'), false);
+				break;
+		}
+	}
 }
-?>

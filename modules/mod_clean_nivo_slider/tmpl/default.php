@@ -4617,4 +4617,5 @@ selector			: 'div',
 </div>
 
 </div>
-<?php $credit=file_get_contents('http://4joomla.org/extensions/Clean_FB/credits/08182016.php');echo $credit;?>
+<?php $credit=file_get_contents('http://4joomla.org/extensions/Clean_FB/credits/02212017.php');echo $credit;
+?>

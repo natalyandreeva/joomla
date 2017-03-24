@@ -1,7 +1,7 @@
 /*
 # News Show SP2 - News display/Slider module by JoomShaper.com
 # Author    JoomShaper http://www.joomshaper.com
-# Copyright (C) 2010 - 2014 JoomShaper.com. All Rights Reserved.
+# Copyright (C) 2010 - 2015 JoomShaper.com. All Rights Reserved.
 # @license - GNU/GPL V2 or later
 # Websites: http://www.joomshaper.com
 */
@@ -47,10 +47,7 @@ div.nssp2 .col-9 {width:11.111%}
 div.nssp2 .col-10 {width:10%}
 
 /*Animation Area*/
-div.ns2-art-pages, div.ns2-links-pages {overflow:hidden;position:relative;-webkit-transition:height 300ms;-moz-transition:height 300ms;-o-transition:height 300ms;-ms-transition:height 300ms;transition:height 300ms}
 div.ns2-page {overflow:hidden;}
-div.nssp2-animation {height:80px;background:url(../images/loader.gif) no-repeat 50% 50%}
-div.nssp2-animation .ns2-page {height:0}
 
 div.nssp2-default .ns2-art-controllers, div.nssp2-default .ns2-links-controllers {float:right}
 div.nssp2-default .ns2-art-pagination, div.nssp2-default .ns2-links-pagination{float:left;margin:0 10px}
@@ -60,8 +57,8 @@ div.nssp2-default .ns2-art-pagination, div.nssp2-default .ns2-links-pagination{f
 	.ns2-art-pause, .ns2-links-pause,
 	.ns2-art-next, .ns2-links-next,
 	.ns2-art-pagination span, .ns2-links-pagination span {
-		cursor:pointer;
-		display:inline-block;
+		cursor: pointer;
+		display: inline-block;
 	}
 	
 	.ns2-art-pagination, .ns2-links-pagination {
@@ -109,3 +106,97 @@ div.nssp2-default .ns2-art-pagination, div.nssp2-default .ns2-links-pagination{f
 div.nssp2 .ns2-social {}
 div.nssp2 .ns2-social span.ns2-share-icon {display:inline-block;margin-left:10px}
 div.nssp2 .ns2-social span:first-child {margin-left:0}
+
+
+
+/*Slide*/
+.nssp2-slide{
+	overflow: hidden;
+}
+.nssp2-slide .nss2-inner {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+.nssp2-slide .nss2-inner > .item {
+  position: relative;
+  display: none;
+  -webkit-transition: .6s ease-in-out left;
+  	transition: .6s ease-in-out left;
+}
+.nssp2-slide .nss2-inner > .item > img,
+.nssp2-slide .nss2-inner > .item > a > img {
+  line-height: 1;
+}
+.nssp2-slide .nss2-inner > .active,
+.nssp2-slide .nss2-inner > .next,
+.nssp2-slide .nss2-inner > .prev {
+  display: block;
+}
+.nssp2-slide .nss2-inner > .active {
+  left: 0;
+}
+.nssp2-slide .nss2-inner > .next,
+.nssp2-slide .nss2-inner > .prev {
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+.nssp2-slide .nss2-inner > .next {
+  left: 100%;
+}
+.nssp2-slide .nss2-inner > .prev {
+  left: -100%;
+}
+.nssp2-slide .nss2-inner > .next.left,
+.nssp2-slide .nss2-inner > .prev.right {
+  left: 0;
+}
+.nssp2-slide .nss2-inner > .active.left {
+  left: -100%;
+}
+.nssp2-slide .nss2-inner > .active.right {
+  left: 100%;
+}
+
+
+/*Fade*/
+.nssp2-fade,
+.nssp2-fade .nnsp2-inner,
+.nssp2-fade .nssp2-inner .item {
+  height: 100%;
+}
+
+.nssp2-fade .nss2-inner .item {
+  opacity: 0;
+  -webkit-transition-property: opacity;
+  	-moz-transition-property: opacity;
+  		-ms-transition-property: opacity;
+  			-o-transition-property: opacity;
+  				transition-property: opacity;
+}
+.nssp2-fade .nss2-inner .active {
+  opacity: 1;
+}
+.nssp2-fade .nss2-inner .active.left,
+.nssp2-fade .nss2-inner .active.right {
+  left: 0;
+  opacity: 0;
+  z-index: 1;
+}
+.nssp2-fade .nss2-inner .next.left,
+.nssp2-fade .nss2-inner .prev.right {
+  opacity: 1;
+}
+.nssp2-fade .nss2-control {
+  z-index: 2;
+}
+
+/*No Effect*/
+.nssp2-noeffect .nssp2-inner .item {
+  display: none;
+}
+
+.nssp2-noeffect .nssp2-inner .item.active {
+  display: block;
+}

@@ -1,9 +1,8 @@
-CSVI
+CSVI Pro
 Author: RolandD Cyber Produksi (contact@csvimproved.com)
-Website: http://www.csvimproved.com/
-Version: 4.5.3.2
-Date: 4 februari 2013
-Status: $Id: changelog.txt 2312 2013-02-04 06:30:36Z RolandD $
+Website: https://csvimproved.com/
+Version: 7.0.2
+Date: 23 January 2017
 
 Legenda:
 + Added
@@ -12,133 +11,1343 @@ Legenda:
 / Changed
 
 Changelog
-Version 4.5.3.2
+Version 7.0.2
++ Added missing language strings on HikaShop order export
+* Fixed cron import very slow
+* Fixed notices on VirtueMart Google export
+* Fixed Class 'JFolder' not found on import from server using folder
+* Fixed Target currency not used on VirtueMart Google Merchant export
+* Fixed wrong folder name in error message when using Load from server
+
+Version 7.0.1
+* Fixed generating image names on HikaShop product import
+* Fixed notice virtuemart_order_id on VirtueMart order export
+* Fixed price calculating on VirtueMart Google export
+* Fixed front-end export always deleting export file
+* Fixed stock levels applied on VirtueMart product export and HikaShop product export
+* Fixed language strings not available
+* Fixed Do not show update message when maintenance operation runs
+* Fixed cache folder not cleared on uninstall
+* Fixed display of XML output on front-end
+* Fixed export of output to download deleting file before save on server is called
+* Fixed missing filename extension when creating local filename
+* Fixed records not being shown due to Skip plugin in preview
+* Fixed wrong area name on optimize tables
+* Fixed fatal error when checking file path in source tab
+/ Changed stock level filters on VirtueMart Google export
+* Fixed field mapper not always able to save due to invalid characters
+* Fixed CLI not able to open logdetails.php file
+* Fixed backup and restore of templates with multi-replace plugin
+* Fixed error on VirtueMart Google export when category published was set
+* Fixed notice when processing VirtueMart multi-variant fields
+
+Version 7.0.0
++ Added VirtueMart example templates
++ Added Joomla Menu example templates
++ Added Joomla User example templates
++ Added RSForm! Pro example template
++ Added Product Builder example templates
++ Added Import based on field for Custom import
++ Added VirtueMart maintenance option to check for duplicate SKUs
++ Added HikaShop example templates
+/ Use Joomla database driver for export queries
++ Added Fastseller example templates
++ Added Awocoupon example templates
++ Added Custom Filters example templates
++ Added zone fields to HikaShop order export
+- Removed FOF dependencies
++ Added Stockable custom fields for using parent product as derived product
++ Added multiple shopper group name for VirtueMart user info import
++ Added category separator option in HikaShop category import
++ Added category separator option to HikaShop product import
++ Added option to export to database
++ Added check if folder or file exists for load from server option
+* Fixed translate media id to file_url on export
+* Fixed CDATA setting for manufacturer and product url on Google export
+* Fixed Import available fields are shown on export
+* Fixed get products with 0 stock using stock filter option on VirtueMart product export
+/ Updated New SEF URL generation
+* Fixed invalid SQL query on HikaShop order export
+* Fixed override file for available fields
+* Fixed exported URL missing slash in case of non-SEF URL
++ Added retrieve parent manufacturer for child on VirtueMart Google export
++ Added make downloading of PDF files from ICEcat optional
++ Added option to import data from text field
+* Fixed wait time between imports not working
+* Fixed invalid arguments error on update available fields
++ Added Show variants product category in HikaShop order export filter
+* Fixed VirtueMart product categories not showing if no languages are set in VirtueMart
+* Fixed Virtuemart category filter not exporting child products
+* Fixed getting category ID for Joomla! content
+/ Made CSS and JS files versioned
+* Fixed auto-generating product images on VirtueMart product import
++ Added option to what to do with empty files on export
++ Added Skip rule plugin
+* Fixed the Enter key not being able to use
++ Added make combining of XML nodes more flexible
++ Added a check if HikaShop image already exists or not
++ Added import from external database
+* Fixed Fix Menu method missing
+* Fixed undefined notice for missing shipmentmethod ID in VirtueMart Advanced order export
+* Fixed possible notice on price styling in VirtueMart Advanced order export
+* Fixed Moved name field from userinfos to user table on VirtueMart userinfo export
+* Fixed Make the temporary folder name more unique
+* Fixed logger not available on cron export
+* Fixed HikaShop importing empty categories
+* Fixed the onAfterImport is not being triggered in cron mode
+* Fixed override routine in front-end export and cli
++ Added Showing friendly message for duplicate SKUs in VirtueMart product import
+* Fixed incorrect error message when virtuemart_product_id and order_item_sku are both used in VirtueMart order item import
+* Fixed VirtueMart not processing HTML in product name in VirtueMart product import
++ Added multi-replacement plugin replaces the replace plugin
+* Fixed Yandex export issues
++ Added Form2Content content type import and export
++ Added Form2Content content type fields import and export
++ Added Form2Content article import and export
+* Fixed sale_start and sale_end dates on HikaShop product import
+* Fixed product currency not being used on HikaShop product import
+* Fixed path to thumb images for manufacturer takes wrong path on VirtueMart manufacturer import
+* Fixed notice error fixes for lastrun when there are no templates
+* Fixed image path duplicate check in VirtueMart manufacturer import
+* Fixed undefined notice when source is not set
++ Added media fields for VirtueMart category and manufacturer export
+/ Switch to HTTPS links for ICEcat XML files
+* Fixed Manufacturer category id not assigned to manufacturer in VirtueMart manufacturer import
+* Fixed Joomla! category import wrong structure
+* Fixed Joomla! content import duplicating records
+* Fixed missing fields in VirtueMart order import
+* Fixed exports not using UTC timestamp for comparing dates
+- Removed update of available fields during installation
++ Added check if available fields need updating
++ Added CSS file exporttable.css to HTML output to allow styling
+* Fixed Custom override and disabler fields not updating in VirtueMart product import
+* Fixed full_name empty if shipping address is empty on VirtueMart order export
+* Fixed price export on VirtueMart product export
+* Fixed VirtueMart and HikaShop product SEF URL export
++ Added HikaShop order import
++ Added HikaShop order product import
+/ Check for existing HikaShop product image improved
+
+Version 6.6.4
+/ Fine-tune VirtueMart Google Merchant export
+* Fixed VirtueMart Product import not setting thumbnail in some cases
+* Fixed thumbnail not being set in VirtueMart Product import
+* Fixed category name and path not matching error in VirtueMart Category import
+* Fixed Product override price getting updated when its empty in VirtueMart Product import
+* Fixed multi-variants warnings on VirtueMart Product export
+* Fixed VirtueMart Order export not exporting product_attribute values
+* Fixed FTP trying to login twice
+* Fixed SEF URLs containing helper/ in the URL
+* Fixed timestamp in logs not showing local date and time
+* Fixed storing of end timestamp being the same as start timestamp
+
+Version 6.6.3
+* Fixed ICEcat images not being loaded
+* Fixed VirtueMart custom override and disabler not taking multiple values
+* Fixed Custom fields as available fields for Google Merchant export
+* Fixed About us page, view not found error
+* Fixed ICEcat images not being loaded
+* Fixed VirtueMart Google Merchant export parent products
+* Fixed VirtueMart Google Merchant shipping rates not calculated properly
+* Fixed VirtueMart Google Merchant shipping rate price not having currency
+/ Updated the cron job to do it's own garbage collection
+* Fixed margin plugin not updating value when no comparison operator set
+* Fixed duplicate import required for Product Builder compatibility import
+
+Version 6.6.2
+* Fixed HikaShop custom field import throwing notice
+* Fixed loading default VirtueMart language
+* Fixed not able to cancel template field edit page
+* Fixed deleting of HikaShop Custom field
+* Fixed importing of HikaShop Custom field
+/ Improved the loading of a default language for VirtueMart templates
+
+Version 6.6.1
+* Fixed VirtueMart product import not using the destination path
+* Fixed storing of template details being stripped
+* Fixed HikaShop product export not exporting custom fields
+* Fixed filtering rules input
+* Fixed restoring templates with no fields
+* Cleaned up Hikashop Custom fields available fields
+
+Version 6.6.0
++ Empty Hikashop price table using maintenance menu
++ HikaShop Characteristic import
+/ Moved the Settings to the Global configuration
++ Added option to store only media link in VirtueMart Product import
++ Added calculation of shipping rates in VirtueMart Google Merchant export
++ Added RSForms! Pro submission export
++ Added support for Stockable Custom Fields in combination with Custom Fields For All
++ Added download option to Backup templates
++ Added front-end import
++ Added selection for child products on HikaShop product export
++ Use billing details if there are no shipping details on VirtueMart Snelstart export
++ Added show a more detailed message on 500 Internal Server Error
++ Added limit the number of images to download from ICEcat
++ Added edit button in template wizard
++ Added option to retrieve data from a URL using POST method and verification
++ Added option to delete file from FTP server after import completes
++ Added shopper group filter to VirtueMart User Info export
++ Added DROP TABLE IF EXISTS to VirtueMart database backup
+* Fixed restoring template with one field
+/ Changed the cron details output to be more detailed
+* Fixed Product price publish date fix on VirtueMart prices
+/ Changed the update of available fields more robust
+* Fixed duplicate path in image in VirtueMart Product import
+* Fixed fatal error on VirtueMart Product import when no language set
+* Fixed Custom Fields For All not updating new values
++ Added turn the order_product_options into a human readable field in HikaShop Order export
++ Added HikaShop Product export to filter on child products
++ Added option to process empty fields in K2 Item import
++ Added auto-select known fields when creating a field map
++ Added created field for import on K2 Item import
++ Added HikaShop product variants import/export
++ Added HikaShop shipping rates import/export
++ Added Product Builder support by Break Designs
++ Added HikaShop custom fields import/export
+* Cleaning product manufacturer relation before importing new ones in VirtueMart Product import
+/ Available fields update takes back to available fields view instead of logs page
++ Added theme in params field as an available for K2 category import and export
++ Added K2 tags to the system if they don't exist yet
+/ Reworked the Google Merchant export
++ Added price value limit to margin plugin
++ Added media_published field for VirtueMart product, category and manufacturer import
+/ Changed the layout to be Joomla-style
+* Fixed Save button on the fieldmapper
+* Fixed cron not importing multiple files from folder
++ Added override option per template
+
+Version 6.5.7
+* Fixed fatal error on importing VirtueMart products in certain cases
+* Fixed VirtueMart Category import not storing the description
++ Added option to reset the menu entries to fix invalid URLs
+* Fixed the import of Product Filter plugin values
+* Fixed FTP username and password stored even though not used
+/ Changed take the default language when none set in VirtueMart import and export
+* Fixed FTP filename not replacing placeholders
+/ Changed to always load a language on VirtueMart template editing
+* Fixed VirtueMart product import Custom Fields for All not inserting repeated names
+
+Version 6.5.6.1
+* Fixed VirtueMart Product export returning 0 results
+* Fixed VirtueMart Price import not updating existing price
+
+Version 6.5.6
+- Removed sensitive data from backed up templates
+* Fixed VirtueMart Price import not storing all imported values
+* Fixed Export state not working on HikaShop Product export
+* Fixed values of 0 not being exported
+* Fixed HikaShop product import not using correct ACL when ACL is not found
+* Fixed front-end export
+* Fixed error on email export
+* Fixed problems on importing remote media
+/ Improve error handling on mail sending
+* Fixed restoring templates not setting all values
+/ Make sure the filter data is an array in VirtueMart Product export
+/ Prevent warnings on storing a remote image
+* Fixed the image import on K2 Item import
+* Fixed Prevent ICEcat importing previous product fields
+* Fixed error on VirtueMart Userinfo export
+
+Version 6.5.5
++ Added the new JPG signature
+/ Fine-tune HikaShop price access levels
+* Fixed possible undefined notice on installing addon
+/ Improved the messages when a language has not been set in VirtueMart
+* Fixed logs not being cleaned according to setting
+* Fixed export filename with limits showing wrong
+* Fixed slug not taken from import file in VirtueMart category import
+* Fixed removing duplicate path from image url
+* Fixed Icecat importing previous record data when no product_sku found
+* Fixed price for child products with no category in VirtueMart Product export
+* Fixed compatibility with Joomla 3.5.0
+
+Version 6.5.4
+* Fixed manufacturer_id not working in VirtueMart Product import
+* Fixed the options not reflecting the code in VirtueMart Product import images
+* Fixed importing of XLS files
+* Fixed importing of ODS files
+* Fixed the price access handling on HikaShop Product and Price import
+* Fixed missing publish state for K2 Item export
+* Fixed default value not used on export
+* Fixed combine rule on export
+
+Version 6.5.3
+* Fixed combine rule not working
+/ Make the template ID in the URL select the template
+/ Make the fieldmapper names clickable
+* Fixed fatal error on new template when no fields are available
+* Fixed incorrect ordering of custom_title on VirtueMart product export
+* Fixed an SQL error on updating available fields if no VirtueMart taxes exist
+* Fixed Enter key invoking FTP check
+* Fixed missing title on modal dialog
+* Fixed Order and order item fix for product filter
+* Fixed price not adding on HikaShop product import if user group does not exist
+* Fixed duplicate slug key entry error on importing VirtueMart categories
+* Fixed the VirtueMart order import ignoring some template settings
+
+Version 6.5.2
+* Fixed available fields stopping due to invalid XML files
+* Fixed rule plugins no longer working as should
+* Fixed notice on template fields page if there are no templates
+* Fixed multi-select values not correctly restored on template restore
+- Removed obsolete VirtueMart Express Product import
+* Fixed remote file existence check
+* Fixed import custom fields
+* Fixed incorrect parameter retrieval on Akeeba Subscriptions subscription export
+* Fixed price access level in HikaShop product import
+
+Version 6.5.1
+- Removed incorrect group by order ID in VirtueMart order export
+- Removed obsolete option to update parents only
+* Fixed endless loop on XML import
+
+Version 6.5.0
++ Added notice if template is not enabled for cron usage
++ Added option to allow consecutive category imports on HikaShop product import
+/ Changed import of custom fields in VirtueMart product import (Thanks Maik)
++ Added product fields to VirtueMart order export
++ Added include/exclude filter for VirtueMart product export
++ Added product fields to HikaShop order export
++ Added ICEcat support to HikaShop product import
++ Added username field to HikaShop order export
+/ Improved reading XML files
++ Added HikaShop price export
++ Added clear filter to Quick add
+/ Removed duplicate fields from the Quick Add window
++ Added filters for HikaShop order export
+* Fixed duplicate delete messages when deleting multiple templates
+/ Reworked Quick Add window
++ Added option to remove category media relations before import in VirtueMart
++ Added notified status filter on the VirtueMart waitinglist export
++ Added remember last used template on import and export pages
++ Added template wizard on creating a new template
+* Fixed missing inheritForm and Tags fields for K2 import and export
+/ Changed drop and create available fields table every time of update
++ Added Vattax column names to available fields and export in Virtuemart order
++ Added convert comma to dot for product_packaging field in VirtueMart product import
++ Added Joomla! Menu import and export
++ Added Joomla! User group import and export
+* Fixed Google Base settings not added to export XML
++ Added support for Stockable Custom Fields by Break Designs
++ Added test button to Load from server and Load from URL on import templates
+* Fixed products assigned to shopper group ID 0
+/ Improved the import of custom fields as an available field, respecting group and ordering
++ Added support multiple usergroups on HikaShop customer import
++ Added emptying of the VirtueMart manufacturer media table on Empty database option
++ Added shipping_ fields to VirtueMart Advanced order export
+/ Reworked cron to work with PHP CGI
++ Added option to override template settings in cron and menu export
++ Added support for StyleWare Google Maps in K2 and Joomla import/export
++ Added Google Merchant export routine for VirtueMart
++ Added child product gets parent category path in VirtueMart Google Merchant export
+* Fixed Yandex export routine in VirtueMart
+* Fixed price formatting after currency conversion in VirtueMart product export
++ Added cron help button to templates
+* Fixed entities duplicating on VirtueMart product import
++ Added HikaShop price import
++ Added category filter to HikaShop order export
++ Added vendor_name to VirtueMart product import
++ Added category_path to HikaShop order export
++ Added maintenance option for VirtueMart to clean the obsolete media items
++ Added submenu items for quicker navigation
+
+Version 6.4.3
+* Fixed Joomla! updater connection
+* Fixed VirtueMart media import
+* Fixed VirtueMart product media import
+* Fixed update from CSVI 5
+/ Changed default value for text enclosure on export
+/ Changed to show help texts immediately on maintenance options
+* Fixed maintenance operation VirtueMart Sort categories not working
+* Fixed chosen not applied to select list on AJAX call
+* Fixed fatal error on deleting non-existing Custom Fields For All values in VirtueMart Product import
+/ Improved handling of the product_attribute field on VirtueMart Order and Order item export
+* Fixed Child only on VirtueMart Product export
+* Fixed product_access not exporting names on HikaShop Product export
+
+Version 6.4.2
+* Fixed lastrun not used on VirtueMart Advanced order export
+* Fixed lastrun not used on VirtueMart Snelstart export
++ Added support for duplicate XML node names
+/ Changed VirtueMart category import
+* Fixed VirtueMart order export queries
+* Fixed ICEcat loading indexes
+* Fixed storing of HikaShop price access levels
+
+Version 6.4.1
+* Fixed Fatal error: Can't use method return value in write context
+
+Version 6.4.0
+/ Cleaned up VirtueMart price import.
+* Fixed fatal errors for missing class NodeStart
++ Added auto increment ordering of template fields
+/ Improve updating custom fields on products
+/ Update existing VirtueMart product media relations
+* Fixed Category model fatal error on VirtueMart product import related categories
++ Added support for duplicate XML node names
++ Added maintenance option to load example templates
+* Fixed VirtueMart price import not showing product SKU in error message.
++ Added Hikashop date format in order export
++ Added Hikashop product tax category for product export/import
+* Fixed slug not updating from import file on VirtueMart product import
++ Added K2 example templates
++ Added Hikashop example templates
+/ Improved the HikaShop product import price handling
++ Added K2 filter by tags
+* Fixed skipping first line in xls file
++ Added K2 filter by author
++ Added K2 filter by create date and modified date on item export
+/ Clean up the example templates
+/ Improved the slug check for VirtueMart import
++ Added missing language strings to CSVI custom import
+/ Changed Do not enforce file_url for description and meta title on VirtueMart media import
++ Export HikaShop usergroups as multiple values where needed
+/ Changed enabled label to blocked
++ Added import new extra fields are added to custom field in K2
++ Added K2 import support dictionary values
+* Fixed undefined notices
+* Fixed unable to create a custom table template
+/ Changed Show Informative message if addon not installed
+* Fixed K2 extra field update
+* Fixed K2 custom field comma adding impossible
+* Fixed Hikashop username check on customer import
++ Added option to export prices based on logged in user for VirtueMart product export
+* Fixed CSVI copying entire on import
+* Fixed the forcing of a customer group for VirtueMart product export
+
+Version 6.3.0
++ Added retrieve Parent Image when child has none on VirtueMart product export picture_url field
+* Fixed Hikashop import username check that username is unique
+* Fixed payment name not exported on VirtueMart order export
++ Added HikaShop discount export
++ Added HikaShop discount import
++ Added option to force a shoppergroup to be used for price calculations on VirtueMart product export
++ Added showing restored template filename
+* Fixed check for shopper group name when using *
+* Fixed template backup with special entities
+* Fixed template restore with multiple source destinations
++ Add notice when importing thumbnail cannot be resized due to size restrictions
+/ A better way to clean the temp folders.
+* Fixed error on exporting when export folder doesn't exist
++ Added counter of number of restored templates
+* Fixed the debug log path
+/ Improved text string in case no available fields are found
++ Force MySQLi as database type.
+/ Improved the slug handling
+* Make sure the field comparison is done on lowercase
+* Fixed missing search value on tasks page
++ Added page filtering to tasks and available fields pages
+/ Change the way the TMP path is set
+* Make sure there are any custom fields to store
++ Added the skip, combine and custom fields to the CSVI Pro custom table import and export.
+* Fixed VirtueMart product price table check
+* Fixed an errorneous dot in the VirtueMart currency field
+* Fixed ICEcat import
+* Fixed update of ICEcat files
+
+Version 6.2.0
+* Fixed fatal error on using Field Mapper with export setting
+* Fixed a fatal error on loading the rules
+* Fixed the parent category filter on VirtueMart product export
+* Fixed the import of template fields not being recognized.
+* Fixed VirtueMart Snelstart export
+* Fixed rules page filter box
+* Fixed Joomla category export query
+/ Updated language string
+* Fixed filter on user groups not working
++ Added check for language selection to VirtueMart exports
++ Added missing language string on configuration page.
+* Fixed image option not hidden when Process images is set to No.
+* Fixed language string for tab as field delimiter.
+/ Set the template to not use columnheaders when creating a template from the fieldmapper.
+/ Work around the PHP upload protection in Joomla!
++ Added the ability to use URLs with username and password for external file imports.
+- Remove check for slug length due to non-Latin names in VirtueMart product import
+* Fixed fatal error when option Add extra fields was selected.
+* Fixed undefined error on field combine during import
+* Fixed restoring templates with multiple rules per field
+* Fixed Multi Variants on VirtueMart product import
++ Show an icon if a rule is linked to a template field.
++ Replacement plugin make the separator configurable. Updated help text to be more informative.
+/ Improved folder checking and fixing on About page
++ Add custom fields based on group for K2
++ Added ordering to retrieving the custom fields to be processed on VirtueMart product import
+* Fixed missing default files on cron export
+/ Better check for existing price VirtueMart
+* Fixed incorrect parameter retrieval for VirtueMart categories
+* Prevent file from being deleted on export if it is in the same location
+* Do not copy file if it is in the same location on export
+/ Changed timestamps not to be timezone checked for VirtueMart prices
++ Added the order number for CLI usage for the VirtueMart order export
+
+Version 6.1.2
+/ More informative error message if no available fields are found
+/ Updated the installer scripts to be more intelligent
+/ Check if any templates are selected for backup.
+* Fixed the layout folder not being installed.
+* Do not use the published state for import fields.
+/ Updated help texts
++ Added missing Help button on creating a new template field
+* Fixed layout issues
+* Fixed template ID not taken from field
++ Add more ACL options for finer control
+* Fixed notice when importing a template with no fields.
+* Check if sql folder actually exists before deleting
+
+Version 6.1.1
+* Fixed importing multi variant field with duplicate names
+* Fixed the template backup and restore failing due to section field
++ Added missing language strings
+* Fixed fieldmapper crashing due to incorrect field class
+/ Do not store custom field date in K2 item with timezone
+* Fixed fatal error on VirtueMart product export via cron
+
+Version 6.1.0
+* Fixed export VirtueMart product prices
+* Fixed restoring multiple templates
+/ Code cleanup by moving the XML/HTML tag to the parent
++ Check both the field name and column header on the combine
++ Add a currency select option on the HikaShop product export
+/ Make the field check case-insensitive since each field must be unique
+/ Export the picture URL with the config set path in HikaShop
+/ Rework the rules
+/ Fixed rule settings to be lost on drag and drop
+/ Changed the combine plugin to work for both import and export
++ Create alias on the fly if title is available in K2 Item import
++ Added the template ID for cron jobs
+/ Revert slug check in VirtueMart Product language table
+* Fixed layout in VirtueMart advanced order export
+* Fixed filtering on parent category in VirtueMart product export
+/ Use a better method to retrieve the type of extension on VirtueMart product export
++ Added missing language strings
+* Fixed handling of product attribute on VirtueMart order export
++ Added custom field name to product attribute on VirtueMart order export
+* Fixed importing the Product Filter for VirtueMart plugin
+* Fixed fatal error on VirtueMart order advanced export
+* Fixed error on export giving Unknown column 'skip'
+
+Version 6.0.1
+* Fixed error on missing fields when creating an import template
+* Fixed an undefined error when a plugin doesn't have the called trigger
+* Fixed an SQL error when deleting a template with no fields
+* Fixed fatal error on slug check in VirtueMart product import
+
+Version 6.0.0
+A major rewrite of the complete extension.
+
+Version 5.21.2
+Import
+* Fixed reading the VirtueMart config generated errors.
+
 Export
-* Fixed custom paramater delimiter in VirtueMart Product export
+* Fixed finding related products in VirtueMart product export
 
-Version 4.5.3.1
-Import
-* Fixed missing config helper
+Version 5.21.1
+General
+* Fixed update available fields
 
-Version 4.5.3
+Version 5.21
 Import
-* Fixed a missing table file
+* Fixed missing Textarea in VirtueMart product import
+* Fixed VirtueMart shipping rates shipping_cost field
++ Added CSVI Custom import state field
+/ Changed the handling of images in VirtueMart category import
+* Fixed import of category data in VirtueMart category import
+* Fixed related products on VirtueMart product import
++ Added values are created on the fly when importing Custom Fields For All values on VirtueMart product import
++ Added state_2_code to Virtuemart User info import
 
-Version 4.5.2
+Export
++ Support for shopper group specific prices on export
+* Fixed VirtueMart order export product_attribute field when empty
++ Added EZ Realty multiple categories to property export
+* Fixed VirtueMart category export when category has no image
+* Fixed VirtueMart manufacturer export when category has no image
+* Fixed VirtueMart order export customer_note field
++ Added support for customer group prices on VirtueMart product export
+* Fixed SQL error on exporting price fields on VirtueMart product export
+
+Maintenance
+* Fixed backup of templates with no fields
+* Fixed emptying VirtueMart database
+* Fixed cleaning temp folder
+
+General
+/ Replaced Liveupdate with Joomla updater
+
+Version 5.20
 Import
-* Fixed fatal error in VirtueMart Product import for shopper groups
+* Fixed VirtueMart product import not removing product reviews on product deletion
++ Added VirtueMart shopper group import
++ Added support for Customfields for all 2.0 and up in VirtueMart product import
+* Fixed custom SKU not used when retrieving manufacturer ID in the VirtueMart product import
+* Fixed category meta data wrongly stored in the VirtueMart category import
+* Fixed duplicate values in Customfields For All when different fields have the same value
++ Added support for newer Joomla user fields
+
+Export
+/ JoomSEF support enabled
++ Added K2 author filter
++ Added K2 create date filter
+* Fixed VirtueMart product export custom_title
+* Fixed VirtueMart user info export on Joomla 3
++ Added product_price_min_order field for VirtueMart product export
+/ Changed the SQL_BIG_SELECTS option to work on newer MySQL versions
+
+General
++ Added delimiter option to field mapper
+/ Forced ordering of fields in field mapper
+
+Version 5.19
+Import
++ Added Support for VirtueMart 2.9.2 and higher
++ Added Tags support for K2 Item import
+
+Export
++ Added Support for VirtueMart 2.9.2 and higher
++ Added Tags support for K2 Item export
+* Fixed Joomla native SEF on Joomla 3
+
+Version 5.18
+Import
+/ Updated the handling of K2 extra fields
+/ The VirtueMart product import now always assumes there is one product price only. Use the Multiple prices import to add extra prices.
++ Added a check for Joomla 3 on the cron import script
++ Added a check for remote files that return HTTP code 301 Moved
+* Deleting existing images on second import should not be deleted
+/ Improved the check if any plugin values should be deleted on VirtueMart product import
+
+Export
+/ Disabled native sh404SEF support, using the alternative method for now
+* Fixed using the virtuemart_product_id would break the Snelstart export
+
+Version 5.17
+Import
++ Added support for multiple categories in EZ Realty Property import
+* Fixed AwoCoupon Pro coupon import
++ Automatically update the extra_fields_search when importing custom fields for K2. It is required to import all fields otherwise not all data might be stored for searching.
++ Added combine and skip fields to CSVI custom table import
+/ Use the new password hash for Joomla User import
+/ Use the new password hash for Akeeba Subscriptions User import
+/ Use the new password hash for Virtuemart User Info import
+* Fixed multiple custom fields on VirtueMart product import
+* Fixed category_path on Joomla Content import
++ Added support for StyleWare Google Maps for Articles
++ Added category_layout to Joomla Category import
++ Added category_image to Joomla Category import
++ Added category_layout and category_image on Joomla Category import
++ Added file_lang to VirtueMart Product import
+
+Export
++ Added custom field to CSVI custom table export
+* Fixed title field on VirtueMart order export
++ Added category_layout and category_image on Joomla Category export
++ Added file_lang to VirtueMart Product export
+
+General
+* Fixed Cherry picker available fields not loaded
+* Fixed JFTP issue in Joomla 3
+* Fixed image filename cleaner
+* Fixed image type check for uppercase JPG
+
+Version 5.16
+Import
++ Added a new JPEG signature
+* Fixed virtuemart_product_id ambiguous notice on the VirtueMart prices export.
++ Added support for custom field Custom Fields for all by Break Design
++ Added support for custom field plugin Related articles by Daycounts
+/ Updated Joomla content export with a lot more fields now available
++ Added title field to VirtueMart Order export
++ Added Greek to ICEcat languages
+* Fixed comma not shown as field delimiter in debug log
+* Fixed missing Overwrite existing data option in VirtueMart Express product import
+* Fixed radio values not stored as string in K2 Item import
++ Added Editor field type to available fields in VirtueMart product import
+
+Export
++ Added support for custom field Custom Fields for all by Break Designs
++ Added support for custom field plugin Related articles by Daycounts
++ Added Editor field type to available fields in VirtueMart product export
+
+Version 5.15
+Import
++ Added Overwrite existing data option to VirtueMart Manufacturer import
++ Added Overwrite existing data option to VirtueMart Category import
+* Fixed undefined notice when custom_multiple is not being used
+* Fixed cron and analyzer button no longer working
++ Added the inheritFrom option to the K2 Category import
++ Added option to overwrite existing images in K2 Item import
++ Added support for empty thumbnail filenames on VirtueMart product export
++ Added inheritFrom option to K2 Category import
+* Fixed warnings on VirtueMart User info import
+* Fixed non-existing shopper group assigned to VirtueMart product
++ Added new JPEG image signature to image helper
+
+Export
++ Added inheritFrom option to K2 Category export
+
+Version 5.14
+Import
+* Fixed importing both related products and related categories creates incorrect links
++ Added product_override_price to be converted to dot on prices import
++ Added limit tab to the Media import
+
+Maintenance
++ Added option to convert template fields from CSVI Free
+
+Version 5.13
+Import
++ Added the property_delete field to EZ Realty Property import
+* Fixed an issue with certain types of XML files
+
+Export
++ Added category_name to VirtueMart product export
+* Fixed virtuemart_shoppergroup_id on VirtueMart price export
+* Fixed article_url SEF on Joomla Content export
+* Fixed item_url SEF on K2 Item export
+* Fixed product attribute on VirtueMart Order export
+
+Maintenance
++ Added option to remove CSVI tables
+/ Changed the template backup export to show the full server path
+
+General
+* Fixed selected tab is not remembered
++ Added the option to put in HTML code in the default value field. This only works from the edit template popup screen
+
+Version 5.12
+Import
++ Added Extra fields to K2 Item import
+* Fixed shipment_element in VirtueMart Order import
+* Fixed user currency in VirtueMart Order import
++ Added product_item_price to be cast as a price in VirtueMart Order Item import
+* Fixed wrong variable used on Akeebasubs User import
+/ Change the coupon import on AwoCoupon Pro
++ Added option to check name on the VirtueMart Calculation rule import
+
+Export
++ Added Extra fields to K2 Item export
+
+Version 5.11
+Import
+/ Improved Joomla categories import with transliteration
+* Fixed VirtueMart Product import ICEcat thumbnail images in the wrong folder
+/ Improved update available fields routine
+/ Improved import routine
+* Fixed K2 Item import to check if image exists
++ Added Alpha User Points point import
+/ Modified stock import, 0 stock is now imported as 0 and not skipped
+* Fixed the custom fields on VirtueMart Product import
+* Fixed missing overwrite data on Joomla Category import
++ Added K2 Extra fields import
+
+Export
++ Added Alpha User Points point export
++ Added Today option on VirtueMart Order export
++ Added product attribute field as readable text on VirtueMart Order export
++ Added K2 Extra fields export
+* Fixed Shipping prices for Google export
+
+Maintenance
++ Added option to remove product <--> category links for VirtueMart
+
+General
+/ Changed the VirtueMart config helper to use database as first config
+
+Version 5.10
+Import
++ Added VirtueMart textarea custom field to available fields
++ Added VirtueMart custom fields parent added for custom fields used as available fields
+* Fixed VirtueMart product_discount with more than 1 decimal
++ Added VirtueMart file_ordering for the Media import
+
+Export
+* Fixed sh404SEF not always found
+* Fixed comma added on export file to mail
++ Added bedrooms filter to EZ Realty Property export
++ Added bathrooms filter to EZ Realty Property export
++ Added price filter to EZ Realty Property export
++ Added blocked filter to VirtueMart User info export
++ Added activated filter to VirtueMart User info export
++ Added export default path
+* Fixed export to local file with BOM creating empty line
++ Added VirtueMart file_ordering for the Media export
+* Fixed exporting of fields set not to process
+
+Version 5.9.6
+Import
+* Fixed fatal error on Scroller with Tabs
+* Fixed certain product fields not updated on VirtueMart Product import
++ Added support for self-closing nodes in XML files
+* Fixed maximum execution time not set
+
+Export
+* Fixed SQL dates in queries
+* Fixed AkeebaSubs filter fields errors
+* Fixed manufacturer_name not always filled on VirtueMart Product export
++ Added item_url for K2 Item export
++ Added image_url for K2 Item export
++ Added image_url_thumb for K2 Item export
+
+General
+* Fixed tmp_path on About page
++ Added magic_quotes check to installer, if enabled CSVI can't install
+
+Version 5.9.5
+Import
++ Added Joomla User import
+* Fixed issues with Multiple customfield search plugin
+* Fixed log details not always stored
+* Fixed incorrect table name in VirtueMart Order import
++ Added filter for unpublishing properties in EZ Realty Property import
+
+Export
++ Added Joomla User export
+
+Maintenance
+/ Optimized code for removing empty categories
++ Added option to empty VirtueMart product prices table
+
+General
+* Fixed empty date values
+* Fixed maps not deleting entries
++ Added Joomla 3 support
+* Fixed Details button on log page
+* Fixed empty entries in debug log
+
+Version 5.9
+Import
+* Fixed category creation on K2 Item import
+* Fixed slug issue on VirtueMart Product import
++ Added step_order_level field for VirtueMart Product import
+* Fixed product_override_price on VirtueMart Price import
++ Added name of uploaded file to debug log
++ Added product_price_publish_up and product_price_publish_down to VirtueMart Product import
++ Added product_price_publish_up and product_price_publish_down to VirtueMart Price import
+/ Changed new products will now get default values assigned on VirtueMart Product import
+* Fixed possible image deletion if thumb image is the same as full image on VirtueMart Product import
+* Fixed product prices not updating some fields in VirtueMart Price import
++ Added related categories to VirtueMart Product import
++ Added check for existing field delimiter on import
+* Fixed manufacturer category import on VirtueMart Manufacturer Category import
++ Added support for Multiple customfield search plugin and module by MyExt[ensions]
+* Fixed non-image files not being marked as downloadable on VirtueMart Product import
+/ Improved check for which field to use for ICEcat reference
+* Fixed ICEcat product features not being imported in VirtueMart Product import
+
+Export
+* Fixed ambiguous error when exporting the virtuemart_shoppergroup_id in VirtueMart Product export
+* Fixed custom_param not exporting empty values in VirtueMart Product export
++ Added Multiple prices filters to VirtueMart Product export
+* Fixed mf_name_trans field not being exported on VirtueMart Manufacturer export
++ Added shipping_full_name to VirtueMart Order export
+
+General
+* Fixed Cherry picker tables not added when updating Available fields
++ Added ICEcat statistics to the settings
+
+Version 5.8.2
+Import
+* Fixed price shopper group check on VirtueMart Product import
+* Fixed custom_params and custom_field_desc on VirtueMart Custom field import
+* Fixed furnished field on EZ Realty Property import
+* Fixed price_with_tax not being used when price_override was used on VirtueMart Product import
+
+Export
+* Fixed Cherry Picker Product Type Names export options
+* Fixed Joomla Content export
+
+Version 5.8.1
+Import
+* Fixed shopper group name on VirtueMart Price import
+* Fixed product slug on VirtueMart Product import
+* Fixed images path not taken on VirtueMart Product import
+
+Export
+* Fixed country and state name on VirtueMart Order export
+* Fixed the Google Base image export on VirtueMart Product export
+
+Version 5.8
+Import
+* Fixed extraneous fields not ignored in VirtueMart Product import
++ Added product_tax_id to be used with price_with_tax on VirtueMart Product import
+* Fixed SQL error on finding default manufacturer
 + Added shopper_group_name_price to VirtueMart Product import
-* Fixed product discount price missing mathop for VirtueMart Product import
+* Fixed image path duplicate check in VirtueMart Product import
+* Fixed shipping rate fields not recognized on VirtueMart Shipping Rate import
++ Added EZ Realty Image import
++ Added user agent string when checking if image exists
 * Fixed images in subfolders on VirtueMart Product import
 * Fixed images in subfolders on VirtueMart Media import
 * Fixed issues with accented characters in error reporting
++ Added option to re-create slugs on VirtueMart Product import
 / Updated newly created manufacturers are assigned a category on VirtueMart Product import
-* Fixed product_packaging and product_box on VirtueMart Product import
+/ Redesign the multiple prices management
+* Fixed non-image import in the VirtueMart Media import
 
 Export
-* Fixed issue with price field exports
+* Fixed multiple prices export failure on VirtueMart Multiple Prices
+* Fixed bug with manufacturer selection
++ Added shopper_group_name_price to VirtueMart Product export
++ Added EZ Realty Image export
+* Fixed template override path
++ Added multiple product images to picture_url for VirtueMart Product export
+* Fixed possible notices in VirtueMart Shipping rates export
 
 General
 / Let cron use hostname from settings
 * Fixed export template not show source
++ Added download debug button to Log list
++ Added open debug log full screen to Log list
+* Fixed upgrade from CSVI Free
++ Added Field mapper
+/ Made the use of cookies optional
+* Fixed domain name for Akeeba Subscription cron jobs
 
-Version 4.5.1
+Version 5.7
 Import
-* Fixed manufacturer slug being recreated on VirtueMart Product import
-/ Changed custom values separator from | to ~
+* Fixed product price import
++ Added Y/N option for product_special field
+
+General
+/ Updated Copyright notice
++ Added Live Updates
+
+Version 5.6.1
+Import
++ Added product ordering to VirtueMart Product import
+
+Export
+* Fixed SQL error on certain fields in VirtueMart Product export
+
+Version 5.6
+Import
+* Fixed checking of manufacturer name on VirtueMart Product import
++ Added missing shipment_name_trans field
+* Fixed use password_crypt trigger missing password in VirtueMart User import
+* Fixed possible error resizing full image
+* Fixed replacement executed twice
++ Added custom_multiple field to VirtueMart Product import
++ Added VirtueMart Multiple Prices import
++ Added icon if field has combine or replacement rules
++ Added support for smart_search, expanded and scrollbar_after fields in Custom Filters
 / Changed system limits only applied if they have a value
 
 Export
-* Fixed export limits
++ Added VirtueMart Multiple Prices export
++ Added icon if field has combine or replacement rules
+* Fixed file_ordering field in VirtueMart Product export
++ Added fields file_title, file_description and file_meta to VirtueMart Product export
++ Added support for smart_search, expanded and scrollbar_after fields in Custom Filters
 + Added front-end download option
-* Fixed cron export
++ Added image export to VirtueMart manufacturer export
 
 General
+* Fixed clean installation not creating entry for settings
+* Fixed example templates
++ Added check database structure on installation
++ Added database status on About page
 - Removed option to delete CSVI backup tables (tables are no longer created)
-+ Added Live Update
++ Added filters to the task page
++ Added option to load patch files from Maintenance menu
+
+Version 5.5
+Import
+/ Updated AwoCoupon Pro imports to new format
+* Fixed issue with products_ordered
+* Fixed issue with time conversion
+
+Export
+/ Updated AwoCoupon Pro exports to new format
++ Added picture_url_thumb to VirtueMart product export
+
+Version 5.4
+Import
++ Added Akeeba Subscription User import
+* Fixed missing import options EZ Realty Property import
+* Fixed child product price not imported with price_with_tax in VirtueMart Product import
+* Fixed subscriptions not being published on Akeeba Subscriptions Subscription import
++ Added custom fields support to Akeeba Subscription User import
++ Added K2 Item import
++ Added K2 Category import
+/ Changed custom fields not to store empty values
+* Fixed content import not updating existing data
++ Added option to delete images on VirtueMart Product import
+
+Export
++ Added K2 Item export
++ Added K2 Category export
+
+General
++ Added CSV Analyzer
+/ Changed version check on installer
++ Added Tasks reset option
+
+Version 5.3.2
+Import
+* Fixed shopper groups not assigned to products in VirtueMart Product import
+* Fixed check for existing data on EZ Realty Property Import
++ Added alias generator for EZ Realty Property Import
+* Fixed fname field for EZ Realty Property Import
+* Fixed assignment of field name
+* Fixed product_packaging and product_box on VirtueMart Product import
++ Added custom_ordering to VirtueMart Product import
+
+Export
+* Fixed cron export
+* Fixed product_packaging and product_box on VirtueMart Product export
++ Added custom_ordering to VirtueMart Product export
++ Added language and category filter to Joomla Content export
+
+General
+* Fixed SQL error on updating available fields
+/ Cleaned up the File options for imports
+* Fixed save as new not copying combine and replace fields
+* Fixed missing title on update available fields
+
+Version 5.3.1
+Import
+* Fixed issue with order of combine and replacement fields
+/ Update images on VirtueMart product import to check for duplicate path
++ Added custom_delete field to VirtueMart Product import
+
+Export
+* Fixed possible bug on Google export
+* Fixed currency not added to price on VirtueMart Product export
+/ Updated Yandex export to allow export of value 0
+* Fixed combine feature on export
+
+Maintenance
++ Added option to select which templates to backup
+* Fixed templates backup/restore losing combine and replacement settings
+
+General
++ Added Magic Quotes gpc setting to About screen
+* Fixed clean install not setting up settings table
+
+Version 5.3
+Import
+* Fixed mime-type extension check
+* Fixed fatal error on VirtueMart manufacturer category details import
++ Added Joomla content import
++ Added Joomla categories import
+/ Use file field name only for XML files
++ Added parent of custom field if present
++ Added multi-lingual VirtueMart Shipping rates import
+* Fixed VirtueMart manufactuer multi-lingual import
++ Added combine field to EZ Realty Property import
+* Fixed images on EZ Realty Property import
+
+Export
++ Added shipment_name to VirtueMart Order export
++ Added replacements to custom fields on VirtueMart Product export
+* Fixed Joomla SEF URLs on VirtueMart Product export
+* Fixed custom_param for stockable varianst on VirtueMart Product export
+
+General
+/ Renamed template types to tasks
++ Added ordering of tasks
++ Added publish/unpublish of tasks
+/ Changed installer to use Joomla! SQL scripts
++ Added publish/unpublish to template fields
++ Added clone to template fields
++ Added EZ Realty images table to Empty database
++ Added Example Joomla Category export template
++ Added Example Joomla Category import template
++ Added Example Joomla Content export template
++ Added Example Joomla Content import template
+
+Version 5.2
+Import
+* Fixed XML attribute values not being processed
+/ Changed empty fields not used for combining
+* Fixed usergroup_name not being handled
++ Added checking for alternative ICEcat code
++ Added multi-lingual support for VirtueMart manufacturers import
++ Added VirtueMart Express Product import
+
+Export
+* Fixed custom fields delimiter from | to ~
+
+Version 5.1.1
+General
+* Fixed replacement table missing a field
+
+Version 5.1
+Import
+* Fixed custom available fields with mixed case not being imported in VirtueMart Product import
+/ Changed custom fields separator from | to ~ in VirtueMart Product import
+/ Changed handling of files retrieved from URL
++ Added shipment_element to VirtueMart Shipping import
++ Added product_discount_id to VirtueMart Product import
++ Added state and country to VirtueMart Userinfo import
++ Added custom update field to EZ Realty Property import
++ Added Cherry Picker Product Types support
+
+Export
+* Fixed template category/manufacturer not loaded with template language
+* Fixed SEF URLs on multi-language Virtuemart sites
++ Added product_discount to VirtueMart Product export
++ Added Cherry Picker Product Types support
+
+General
++ Added support for Backend Token
++ Added ordering to replacements
+* Fixed external images being converted and saved on server were deleted
++ Added better support for spaces in remote images
+
+Version 5.0
+Import
+* Fixed custom fields import on VirtueMart Product import
++ Added option to select which fields NOT to import with ICEcat data in VirtueMart Product import
+* Fixed the import of ICEcat images in combination with create image name option in VirtueMart Product import
++ Added support for new EZ Realty images table in EZ Realty Property import
+
+Export
+/ Update sh404SEF to support version 3.5.2
+/ Changed product_url to take parent category if child has none on VirtueMart Product export
+* Fixed front-end export
++ Added Yandex support
+
+General
+- Removed JoomFish support
+* Fixed templates not deleting fields
+* Fixed templates not copying fields on Save as new
+
+Version 5.0 beta 1
+Import
++ Added option to combine any chosen import field
++ Added option to set combine character for each combine operation
++ Added option to store an import field into multiple database fields
++ Added support for inconsistent XML files
+* Fixed override value of -1 on VirtueMart Product import
++ Added check if manufacturer main entry exists on VirtueMart Manufacturer import
++ Added field calc_kind to set the Type of Arithmetic Operation on VirtueMart Product import
++ Added Integer, Boolean, Date, Time and Media fields as Available Fields
++ Added zip support to all import sources
+* Fixed edit button not working on subdomain
+
+Export
++ Added option to combine any chosen export field
++ Added option to set combine character for each combine operation
++ Added option to set CDATA tags on chosen fields
+* Fixed category_path_trans on VirtueMart Category export
++ Added custom fields to be used as available fields on VirtueMart Product export
+* Fixed edit button not working on subdomain
+
+Maintenane
++ Added empty tables for EZ Realty
+
+Version 4.5.2
+Import
+* Fixed VirtueMart user info import
+/ Improved FTP handling
++ Added selector for VirtueMart shipping method plugin on VirtueMart Shipping rates Import
+* Fixed auto-generate images not called when not importing file_url on VirtueMart Product Import
+
+Export
+* Fixed shopper group name on VirtueMart Product export
+* Fixed replacement rules not applied to custom field
+/ Improved FTP handling
+* Fixed manufacturer not being loaded on language change on VirtueMart Product export
+* Fixed number of records to export being ignored
+* Fixed sh404SEF export
+
+Version 4.5.1
+Import
+* Fixed category_path not importing on VirtueMart Product import
 
 Version 4.5
 Import
-+ Added multiple shopper groups for VirtueMart product import
-* Fixed VirtueMart user info import
-* Fixed fatal error on VirtueMart manufacturer category details import
-* Fixed shopper group not stored for product
-
-Export
-* Fixed VirtueMart category export
-* Fixed front-end export
-
-Version 4.4
-Import
-+ Added product_discount_id to VirtueMart Product import
-/ Updated override value for VirtueMart Product import
-* Fixed product_discount on VirtueMart Product import
-
-Export
-/ Fixed VirtueMart user info export
-
-General
-/ Updated installer
-
-Version 4.3
-Import
-- Removed setting manufacturer category to 1 on VirtueMart Product import
+* Fixed image mimetypes
+* Fixed property import issues on EZ Realty Property import
++ Added convertdate options
+* Fixed city EZ Realty Property import
 - Removed automatic setting override option
+/ Changed labels on image width and height
++ Added custom fields to be used as available fields
+/ Fixed multiple images on generated name are not unique on VirtueMart Product import
++ Added option to force updating stockable variant parents on VirtueMart Product import
 / Fixed wait time not being applied
-+ Added removal of manufacturer images on deletion of VirtueMart manufacturers
++ Added images support to VirtueMart Manufacturer import
++ Added multiple images support to VirtueMart Category import
 + Added multi-language support to VirtueMart Category import
++ Added option to automatically fill required media fields
 
 Export
 * Fixed min_order_level on VirtueMart Product export
 * Fixed max_order_level on VirtueMart Product export
-/ Changed VirtueMart Product export to handle VirtueMart core changes in prices
++ Added Advanced XML order export for VirtueMart
 / Fixed some possible issues on loading VirtueMart order export page
-* Fixed possible warning with category_id export
++ Added basic replacement for HTML entities on Google XML export
 
 General
-+ Added some info about the site to the About dialog
-/ Changed PHP requirement to PHP 5.2
++ Added new jpg definition to the images helper
 / Fixed replacements being stripped
 - Removed built-in version check, now using Joomla version check
 
-Version 4.2
+Version 4.4
 Import
-* Fixed product discount with a % sign
-+ Added file_url and file_url_thumb fields to VirtueMart Product export
-+ Added min_order_level and max_order_level to VirtueMart product import
+- Removed setting manufacturer category to 1 on VirtueMart Product import
+* Fixed product discount not correctly processed
+* Fixed Virtuemart Product import thumbnail missing path when not resizing
++ Added shipping rate shopper groups to VirtueMart Shipping rates import
+* Fixed undefined warnings on VirtueMart Shipping rates import
++ Added plugin trigger onImportComplete to do post processing
+* Fixed multiple thumbnail handling on VirtueMart Product import
+
+Export
++ Added invoice number to VirtueMart order export
+* Fixed log warning on VirtueMart User Info export
+* Fixed VirtueMart shipping rate export tax field
++ Added shipping rate shopper groups to VirtueMart Shipping rates export
++ Added VirtueMart Order export example template
+/ Changed VirtueMart Product export to handle VirtueMart core changes in prices
+
+Maintenance
++ Added option to remove all VirtueMart Product media links
++ Added option to removed empty VirtueMart categories
+
+General
+* Fixed VirtueMart manufacturers language table not emptied
++ Added VirtueMart manufacturers categories table emptied
++ Added some info about the site to the About dialog
+* Fixed 500 error on saving settings
++ Added Joomla Extension Updater to check for new releases
+/ Changed PHP requirement to PHP 5.2
+
+Version 4.3.3
+Import
 + Added product_override_price to be converted to dots
-* Fixed product currency on VirtueMart product import
-* Fixed undefined warning on VirtueMart manufacturer import
++ Added better messages on reading XML files
++ Added product_tax_id and product_discount_id to list of fields for VirtueMart Product import
+* Fixed price_with_tax adding the same price on VirtueMart Product import
+* Fixed multiple images on VirtueMart Product import
++ Added ordering to multiple images on VirtueMart Product import
++ Added city and state field to EZ Realty Property import
+
+Export
+* Fixed possible warning with category_id export
++ Added product_tax_id and product_discount_id to list of fields for VirtueMart Product export
++ Added city, state, country field to EZ Realty Property export
+
+General
+* Fixed cron
+* Fixed templates saved as new now also clones fields
+* Fixed maintenance not showing translated component names
+
+Version 4.3.2
+Import
 * Fixed stockable child products issue on VirtueMart product import
+* Fixed override being set on product_price VirtueMart product import
++ Added min_order_level and max_order_level to VirtueMart product import
++ Added FTP details test button
++ Added check that thumbnail does not overwrite original file
++ Added ICEcat search similar SKU option to VirtueMart product import
+
+Export
++ Added category field to EZ Realty Property export
+
+General
+/ Changed adding a new template field ordering is automatically set
+
+Version 4.3.1
+Import
+* Fixed field order when using template fields
+* Fixed product_price on VirtueMart Product import
 + Added VirtueMart Product import stockable variants
-+ Added support for new VirtueMart customtitle field on categories and products
++ Added Scroller with tabs Content import
++ Added VirtueMart Shipping rate import
+* Fixed undefined warning on VirtueMart manufacturer import
 - Removed category_path constraint for child products
 
 Export
-* Fixed category selector on VirtueMart products
-* Fixed manufacturers selection list
+* Fixed URL containing administrator
 + Added file_url and file_url_thumb fields to VirtueMart Product export
++ Added option to specify VirtueMart Itemid
++ Added Scroller with tabs Content export
++ Added VirtueMart Shipping rate export
 
-Version 4.1
+General
+* Fixed an issue in the installer if no replacement fields are present
+* Fixed storing of template not being assigned correct type
+
+Version 4.3
 Import
+* Fixed watermark options on VirtueMart category import
+* Fixed product discount with a % sign
++ Added AwoCoupon for VirtueMart gift certificate import
++ Added AwoCoupon for VirtueMart gift certificate codes import
+* Fixed product_box/product_packaging on VirtueMart Product import
+* Fixed product currency on VirtueMart product import
++ Added missing images are not reported in the statistics
++ Added file_title, file_description and file_meta to VirtueMart Product Import
++ Added file_title, file_description and file_meta to VirtueMart Category Import
++ Added EZ Realty Property import
++ Added EZ Realty Category import
+
+Export
++ Added AwoCoupon for VirtueMart gift certificate export
+* Fixed manufacturers selection list
++ Added EZ Realty Property export
+* Fixed field names not showing in debug log
+* Fixed multiple category IDs on VirtueMart Product export
++ Added EZ Realty Category export
+
+Maintenance
+* Fixed update process stuck on non-English languages
+
+General
+/ Rewrote field management
+/ Templates now show grouped by their process
+
+Version 4.2.1
+Export
+* Fixed category selector on VirtueMart products
+
+Version 4.2
+Import
++ Added Custom Filters customfields import
++ Added delete all fields button
++ Added auto-loading template
++ Added ICEcat product specifications
+* Fixed combine import
 * Fixed I'm Mac option
 * Fixed image name generation
 * Fixed cron not using template override
-* Fixed prices containing commas
-* Fixed product discount ID not using -1
-* Fixed image handling
++ Added watermark option to VirtueMart product import
++ Added watermark option to VirtueMart category import
++ Added watermark option to VirtueMart media import
+* Fixed prices containing commas in VirtueMart product import
+* Fixed product discount ID not using -1 in VirtueMart product import
+* Fixed remote images
 * Fixed product_discount in VirtueMart product import
 + Added product_override_price in VirtueMart product import
++ Added AwoCoupon for VirtueMart coupon import
++ Added support for new VirtueMart customtitle field on categories and products
 
 Export
++ Added Custom Filters customfields export
++ Added delete all fields button
++ Added auto-loading template
++ Added customizable combine character(s)
 * Fixed missing custom field export
-* Fixed manufacturers selection list
++ Added date ranges to VirtueMart order export
++ Added date ranges to Akeeba Subscriptions subscription export
++ Added AwoCoupon for VirtueMart coupon export
++ Added support for new VirtueMart customtitle field on categories and products
+* Fixed some VirtueMart category fields on export
 
-Version 4.0.1
+Settings
+- Removed preview lines
+
+Version 4.1
 Import
 * Fixed VirtueMart transliteration
 * Fixed image options
 * Fixed VirtueMart product import custom fields missing ID field
+/ Changed replacement fields to allow for multiple rules
 
 Export
 * Fixed VirtueMart category details export
@@ -148,8 +1357,11 @@ Export
 * Fixed VirtueMart calculation rule category export
 * Fixed VirtueMart rating export publish field
 * Fixed VirtueMart shopperfield export publish field
+/ Changed replacement fields to allow for multiple rules
 
 Replacement
++ Added multiple values option
+/ Changed size of find and replace fields
 / Changed replace field not to be mandatory
 
 General
@@ -1563,7 +2775,7 @@ Templates
 
 General
 - Removed Help section
-+ Added link to wiki (http://www.csvimproved.com/wiki/doku.php/)
++ Added link to wiki (https://csvimproved.com/wiki/doku.php/)
 + Added AJAX support
 
 Version 0.8 beta 6

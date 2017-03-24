@@ -38,8 +38,10 @@ if (!empty($this->product->images)) {
 <div class="main-image">
 
 	<?php
-		echo $image->displayMediaFull("",true,"rel='vm-additional-images'");
+		//echo $image->displayMediaFull("",true,"rel='vm-additional-images'");
 	?>
+	<a rel="vm-additional-images" href="<?php echo $image->file_url ?>">
+	<img border="0"  src="<?php echo $image->file_url ?>" rel='vm-additional-images'></a>
 
 	 <div class="clear"></div>
 </div>

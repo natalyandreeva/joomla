@@ -9,7 +9,7 @@
 
 defined('_JEXEC') or die;
 
-require_once JPATH_ROOT . '/components/com_banners/helpers/banner.php';
+JLoader::register('BannerHelper', JPATH_ROOT . '/components/com_banners/helpers/banner.php');
 $baseurl = JUri::base();
 ?>
 <div class="bannergroup<?php echo $moduleclass_sfx ?>">
@@ -26,7 +26,7 @@ $baseurl = JUri::base();
 		<?php else:?>
 			<?php $imageurl = $item->params->get('imageurl');?>
 			<?php $width = $item->params->get('width');?>
-			<?php $height = $item->params->get('height');?>
+			<?php $height = $item->params->g:et('height');?>
 			<?php if (BannerHelper::isImage($imageurl)) :?>
 				<?php // Image based banner ?>
 				<?php $alt = $item->params->get('alt');?>

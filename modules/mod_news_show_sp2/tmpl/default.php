@@ -2,7 +2,7 @@
 /*
 # News Show SP2 - News display/Slider module by JoomShaper.com
 # Author    JoomShaper http://www.joomshaper.com
-# Copyright (C) 2010 - 2014 JoomShaper.com. All Rights Reserved.
+# Copyright (C) 2010 - 2015 JoomShaper.com. All Rights Reserved.
 # @license - GNU/GPL V2 or later
 # Websites: http://www.joomshaper.com
 */
@@ -11,19 +11,44 @@
 defined( '_JEXEC' ) or die( 'Restricted access' );
 
 $modId = $module->id;
-if ($article_column>=$c_article_count):
+
+if ( $article_column>=$c_article_count )
+{
 	$article_column 	= $c_article_count;
 	$article_row		= 1;
-endif;
+}
+
 $date_time 				= '';
+$row 					= 0;
+$link_row 				= 0;
+$i 						= 0;
+$j 						= 0;
+
 ?>
+
 <div id="ns2-<?php echo $modId; ?>" class="nssp2 ns2-<?php echo $uniqid ?>">
 	<div class="ns2-wrap">
 		<?php if ($c_article_count > 0): ?>
-			<div class="ns2-art-wrap <?php echo ($article_animation!="disabled") ? ' nssp2-animation ' . $article_controllers_style : '' ?> <?php if ($links_block && $c_links_count!=0 && $links_position=="right"): ?> col-2 flt-left<?php endif; ?>">			
-				<div class="ns2-art-pages">
-				<?php for($i=0;$i<$c_article_count;$i++): ?>
-					<div class="ns2-page">
+			<div id="ns2-art-wrap<?php echo $modId; ?>" class="ns2-art-wrap <?php echo ($article_animation!="disabled") ? $article_animation . ' ' . $article_controllers_style : '' ?> <?php if ($links_block && $c_links_count!=0 && $links_position=="right"): ?> col-2 flt-left<?php endif; ?>">			
+				<div class="ns2-art-pages nss2-inner">
+				<?php for($i=0;$i<$c_article_count;$i++): $row++; ?>
+					<?php
+						if( $article_animation != "disabled" )
+						{
+							if( $i == 0 ){
+								$anim_class = 'item active';
+							}
+							else
+							{
+								$anim_class = 'item';
+							}
+						}
+						else
+						{
+							$anim_class = '';
+						}
+					?>
+					<div class="ns2-page <?php echo $anim_class; ?>">
 						<div class="ns2-page-inner">
 						<?php for($j=0;$j<$article_row;$j++, $i++): ?>
 							<div class="ns2-row <?php echo $j==0 ? 'ns2-first' : '' ?> <?php echo $j%2 ? 'ns2-even' : 'ns2-odd' ?>">
@@ -195,17 +220,16 @@ $date_time 				= '';
 					<div style="clear:both"></div>
 					<div class="ns2-art-controllers">
 						<?php /*Pagination*/ if ($article_pagination): ?>
-							<div class="ns2-art-pagination"></div>
+							<div class="ns2-art-pagination nssp2-controllers">
+								<?php for ($i=0; $i < $row; $i++) { ?>
+									<span data-target="#ns2-art-wrap<?php echo $modId; ?>" data-nsspwalk-to="<?php echo $i; ?>" class="<?php echo ($i==0) ? 'active' : ''; ?>"></span>
+								<?php } ?>
+							</div>
 						<?php endif; ?>
-						<?php /*Previous*/ if ($article_arrows): ?>
-							<div class="ns2-art-prev">&laquo;</div>
-						<?php endif; ?>
-						<?php /*Play & Pause*/ if ($article_play_button): ?>
-							<div class="ns2-art-play">&rsaquo;</div>
-							<div class="ns2-art-pause">||</div>
-						<?php endif; ?>	
-						<?php /*Next*/ if ($article_arrows): ?>					
-							<div class="ns2-art-next">&raquo;</div>
+
+						<?php /*Next & Previous*/ if ($article_arrows): ?>
+							<a class="ns2-art-prev" href="#ns2-art-wrap<?php echo $modId; ?>" data-nsspwalk="prev">&laquo;</a>				
+							<a class="ns2-art-next" href="#ns2-art-wrap<?php echo $modId; ?>" data-nsspwalk="next">&raquo;</a>
 						<?php endif; ?>
 						<div style="clear:both"></div>
 					</div>
@@ -220,13 +244,29 @@ $date_time 				= '';
 		<?php 
 			$links=$c_article_count;
 		?>
-		<div class="ns2-links-wrap <?php echo ($links_animation!="disabled") ? 'nssp2-animation' . $links_controllers_style : '' ?> <?php if ($links_position=="right"): ?> col-2 flt-left<?php endif; ?>">
+		<div id="ns2-links-wrap<?php echo $modId; ?>" class="ns2-links-wrap <?php echo ($links_animation!="disabled") ? $links_animation . ' ' . $links_controllers_style : '' ?> <?php if ($links_position=="right"): ?> col-2 flt-left<?php endif; ?>">
 			<?php if ($links_more): ?>
 				<strong><?php echo  JText::_($links_more_text) ?></strong>
 			<?php endif; ?>
-			<div class="ns2-links-pages">
-			<?php for($i=$links;$i<$links+$c_links_count;$i++): ?>	
-				<div class="ns2-page">
+			<div class="ns2-links-pages nssp2-inner">
+			<?php for( $i = $links; $i < $links+$c_links_count; $i++ ): $link_row++; ?>
+				<?php
+					if( $links_animation != "disabled" )
+					{
+						if( $i == $links ){
+							$anim_class = 'item active';
+						}
+						else
+						{
+							$anim_class = 'item';
+						}
+					}
+					else
+					{
+						$anim_class = '';
+					}
+				?>
+				<div class="ns2-page <?php echo $anim_class; ?>">
 					<div class="ns2-page-inner">
 						<?php for ($ii=0; $ii<$links_count; $ii++, $i++): ?>
 							<?php if ($i<$a_count): ?>
@@ -292,17 +332,15 @@ $date_time 				= '';
 				<div style="clear:both"></div>
 				<div class="ns2-links-controllers">
 					<?php /*Pagination*/ if ($links_pagination): ?>
-						<div class="ns2-links-pagination"></div>
+						<div class="ns2-links-pagination nssp2-controllers">
+							<?php for ($i=0; $i < $link_row; $i++) { ?>
+								<span data-target="#ns2-links-wrap<?php echo $modId; ?>" data-nsspwalk-to="<?php echo $i; ?>" class="<?php echo ($i==0) ? 'active' : ''; ?>"></span>
+							<?php } ?>
+						</div>
 					<?php endif; ?>
-					<?php /*Previous*/ if ($links_arrows): ?>
-					<div class="ns2-links-prev">&laquo;</div>
-					<?php endif; ?>
-					<?php /*Play & Pause*/ if ($links_play_button): ?>
-						<div class="ns2-links-play">&rsaquo;</div>
-						<div class="ns2-links-pause">||</div>
-					<?php endif; ?>	
-					<?php /*Next*/ if ($links_arrows): ?>					
-						<div class="ns2-links-next">&raquo;</div>
+					<?php /*Next & Previous*/ if ($article_arrows): ?>
+						<a class="ns2-links-prev" href="#ns2-links-wrap<?php echo $modId; ?>" data-nsspwalk="prev">&laquo;</a>				
+						<a class="ns2-links-next" href="#ns2-links-wrap<?php echo $modId; ?>" data-nsspwalk="next">&raquo;</a>
 					<?php endif; ?>
 					<div style="clear:both"></div>
 				</div>
@@ -316,63 +354,23 @@ $date_time 				= '';
 </div>
 
 <script type="text/javascript">
-//<![CDATA[
-<?php if ($c_article_count > 0 && $article_animation!="disabled"): ?>
-window.addEvent('load', function() {
-	new nssp2({
-		container: document.getElement('#ns2-<?php echo $modId; ?> .ns2-art-pages'),
-		interval: <?php echo $article_animation_interval ?>,
-		activator: "<?php echo $article_activator ?>",
-		transition: "<?php echo $article_animation ?>",	
-		fxOptions: {
-			duration:  <?php echo $article_animation_speed ?>, 
-			transition: Fx.Transitions.<?php echo $article_animation_transition ?>
-		},
-		buttons: {
-			<?php if ($article_arrows): ?>
-			previous: document.getElement('#ns2-<?php echo $modId; ?> .ns2-art-prev')
-			,next: document.getElement('#ns2-<?php echo $modId; ?> .ns2-art-next')
-			<?php endif; ?>
-			<?php if ($article_play_button): ?>
-			,play: document.getElement('#ns2-<?php echo $modId; ?> .ns2-art-play')
-			,stop: document.getElement('#ns2-<?php echo $modId; ?> .ns2-art-pause')
-			<?php endif; ?>
-		}
-		<?php if ($article_pagination): ?>
-		,pagination: document.getElement('#ns2-<?php echo $modId; ?> .ns2-art-pagination')
-		<?php endif; ?>
-		,autoPlay: <?php echo $article_autoplay ?>
-	});
-});
-<?php endif; ?>
+	<?php if ($c_article_count > 0 && $article_animation!="disabled"): ?>
+		!function ($) {
+	        $(function(){
+	          $('#ns2-art-wrap<?php echo $modId; ?>').nssp2({
+	          	interval: <?php echo $article_animation_interval; ?>
+	          })
+	        })
+	    }(window.jQuery)
+	<?php endif; ?>
 
-<?php if ($links_block && $c_links_count!=0 && $links_animation!="disabled"): ?>
-window.addEvent('load', function() {
-	new nssp2({
-		container: document.getElement('#ns2-<?php echo $modId; ?> .ns2-links-pages'),
-		interval: <?php echo $links_animation_interval ?>,
-		activator: "<?php echo $links_activator ?>",
-		transition: "<?php echo $links_animation ?>",		
-		fxOptions: {
-			duration:  <?php echo $links_animation_speed ?>, 
-			transition: Fx.Transitions.<?php echo $links_animation_transition ?>
-		},	
-		buttons: {
-			<?php if ($links_arrows): ?>
-			previous: document.getElement('#ns2-<?php echo $modId; ?> .ns2-links-prev')
-			,next: document.getElement('#ns2-<?php echo $modId; ?> .ns2-links-next')
-			<?php endif; ?>
-			<?php if ($links_play_button): ?>
-			,play: document.getElement('#ns2-<?php echo $modId; ?> .ns2-links-play')
-			,stop: document.getElement('#ns2-<?php echo $modId; ?> .ns2-links-pause')
-			<?php endif; ?>
-		}
-		<?php if ($links_pagination): ?>
-		,pagination: document.getElement('#ns2-<?php echo $modId; ?> .ns2-links-pagination')
-		<?php endif; ?>
-		,autoPlay: <?php echo $links_autoplay ?>
-	});
-});
-<?php endif; ?>
-//]]>
+	<?php if ($links_block && $c_links_count!=0 && $links_animation!="disabled"): ?>
+		!function ($) {
+	        $(function(){
+	          $('#ns2-links-wrap<?php echo $modId; ?>').nssp2({
+	          	interval: <?php echo $links_animation_interval; ?>
+	          })
+	        })
+	    }(window.jQuery)
+	<?php endif; ?>
 </script>

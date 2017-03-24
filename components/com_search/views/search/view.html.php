@@ -141,6 +141,7 @@ class SearchViewSearch extends JViewLegacy
 			$pagination = $this->get('pagination');
 
 			JLoader::register('ContentHelperRoute', JPATH_SITE . '/components/com_content/helpers/route.php');
+            $category_model = VmModel::getModel('category');
 
 			for ($i = 0, $count = count($results); $i < $count; $i++)
 			{
@@ -271,7 +272,35 @@ class SearchViewSearch extends JViewLegacy
 					}
 				}
 
+				$category_parents = '';
+
+				if ($category_model && $results[$i]->cat_id > 0) {
+
+					$category = $category_model->getCategory($results[$i]->cat_id);
+					if ($category->parents) {
+						foreach ($category->parents as $pk => $parent) {
+
+							$name = $parent->category_name;
+							if ($pk > 0) {
+								$category_parents .= "/";
+							}
+							$category_parents .=  "<a href='index.php?option=com_virtuemart&view=category&virtuemart_category_id=".$parent->virtuemart_category_id."'>".$parent->category_name."</a>";
+
+						}
+					}
+					$results[$i]->category_path = $category_parents;
+				} 
+				$db =& JFactory::getDBO();
+                $query = "SELECT b.* FROM #__virtuemart_product_medias AS a LEFT JOIN #__virtuemart_medias AS b ON a.virtuemart_media_id = b.virtuemart_media_id WHERE a.virtuemart_product_id= ".$results[$i]->virtuemart_product_id." ORDER BY a.ordering LIMIT 1";
+
+                $db->setQuery($query);
+
+                $image = $db->loadObject();
+                $results[$i]->image = $image;
+
 				$result = & $results[$i];
+								
+
 
 				if ($result->created)
 				{

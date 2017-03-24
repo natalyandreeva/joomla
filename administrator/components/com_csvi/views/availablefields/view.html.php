@@ -1,110 +1,138 @@
 <?php
 /**
- * Available Fields view
+ * @package     CSVI
+ * @subpackage  Availablefields
  *
- * Gives an overview of all available fields that can be used for import/export
- *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: view.html.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
-
-jimport( 'joomla.application.component.view' );
+defined('_JEXEC') or die;
 
 /**
- * Available Fields View
+ * Availablefields view.
  *
-* @package CSVI
+ * @package     CSVI
+ * @subpackage  Availablefields
+ * @since       6.6.0
  */
-class CsviViewAvailableFields extends JView {
+class CsviViewAvailablefields extends JViewLegacy
+{
 
 	/**
-	* Items to be displayed
-	*/
+	 * The items to display.
+	 *
+	 * @var    array
+	 * @since  6.6.0
+	 */
 	protected $items;
 
 	/**
-	* Pagination for the items
-	*/
+	 * The pagination object
+	 *
+	 * @var    JPagination
+	 * @since  6.6.0
+	 */
 	protected $pagination;
 
 	/**
-	* User state
-	*/
+	 * The user state.
+	 *
+	 * @var    JObject
+	 * @since  6.6.0
+	 */
 	protected $state;
 
 	/**
-	 * Available fields view display method
+	 * Form with filters
 	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo 		Replace JError
-	 * @see
-	 * @access 		public
-	 * @param
-	 * @return
-	 * @since 		3.0
+	 * @var    array
+	 * @since  6.6.0
 	 */
-	public function display($tpl = null) {
-		// Get the list of available fields
-		$this->availablefields = $this->get('Items');
+	public $filterForm = array();
 
-		// Load the pagination
-		$this->pagination = $this->get('Pagination');
+	/**
+	 * List of active filters
+	 *
+	 * @var    array
+	 * @since  6.6.0
+	 */
+	public $activeFilters = array();
 
-		// Load the user state
-		$this->state = $this->get('State');
+	/**
+	 * Access rights of a user
+	 *
+	 * @var    JObject
+	 * @since  6.6.0
+	 */
+	protected $canDo;
 
-		if (!$this->get('FieldCheck')) Throw new Exception(JText::_('COM_CSVI_NO_AVAILABLE_FIELDS'), 0);
+	/**
+	 * The sidebar to show
+	 *
+	 * @var    string
+	 * @since  2.0
+	 */
+	protected $sidebar = '';
 
-		// Get the list of actions
-		$options = array();
-		$options[] = JHtml::_('select.option', 'import', JText::_('COM_CSVI_IMPORT'));
-		$options[] = JHtml::_('select.option', 'export', JText::_('COM_CSVI_EXPORT'));
-		$this->actions = JHtml::_('select.genericlist', $options, 'jform_options_action', 'onchange="Csvi.loadTemplateTypes();"', 'value', 'text', $this->state->get('filter.action', ''));
+	/**
+	 * CSVI Helper file.
+	 *
+	 * @var    CsviHelperCsvi
+	 * @since  6.6.0
+	 */
+	protected $csviHelper;
 
-		// Get the list of supported components
-		$this->components = JHtml::_('select.genericlist', CsviHelper::getComponents(), 'jform_options_component', 'onchange="Csvi.loadTemplateTypes();"', 'value', 'text', $this->state->get('filter.component'));
 
-		// Get the list of template types
-		$model = $this->getModel();
-		$templates_model = $model->getModel('templates');
-		$operations = $templates_model->getTemplateTypes($this->state->get('filter.action', 'import'), $this->state->get('filter.component', false));
-
-		// Create the operations list
-		$this->operations = JHtml::_('select.genericlist', $operations, 'jform_options_operation', '', 'value', 'name', $this->state->get('filter.operation'), false, true);
-
-		// Get the panel
-		$this->loadHelper('panel');
+	/**
+	 * Executes before rendering the page for the Browse task.
+	 *
+	 * @param   string  $tpl  Subtemplate to use
+	 *
+	 * @return  boolean  Return true to allow rendering of the page
+	 */
+	public function display($tpl = null)
+	{
+		// Load the data
+		$this->items         = $this->get('Items');
+		$this->pagination    = $this->get('Pagination');
+		$this->state         = $this->get('State');
+		$this->filterForm    = $this->get('FilterForm');
+		$this->activeFilters = $this->get('ActiveFilters');
+		$this->canDo         = JHelperContent::getActions('com_csvi');
 
 		// Show the toolbar
-		$this->addToolbar();
+		$this->toolbar();
+
+		// Render the sidebar
+		$this->csviHelper = new CsviHelperCsvi;
+		$this->csviHelper->addSubmenu('availablefields');
+		$this->sidebar = JHtmlSidebar::render();
+
+		// Check if available fields needs to be updated
+		$maintainenceModel = JModelLegacy::getInstance('Maintenance', 'CsviModel', array('ignore_request' => true));
+		$maintainenceModel->checkAvailableFields();
 
 		// Display it all
 		parent::display($tpl);
 	}
 
 	/**
-	 * Display the toolbar
+	 * Displays a toolbar for a specific page.
 	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		protected
-	 * @param
-	 * @return
-	 * @since 		3.0
+	 * @return  void.
+	 *
+	 * @since   6.6.0
 	 */
-	protected function addToolbar() {
-		JToolBarHelper::title(JText::_('COM_CSVI_AVAILABLE_FIELDS'), 'csvi_availablefields_48');
-		JToolBarHelper::custom('maintenance.updateavailablefields', 'csvi_availablefields_32', 'csvi_availablefields_32', JText::_('COM_CSVI_UPDATE'), false);
-		//JToolBarHelper::help('available_fields.html', true);
+	private function toolbar()
+	{
+		JToolbarHelper::title(JText::_('COM_CSVI') . ' - ' . JText::_('COM_CSVI_TITLE_AVAILABLEFIELDS'), 'list-view');
+
+		if ($this->canDo->get('core.create'))
+		{
+			JToolbarHelper::custom('availablefields.updateavailablefields', 'refresh', 'refresh', JText::_('COM_CSVI_UPDATE'), false);
+		}
 	}
 }
-?>

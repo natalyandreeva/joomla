@@ -17,9 +17,18 @@ defined('_JEXEC') or die('');
 * is derivative of works licensed under the GNU General Public License or
 * other free or open source software licenses.
 */
+echo '<div class="vm-wrap vm-order-done">';
 
+if (vRequest::getBool('display_title',true)) {
+	echo '<h3>'.vmText::_('COM_VIRTUEMART_CART_ORDERDONE_THANK_YOU').'</h3>';
+}
 
-
-echo "<h3>".JText::_('COM_VIRTUEMART_CART_ORDERDONE_THANK_YOU')."</h3>";
-
+$this->html = vRequest::get('html', vmText::_('COM_VIRTUEMART_ORDER_PROCESSED') );
 echo $this->html;
+
+if (vRequest::getBool('display_loginform',true)) {
+	$cuser = JFactory::getUser();
+	if (!$cuser->guest) echo shopFunctionsF::getLoginForm();
+}
+echo '</div>';
+

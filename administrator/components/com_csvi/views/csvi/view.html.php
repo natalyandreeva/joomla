@@ -1,45 +1,91 @@
 <?php
 /**
- * Control panel
+ * @package     CSVI
+ * @subpackage  Dashboard
  *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: view.html.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
-
-jimport( 'joomla.application.component.view' );
+defined('_JEXEC') or die;
 
 /**
- * Default View
+ * Dashboard list.
  *
-* @package CSVI
+ * @package     CSVI
+ * @subpackage  Dashboard
+ * @since       6.6.0
  */
-class CsviViewCsvi extends JView {
+class CsviViewCsvi extends JViewLegacy
+{
 	/**
-	 * CSVI VirtueMart view display method
+	 * The items to display.
 	 *
-	 * @return void
+	 * @var    array
+	 * @since  6.6.0
 	 */
-	function display($tpl = null) {
-		// Show the toolbar
-		JToolBarHelper::title(JText::_('COM_CSVI_CONTROL_PANEL'), 'csvi_logo_48.png' );
-		// Options button.
-		if (JFactory::getUser()->authorise('core.admin', 'com_csvi')) {
-			JToolBarHelper::preferences('com_csvi');
-		}
-		//JToolBarHelper::help('control_panel.html', true);
+	protected $items;
 
-		// Assign data for display
-		$helper = new CsviHelper();
-	    $this->cpanel_images = $helper->getButtons();
+	/**
+	 * The sidebar to show
+	 *
+	 * @var    string
+	 * @since  2.0
+	 */
+	protected $sidebar = '';
 
-		// Display the page
-		parent::display($tpl);
+	/**
+	 * Executes before rendering a generic page, default to actions necessary
+	 * for the Browse task.
+	 *
+	 * @param   string  $tpl  Subtemplate to use
+	 *
+	 * @return  boolean  Return true to allow rendering of the page
+	 *
+	 * @since   6.6.0
+	 *
+	 * @throws  RuntimeException
+	 */
+	public function display($tpl = null)
+	{
+		$helper = new CsviHelperCsvi;
+		$helper->setDownloadId();
+
+		// Call the logs model
+		$model = JModelLegacy::getInstance('Logs', 'CsviModel', array('ignore_request' => true));
+
+		// Set a default ordering
+		$model->setState('filter_order', 'start');
+		$model->setState('filter_order_Dir', 'DESC');
+		$model->setState('list.start', 0);
+		$model->setState('list.limit', 10);
+		$this->items = $model->getItems();
+
+		// Check if available fields needs to be updated
+		$maintainenceModel = JModelLegacy::getInstance('Maintenance', 'CsviModel', array('ignore_request' => true));
+		$maintainenceModel->checkAvailableFields();
+
+		$this->addToolbar();
+
+		// Render the sidebar
+		$helper->addSubmenu('csvi');
+		$this->sidebar = JHtmlSidebar::render();
+
+		return parent::display($tpl);
+	}
+
+	/**
+	 * Add the page title and toolbar.
+	 *
+	 * @return  void
+	 *
+	 * @since   1.6
+	 */
+	private function addToolbar()
+	{
+		JToolbarHelper::title('CSVI - ' . JText::_('COM_CSVI_TITLE_DASHBOARD'), 'info');
+		JToolbarHelper::preferences('com_csvi');
 	}
 }
-?>

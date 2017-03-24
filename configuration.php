@@ -12,9 +12,9 @@ class JConfig {
 	public $host = 'localhost';
 	public $user = 'root';
 	public $password = 'pass';
-	public $db = 'pass';
+	public $db = 'kiss';
 	public $dbprefix = 'kisya_';
-	public $live_site = 'http://kiseya';
+	public $live_site = 'http://kiseya/';
 	public $secret = 'J1n1C1nQMCAuhiGpxvTyY1fkb8iKLTuY';
 	public $gzip = '0';
 	public $error_reporting = 'default';

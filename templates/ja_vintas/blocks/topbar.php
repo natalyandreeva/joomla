@@ -21,12 +21,6 @@ defined ( '_JEXEC' ) or die ( 'Restricted access' );
 	<?php endif; ?>
 	
 	
-	<?php if($this->countModules('search')) : ?>
-	<div id="ja-search">
-		<jdoc:include type="modules" name="search" />
-	</div>
-	<?php endif; ?>
-	
 	<?php if($this->countModules('login')) : ?>
 	<div id="ja-login">
 		<jdoc:include type="modules" name="login" />

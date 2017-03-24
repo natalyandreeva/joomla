@@ -1,162 +1,245 @@
 <?php
 /**
- * Templates model
+ * @package     CSVI
+ * @subpackage  Template
  *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: templates.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
 defined('_JEXEC') or die;
 
-jimport( 'joomla.application.component.model' );
-
 /**
- * Templates Model
+ * Template model.
  *
-* @package CSVI
+ * @package     CSVI
+ * @subpackage  Template
+ * @since       6.0
  */
-class CsviModelTemplates extends JModel {
+class CsviModelTemplates extends JModelList
+{
+	/**
+	 * Holds the database driver
+	 *
+	 * @var    JDatabase
+	 * @since  6.0
+	 */
+	protected $db;
 
 	/**
-	 * Get the saved templates
+	 * Holds the template settings
 	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param
-	 * @return 		array	list of template objects
-	 * @since 		3.0
+	 * @var    array
+	 * @since  6.0
 	 */
-	public function getTemplates() {
-		$db = JFactory::getDBO();
-		$q = "SELECT name AS text, id AS value
-			FROM #__csvi_template_settings
-			ORDER BY name";
-		$db->setQuery($q);
-		$templates = $db->loadObjectList();
-		if (!is_array($templates)) $templates = array();
-		$new = array();
-		$new[] = JHtml::_('select.option', '', JText::_('COM_CSVI_SAVE_AS_NEW_FOR_NEW_TEMPLATE'));
-		$templates = array_merge($new, $templates);
+	protected $options;
+
+	/**
+	 * Construct the class.
+	 *
+	 * @param   array  $config  An optional associative array of configuration settings.
+	 *
+	 * @since   6.0
+	 */
+	public function __construct($config = array())
+	{
+		if (empty($config['filter_fields']))
+		{
+			$config['filter_fields'] = array(
+				'ordering', 'a.ordering',
+				'csvi_template_id', 'a.csvi_template_id',
+				'template_name', 'a.template_name',
+				'action', 'a.action',
+				'lastrun', 'a.lastrun',
+				'enabled', 'a.enabled',
+			);
+		}
+
+		// Load the basics
+		$this->db = JFactory::getDbo();
+
+		parent::__construct($config);
+	}
+
+	/**
+	 * Method to auto-populate the model state.
+	 *
+	 * Note. Calling getState in this method will result in recursion.
+	 *
+	 * @param   string  $ordering   An optional ordering field.
+	 * @param   string  $direction  An optional direction (asc|desc).
+	 *
+	 * @return  void
+	 *
+	 * @since   6.6.0
+	 */
+	protected function populateState($ordering = 'a.ordering', $direction = 'DESC')
+	{
+		// List state information.
+		parent::populateState($ordering, $direction);
+	}
+
+	/**
+	 * Method to get a store id based on the model configuration state.
+	 *
+	 * This is necessary because the model is used by the component and
+	 * different modules that might need different sets of data or different
+	 * ordering requirements.
+	 *
+	 * @param   string  $id  An identifier string to generate the store id.
+	 *
+	 * @return  string  A store id.
+	 *
+	 * @since   12.2
+	 */
+	protected function getStoreId($id = '')
+	{
+		// Add the list state to the store id.
+		$id .= ':' . $this->getState('list.start');
+		$id .= ':' . $this->getState('list.limit');
+		$id .= ':' . $this->getState('list.ordering');
+		$id .= ':' . $this->getState('list.direction');
+		$id .= ':' . $this->getState('filter.search');
+		$id .= ':' . $this->getState('filter.enabled');
+
+		return md5($this->context . ':' . $id);
+	}
+
+	/**
+	 * Build an SQL query to load the list data.
+	 *
+	 * @return  JDatabaseQuery  The query to execute.
+	 *
+	 * @since   4.0
+	 *
+	 * @throws  RuntimeException
+	 */
+	protected function getListQuery()
+	{
+		// Get the parent query
+		$query = $this->db->getQuery(true)
+			->from($this->db->quoteName('#__csvi_templates', 'a'))
+			->leftJoin(
+				$this->db->quoteName('#__users', 'u')
+				. ' ON ' . $this->db->quoteName('a.locked_by') . ' = ' . $this->db->quoteName('u.id')
+			)
+			->select(
+				$this->db->quoteName(
+					array(
+						'csvi_template_id',
+						'template_name',
+						'settings',
+						'advanced',
+						'action',
+						'frontend',
+						'secret',
+						'log',
+						'lastrun',
+						'enabled',
+						'ordering',
+					)
+				)
+			)
+			->select($this->db->quoteName('enabled', 'published'))
+			->select($this->db->quoteName('u.name', 'editor'));
+
+		// Filter by search field
+		$search = $this->getState('filter.search');
+
+		if ($search)
+		{
+			$query->where($this->db->quoteName('a.template_name') . ' LIKE ' . $this->db->quote('%' . $search . '%'));
+		}
+
+		// Filter by action
+		$action = $this->getState('filter.action');
+
+		if ($action)
+		{
+			$query->where($this->db->quoteName('a.action') . ' = ' . $this->db->quote($action));
+		}
+
+		// Filter by enabled
+		$enabled = $this->getState('filter.enabled');
+
+		if ('' !== $enabled && null !== $enabled)
+		{
+			$query->where($this->db->quoteName('a.enabled') . ' = ' . $this->db->quote($enabled));
+		}
+
+		// Add the list ordering clause.
+		$query->order(
+			$this->db->quoteName(
+				$this->db->escape(
+					$this->getState('list.ordering', 'a.ordering')
+				)
+			)
+			. ' ' . $this->db->escape($this->getState('list.direction', 'DESC'))
+		);
+
+		return $query;
+	}
+
+	/**
+	 * Get a list of templates.
+	 *
+	 * @return  array  List of template objects.
+	 *
+	 * @since   3.0
+	 *
+	 * @throws  RuntimeException
+	 * @throws  InvalidArgumentException
+	 */
+	public function getTemplates()
+	{
+		$query = $this->db->getQuery(true);
+		$query->select(
+				array(
+					$this->db->quoteName('template_name', 'text'),
+					$this->db->quoteName('csvi_template_id', 'value'),
+					$this->db->quoteName('action')
+				)
+			)
+			->from($this->db->quoteName('#__csvi_templates'))
+			->order($this->db->quoteName('template_name'));
+
+		$this->db->setQuery($query);
+		$loadtemplates = $this->db->loadObjectList();
+
+		if (!is_array($loadtemplates))
+		{
+			$templates = array();
+			$templates[] = JHtml::_('select.option', '', JText::_('COM_CSVI_SAVE_AS_NEW_FOR_NEW_TEMPLATE'));
+		}
+
+		$import = array();
+		$export = array();
+
+		// Group the templates by process
+		if (!empty($loadtemplates))
+		{
+			foreach ($loadtemplates as $tmpl)
+			{
+				if ($tmpl->action === 'import')
+				{
+					$import[] = $tmpl;
+				}
+				elseif ($tmpl->action === 'export')
+				{
+					$export[] = $tmpl;
+				}
+			}
+		}
+
+		// Merge the whole thing together
+		$templates[] = JHtml::_('select.option', '', JText::_('COM_CSVI_SELECT_TEMPLATE'));
+		$templates[] = JHtml::_('select.option', '', JText::_('COM_CSVI_TEMPLATE_IMPORT'), 'value', 'text', true);
+		$templates = array_merge($templates, $import);
+		$templates[] = JHtml::_('select.option', '', JText::_('COM_CSVI_TEMPLATE_EXPORT'), 'value', 'text', true);
+		$templates = array_merge($templates, $export);
+
 		return $templates;
 	}
-
-	/**
-	 * Save export settings
-	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param 		array	$data	the data to be stored
-	 * @return 		bool	true on success | false on failure
-	 * @since 		3.0
-	 */
-	public function save($data) {
-		$app = JFactory::getApplication();
-		$jinput = JFactory::getApplication()->input;
-		$table = $this->getTable('csvi_template_settings');
-		$bind = array();
-		$id = $jinput->get('template_id', 0, 'int');
-		if ($id > 0) $table->load($id);
-		else $bind['name'] = $jinput->get('template_name', 'Template '.time(), 'string');
-		$bind['settings'] = json_encode($data);
-		$table->bind($bind);
-		if ($table->store()) {
-			$app->enqueueMessage(JText::sprintf('COM_CSVI_PROCESS_SETTINGS_SAVED', $table->name));
-		}
-		else {
-			$app->enqueueMessage(JText::sprintf('COM_CSVI_PROCESS_SETTINGS_NOT_SAVED', $table->getError()), 'error');
-		}
-		return $table->id;
-	}
-
-	/**
-	 * Remove a settings template
-	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param 		array	$data	the data to be stored
-	 * @return 		bool	true on success | false on failure
-	 * @since 		3.0
-	 */
-	public function remove() {
-		$app = JFactory::getApplication();
-		$jinput = JFactory::getApplication()->input;
-		$table = $this->getTable('csvi_template_settings');
-		$table->load($jinput->get('template_id', null, 'int'));
-		if ($table->delete()) {
-			$app->enqueueMessage(JText::sprintf('COM_CSVI_PROCESS_SETTINGS_DELETED', $table->name));
-		}
-		else {
-			$app->enqueueMessage(JText::sprintf('COM_CSVI_PROCESS_SETTINGS_NOT_DELETED', $table->getError()), 'error');
-		}
-	}
-
-		/**
-	* Get the template details
-	*
-	* Retrieves the template details from the csvi_templates table. If the
-	* template id is 0, it will automatically retrieve the template details
-	* for the template with the lowest ID in the database
-	*
-	* @see self::GetFirstTemplateId();
-	* @param $templateid integer Template ID to retrieve
-	*/
-	public function _getTemplate() {
-		$row = $this->getTable($this->_tablename);
-		if ($this->_id == 0) {
-			$this_id = $this->GetFirstTemplateId();
-		}
-		$row->load($this->_id);
-
-		// Fix the price format
-		$row->export_price_formats = self::getNumberFormat($row->export_price_format);
-		return $row;
-	}
-
-	/**
-	 * Load the template types based on type
-	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param 		string	$type	The type of template to filter on
-	 * @return 		array	list of template types
-	 * @since 		3.0
-	 */
-	function getTemplateTypes($type=false, $component=false) {
-		$db = JFactory::getDBO();
-		$q = "SELECT CONCAT('COM_CSVI_', UPPER(template_type_name)) AS name, template_type_name AS value
-			FROM #__csvi_template_types ";
-		// Check any selectors
-		$selectors = array();
-		if ($type) $selectors[] = "template_type = ".$db->Quote($type);
-		if ($component) $selectors[] = "component = ".$db->Quote($component);
-		if (!empty($selectors)) $q .= "WHERE ".implode(' AND ', $selectors);
-		// Order by name
-		$q .= " ORDER BY template_type_name";
-		$db->setQuery($q);
-		$types = $db->loadObjectList();
-
-		// Translate the strings
-		foreach ($types as $key => $type) {
-			$type->value = JText::_($type->value);
-			$types[$key] = $type;
-		}
-		return $types;
-	}
 }
-?>

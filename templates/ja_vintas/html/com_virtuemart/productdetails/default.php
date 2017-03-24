@@ -51,6 +51,7 @@ if (empty($this->product)) {
     echo '<br /><br />  ' . $this->continue_link_html;
     return;
 }
+
 ?>
 
 <div class="productdetails-view productdetails">
@@ -58,6 +59,7 @@ if (empty($this->product)) {
     <?php
     // Product Navigation
     if (VmConfig::get('product_navigation', 1)) {
+    	if (!empty($this->product->neighbours ['previous'][0])) {
 	?>
         <div class="product-neighbours">
 	    <?php
@@ -73,10 +75,10 @@ if (empty($this->product)) {
 	    ?>
     	<div class="clear"></div>
         </div>
-    <?php } // Product Navigation END
+    <?php } } // Product Navigation END
     ?>
 
-	<?php // Back To Category Button
+	<!--?php // Back To Category Button
 	if ($this->product->virtuemart_category_id) {
 		$catURL =  JRoute::_('index.php?option=com_virtuemart&view=category&virtuemart_category_id='.$this->product->virtuemart_category_id);
 		$categoryName = $this->product->category_name ;
@@ -87,10 +89,10 @@ if (empty($this->product)) {
 	?>
 	<div class="back-to-category">
     	<a href="<?php echo $catURL ?>" class="product-details" title="<?php echo $categoryName ?>"><?php echo JText::sprintf('COM_VIRTUEMART_CATEGORY_BACK_TO',$categoryName) ?></a>
-	</div>
+	</div-->
 
     <?php // Product Title   ?>
-    <h1><?php echo $this->product->product_name ?></h1>
+    <div><h1><?php echo $this->product->product_name ?></h1></div>
     <?php // Product Title END   ?>
 
     <?php // afterDisplayTitle Event
@@ -123,7 +125,23 @@ if (empty($this->product)) {
     <?php } // PDF - Print - Email Icon END
     ?>
 
-    <?php
+   <?php
+    if (!empty($this->product->customfieldsSorted['ontop'])) {
+	$this->position = 'ontop';
+	echo $this->loadTemplate('customfields');
+    } // Product Custom ontop end
+    ?>
+
+    <div>
+	<div class="floatleft">
+<?php
+echo $this->loadTemplate('images');
+if (!empty($this->product->prices)) {?><div class="PricepriceWithoutTax vm-display vm-price-value"><span class="vm-price-desc"></span><span class="PricepriceWithoutTax"><?php echo $this->product->prices['priceWithoutTax'];?> р</span></div><?php } ?>
+
+	</div>
+
+	<div class="width55 floatright">
+	 <?php
     // Product Short Description
     if (!empty($this->product->product_s_desc)) {
 	?>
@@ -135,24 +153,14 @@ if (empty($this->product)) {
         </div>
 	<?php
     } // Product Short Description END
-
-
-    if (!empty($this->product->customfieldsSorted['ontop'])) {
-	$this->position = 'ontop';
-	echo $this->loadTemplate('customfields');
-    } // Product Custom ontop end
     ?>
+	    <div class="product-parameters">
+	        ID товара: <?php echo $this->product->virtuemart_product_id; ?><br />
+	        Артикул: <?php echo $this->product->product_sku; ?> <br />
+	    </div>
 
-    <div>
-	<div class="width60 floatleft">
-<?php
-echo $this->loadTemplate('images');
-?>
-	</div>
-
-	<div class="width40 floatright">
 	    <div class="spacer-buy-area">
-
+         
 		<?php
 		// TODO in Multi-Vendor not needed at the moment and just would lead to confusion
 		/* $link = JRoute::_('index2.php?option=com_virtuemart&view=virtuemart&task=vendorinfo&virtuemart_vendor_id='.$this->product->virtuemart_vendor_id);
@@ -195,17 +203,17 @@ echo $this->loadTemplate('images');
 		// Product Price
 		    // the test is done in show_prices
 		//if ($this->show_prices and (empty($this->product->images[0]) or $this->product->images[0]->file_is_downloadable == 0)) {
-		    echo $this->loadTemplate('showprices');
+		//    echo $this->loadTemplate('showprices');
 		//}
 		?>
 
-		<?php
+		<!--?php
 		// Add To Cart Button
 // 			if (!empty($this->product->prices) and !empty($this->product->images[0]) and $this->product->images[0]->file_is_downloadable==0 ) {
 //		if (!VmConfig::get('use_as_catalog', 0) and !empty($this->product->prices['salesPrice'])) {
 		    echo $this->loadTemplate('addtocart');
 //		}  // Add To Cart Button END
-		?>
+		?-->
 
 		<?php
 		// Availability Image

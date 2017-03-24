@@ -1,44 +1,52 @@
 <?php
 /**
- * Log details model
+ * @package     CSVI
+ * @subpackage  Logdetails
  *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: logdetails.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
-
-jimport( 'joomla.application.component.modellist' );
+defined('_JEXEC') or die;
 
 /**
- * Log details Model
+ * Log details model.
  *
-* @package CSVI
+ * @package     CSVI
+ * @subpackage  Logdetails
+ * @since       6.0
  */
-class CsviModelLogdetails extends JModelList {
-
-	var $_context = 'com_csvi.logdetails';
+class CsviModelLogdetails extends JModelList
+{
+	/**
+	 * The database class
+	 *
+	 * @var    JDatabaseDriver
+	 * @since  6.0
+	 */
+	protected $db;
 
 	/**
-	 * Constructor
+	 * Construct the class.
 	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param		array	An optional associative array of configuration settings.
-	 * @return
-	 * @since 		1.0
+	 * @param   array  $config  An optional associative array of configuration settings.
+	 *
+	 * @since   6.0
 	 */
-	public function __construct($config = array()) {
-		if (empty($config['filter_fields'])) {
-			$config['filter_fields'] = array('d.line', 'd.status', 'd.result');
+	public function __construct($config = array())
+	{
+		if (empty($config['filter_fields']))
+		{
+			$config['filter_fields'] = array(
+				'a.action', 'action',
+				'a.result', 'result',
+			);
 		}
+
+		// Load the basics
+		$this->db = JFactory::getDbo();
 
 		parent::__construct($config);
 	}
@@ -48,126 +56,194 @@ class CsviModelLogdetails extends JModelList {
 	 *
 	 * Note. Calling getState in this method will result in recursion.
 	 *
-	 * @copyright
-	 * @author		RolandD
-	 * @todo
-	 * @see
-	 * @access		protected
-	 * @param
-	 * @return		void
-	 * @since		4.0
+	 * @param   string  $ordering   An optional ordering field.
+	 * @param   string  $direction  An optional direction (asc|desc).
+	 *
+	 * @return  void
+	 *
+	 * @since   6.6.0
 	 */
-	protected function populateState() {
-		// Initialise variables.
-		$app = JFactory::getApplication('administrator');
-
-		// Load the filter state
-		$this->setState('filter.action', $app->getUserStateFromRequest($this->_context.'.filter.action', 'filter_action', false, 'word'));
-		$this->setState('filter.result', $app->getUserStateFromRequest($this->_context.'.filter.result', 'filter_result', false, 'word'));
-
+	protected function populateState($ordering = 'a.csvi_logdetail_id', $direction = 'ASC')
+	{
 		// List state information.
-		// Controls the query ORDER BY
-		parent::populateState('d.line', 'asc');
+		parent::populateState($ordering, $direction);
 	}
 
 	/**
 	 * Build an SQL query to load the list data.
 	 *
-	 * @copyright
-	 * @author		RolandD
-	 * @todo
-	 * @see
-	 * @access 		protected
-	 * @param
-	 * @return		object the query to execute
-	 * @since 		4.0
+	 * @return  JDatabaseQuery  The query to execute.
+	 *
+	 * @since   4.0
+	 *
+	 * @throws  Exception
+	 * @throws  RuntimeException
 	 */
-	protected function getListQuery() {
-		// Create a new query object.
-		$jinput = JFactory::getApplication()->input;
-		$db		= $this->getDbo();
-		$query	= $db->getQuery(true);
-
+	protected function getListQuery()
+	{
 		// Get the Run ID
-		$run_id = $jinput->get('run_id', 0, 'int');
+		$run_id = JFactory::getApplication()->input->getInt('run_id', 0);
 
-		// Select the required fields from the table.
-		$query->select('d.line, d.description, d.status, d.log_id, d.result');
-		$query->from('#__csvi_log_details AS d');
+		// Get the parent query
+		$query = $this->db->getQuery(true)
+			->from($this->db->quoteName('#__csvi_logdetails', 'a'))
+			->leftJoin(
+				$this->db->quoteName('#__csvi_logs', 'l')
+				. ' ON ' . $this->db->quoteName('l.csvi_log_id') . ' = ' . $this->db->quoteName('a.csvi_log_id')
+			)
+			->select(
+				$this->db->quoteName(
+					array(
+						'a.csvi_logdetail_id',
+						'a.csvi_log_id',
+						'a.line',
+						'a.description',
+						'a.result',
+						'a.status',
+						'a.area',
+					)
+				)
+			)
+			->where($this->db->quoteName('l.csvi_log_id') . ' = ' . (int) $run_id);
 
-		// Add all the filters
-		$filters = array();
-		if ($run_id) {
-			$query->leftJoin('#__csvi_logs AS l ON l.id = d.log_id');
-			$query->where('l.run_id = '.$run_id);
+		// Filter by search
+		$search = $this->getState('filter.search');
+
+		if ($search)
+		{
+			$query->where($this->db->quoteName('a.description') . ' LIKE ' . $this->db->quote('%' . $search . '%'));
 		}
-		if ($this->getState('filter.action')) $filters[] = $db->quoteName('status').' = '.$db->Quote($this->getState('filter.action'));
-		if ($this->getState('filter.result')) $filters[] = $db->quoteName('result').' = '.$db->Quote($this->getState('filter.result'));
 
-		if (!empty($filters)) {
-		// Add the clauses to the query.
-			$query->where('('.implode(' AND ', $filters).')');
+		// Filter by action
+		$action = $this->getState('filter.action');
+
+		if ($action)
+		{
+			$query->where($this->db->quoteName('status') . ' = ' . $this->db->quote($action));
 		}
 
-		// Add the list ordering clause.
-		$orderCol	= $this->state->get('list.ordering');
-		$orderDirn	= $this->state->get('list.direction');
-		$query->order($db->getEscaped($orderCol.' '.$orderDirn));
+		// Filter by action
+		$result = $this->getState('filter.result');
+
+		if ($result)
+		{
+			$query->where($this->db->quoteName('result') . ' = ' . $this->db->quote($result));
+		}
+
 		return $query;
 	}
 
 	/**
-	 * Get the actions available for the current log
+	 * Load the statistics for displaying.
 	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param
-	 * @return 		array	of available actions
-	 * @since 		3.0
+	 * @param   int     $runId  The log ID.
+	 *
+	 * @return  object  Object of result
+	 *
+	 * @since   3.0
+	 *
+	 * @throws  RuntimeException
+	 * @throws  InvalidArgumentException
 	 */
-	public function getActions() {
-		$jinput = JFactory::getApplication()->input;
-		$db = JFactory::getDbo();
-		$run_id = $jinput->get('run_id', 0, 'int');
-		$q = "SELECT CONCAT('COM_CSVI_', UPPER(".$db->quoteName('status').")) AS ".$db->Quote('text').", ".$db->quoteName('status')." as ".$db->Quote('value')."
-			FROM ".$db->quoteName('#__csvi_log_details')."
-			WHERE log_id IN (SELECT id FROM #__csvi_logs WHERE run_id = ".$run_id.")
-			GROUP by ".$db->quoteName('value');
-		$db->setQuery($q);
-		$actions = $db->loadObjectList();
-		$showall = JHtml::_('select.option', '', JText::_('COM_CSVI_SELECT_ACTION'), 'value', 'text');
-		array_unshift($actions, $showall);
-		return JHtml::_('select.genericlist', $actions, 'filter_action',  '', 'value', 'text', $jinput->get('filter_action'), false, true);
-	}
+	public function getStats($runId)
+	{
+		$details = new stdClass;
+		$csviHelper = new CsviHelperCsvi();
 
-	/**
-	 * Get the results available for the current log
-	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		public
-	 * @param
-	 * @return 		array	of available results
-	 * @since 		3.0
-	 */
-	public function getResults() {
-		$jinput = JFactory::getApplication()->input;
-		$db = JFactory::getDbo();
-		$run_id = $jinput->get('run_id', 0, 'int');
-		$q = "SELECT CONCAT('COM_CSVI_', UPPER(".$db->quoteName('result').")) AS ".$db->Quote('text').", ".$db->quoteName('result')." as ".$db->Quote('value')."
-			FROM ".$db->quoteName('#__csvi_log_details')."
-			WHERE log_id IN (SELECT id FROM #__csvi_logs WHERE run_id = ".$run_id.")
-			GROUP by ".$db->quoteName('result');
-		$db->setQuery($q);
-		$results = $db->loadObjectList();
-		$showall = JHtml::_('select.option', '', JText::_('COM_CSVI_SELECT_RESULT'), 'value', 'text');
-		array_unshift($results, $showall);
-		return JHtml::_('select.genericlist', $results, 'filter_result',  '', 'value', 'text', $jinput->get('filter_result'), false, true);
+		if ($runId)
+		{
+			jimport('joomla.filesystem.file');
+
+			// Add the run ID
+			$details->run_id = $runId;
+
+			// Get the total number of records
+			$query = $this->db->getQuery(true)
+				->select(
+					array(
+						$this->db->quoteName('start'),
+						$this->db->quoteName('end'),
+						$this->db->quoteName('addon'),
+						$this->db->quoteName('action'),
+						$this->db->quoteName('action_type'),
+						$this->db->quoteName('template_name'),
+						$this->db->quoteName('records'),
+						$this->db->quoteName('file_name'),
+						$this->db->quoteName('run_cancelled')
+					)
+				)
+				->from($this->db->quoteName('#__csvi_logs'))
+				->where($this->db->quoteName('csvi_log_id') . ' = ' . (int) $runId);
+			$this->db->setQuery($query);
+			$details = $this->db->loadObject();
+
+			// Load the addon language
+			$csviHelper->loadLanguage($details->addon);
+
+			// Get the status area results
+			$query->clear()
+				->select('COUNT(' . $this->db->quoteName('status') . ') AS ' . $this->db->quoteName('total'))
+				->select($this->db->quoteName('status'))
+				->select($this->db->quoteName('area'))
+				->from($this->db->quoteName('#__csvi_logdetails'))
+				->where($this->db->quoteName('csvi_log_id') . ' = ' . (int) $runId)
+				->group($this->db->quoteName(array('status', 'area')))
+				->order($this->db->quoteName('area'));
+			$this->db->setQuery($query);
+			$details->resultstats = $this->db->loadObjectList();
+
+			// Get some status results
+			$query->clear()
+				->select('COUNT(' . $this->db->quoteName('status') . ') AS ' . $this->db->quoteName('total'))
+				->select($this->db->quoteName('status'))
+				->select($this->db->quoteName('result'))
+				->from($this->db->quoteName('#__csvi_logdetails'))
+				->where($this->db->quoteName('csvi_log_id') . ' = ' . (int) $runId)
+				->order($this->db->quoteName('csvi_logdetail_id'));
+			$this->db->setQuery($query);
+			$results = $this->db->loadObjectList('status');
+			$details->result = array();
+
+			foreach ($results as $status => $result)
+			{
+				if ($status)
+				{
+					$details->result[$status] = $result;
+				}
+			}
+
+			// Check if there is a debug log file
+			$logfile = JPATH_SITE . '/logs/com_csvi.log.' . $runId . '.php';
+
+			if (JFile::exists($logfile))
+			{
+				$attribs = 'class="modal" onclick="" rel="{handler: \'iframe\', size: {x: 950, y: 500}}"';
+				$details->debug = JHtml::_(
+					'link',
+					JRoute::_('index.php?option=com_csvi&view=logs&layout=logreader&tmpl=component&run_id=' . $runId),
+					JText::_('COM_CSVI_SHOW_LOG'),
+					$attribs
+				);
+				$details->debug .= ' | ';
+				$details->debug .= JHtml::_(
+					'link',
+					JRoute::_('index.php?option=com_csvi&view=logs&layout=logreader&tmpl=component&run_id=' . $runId),
+					JText::_('COM_CSVI_OPEN_LOG'),
+					'target="_new"'
+				);
+				$details->debug .= ' | ';
+				$details->debug .= JHtml::_(
+					'link',
+					JRoute::_('index.php?option=com_csvi&task=logs.downloadDebug&run_id=' . $runId),
+					JText::_('COM_CSVI_DOWNLOAD_LOG')
+				);
+			}
+			else
+			{
+				$details->debug = JText::_('COM_CSVI_NO_DEBUG_LOG_FOUND');
+			}
+		}
+
+		return $details;
 	}
 }
-?>

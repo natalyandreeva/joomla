@@ -1,25 +1,50 @@
 <?php
 /**
- * Available Fields controller
+ * @package     CSVI
+ * @subpackage  AvailableFields
  *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: availablefields.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-defined( '_JEXEC' ) or die( 'Direct Access to this location is not allowed.' );
-
-jimport('joomla.application.component.controller');
+defined('_JEXEC') or die;
 
 /**
- * Available Fields Controller
+ * Available fields controller.
  *
- * @package    CSVI
+ * @package     CSVI
+ * @subpackage  AvailableFields
+ * @since       6.0
  */
-class CsviControllerAvailableFields extends JController {
+class CsviControllerAvailableFields extends JControllerAdmin
+{
+	/**
+	 * Proxy for getModel.
+	 *
+	 * @param   string  $name    The model name. Optional.
+	 * @param   string  $prefix  The class prefix. Optional.
+	 * @param   array   $config  The array of possible config values. Optional.
+	 *
+	 * @return  JModel
+	 *
+	 * @since   6.6.0
+	 */
+	public function getModel($name = 'Availablefields', $prefix = 'CsviModel', $config = array('ignore_request' => true))
+	{
+		return parent::getModel($name, $prefix, $config);
+	}
 
+	/**
+	 * Redirect to maintenance to update the available fields.
+	 *
+	 * @return  void.
+	 *
+	 * @since   6.0
+	 */
+	public function updateavailablefields()
+	{
+		$this->setRedirect('index.php?option=com_csvi&task=maintenance.read&component=com_csvi&operation=updateavailablefields');
+	}
 }
-?>

@@ -20,9 +20,9 @@ defined ('_JEXEC') or die('Restricted access');
 ?>
 <div class="product-price" id="productPrice<?php echo $this->product->virtuemart_product_id ?>">
 	<?php
-//	if (!empty($this->product->prices['salesPrice'])) {
-//		echo "<strong>" . JText::_ ('COM_VIRTUEMART_CART_PRICE') . "</strong>";
-//	}
+	if (!empty($this->product->prices['salesPrice'])) {
+		//echo "<strong>" . JText::_ ('COM_VIRTUEMART_CART_PRICE') . "</strong>";
+	}
 	//vmdebug('view productdetails layout default show prices, prices',$this->product);
 	if ($this->product->prices['salesPrice']<=0 and VmConfig::get ('askprice', 1) and isset($this->product->images[0]) and !$this->product->images[0]->file_is_downloadable) {
 		?>
@@ -43,12 +43,12 @@ defined ('_JEXEC') or die('Restricted access');
 	if (round($this->product->prices['salesPriceWithDiscount'],$this->currency->_priceConfig['salesPrice'][1]) != $this->product->prices['salesPrice']) {
 		echo $this->currency->createPriceDiv ('salesPriceWithDiscount', 'COM_VIRTUEMART_PRODUCT_SALESPRICE_WITH_DISCOUNT', $this->product->prices);
 	}
-	echo $this->currency->createPriceDiv ('priceWithoutTax', 'Мелкооптовая цена ', $this->product->prices);
+	echo $this->currency->createPriceDiv ('salesPrice', 'COM_VIRTUEMART_PRODUCT_SALESPRICE', $this->product->prices);
+	echo $this->currency->createPriceDiv ('priceWithoutTax', 'COM_VIRTUEMART_PRODUCT_SALESPRICE_WITHOUT_TAX', $this->product->prices);
 	echo $this->currency->createPriceDiv ('discountAmount', 'COM_VIRTUEMART_PRODUCT_DISCOUNT_AMOUNT', $this->product->prices);
 	echo $this->currency->createPriceDiv ('taxAmount', 'COM_VIRTUEMART_PRODUCT_TAX_AMOUNT', $this->product->prices);
 	$unitPriceDescription = JText::sprintf ('COM_VIRTUEMART_PRODUCT_UNITPRICE', JText::_('COM_VIRTUEMART_UNIT_SYMBOL_'.$this->product->product_unit));
 	echo $this->currency->createPriceDiv ('unitPrice', $unitPriceDescription, $this->product->prices);
-  //  echo $this->currency->createPriceDiv ('salesPrice', 'Розничная цена ', $this->product->prices);
 	}
 	?>
 </div>

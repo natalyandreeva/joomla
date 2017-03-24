@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="module" version="2.5.0" client="site" method="upgrade">
+<extension type="module" version="3.3.0" client="site" method="upgrade">
 	<name>News Show SP2</name>
 	<author>JoomShaper.com</author>
 	<creationDate>Feb 2012</creationDate>
-	<copyright>Copyright (C) 2010 - 2014 JoomShaper.com. All rights reserved.</copyright>
+	<copyright>Copyright (C) 2010 - 2015 JoomShaper.com. All rights reserved.</copyright>
 	<license>GNU/GPL V2 or Later</license>
 	<authorEmail>support@joomshaper.com</authorEmail>
 	<authorUrl>www.joomshaper.com</authorUrl>
-	<version>2.6</version>
-	<description>JoomShaper News Display/Slider Module for 2.5 and 3.2</description>
+	<version>2.9</version>
+	<description>JoomShaper News Display/Slider Module for 3</description>
 	<files>
 		<filename module="mod_news_show_sp2">mod_news_show_sp2.php</filename>
 			<folder>assets</folder>
@@ -29,6 +29,7 @@
 	<config>
 		 <fields name="params" addfieldpath="/modules/mod_news_show_sp2/elements">
 			<fieldset name="DATASOURCE">
+				<field type="assets" name="asset" />
 				<field name="uniqid" type="text" default="" label="UNIQID" description="UNIQID_DESC"/>
 				<field name="content_source" type="list" default="joomla" label="CONTENT_SOURCE" description="CONTENT_SOURCE_DESC">
 				  <option value="joomla">JOOMLA</option>
@@ -139,11 +140,7 @@
 				</field>
 				<field name="article_image_margin" type="text" default="0 0 0 0" label="IMG_MARGIN" description="IMG_MARGIN_DESC" />				
 				<field name="article_thumb_width" type="text" default="50" label="THUMBWIDTH" description="THUMBWIDTH_DESC" />	
-				<field name="article_thumb_height" type="text" default="50" label="THUMBHEIGHT" description="THUMBHEIGHT_DESC" />							
-				<field name="article_thumb_ratio" type="radio" default="0" label="RATIO" description="RATIO_DESC" class="btn-group">
-					<option value="0">JNO</option>
-					<option value="1">JYES</option>
-				</field>	
+				<field name="article_thumb_height" type="text" default="50" label="THUMBHEIGHT" description="THUMBHEIGHT_DESC" />	
 				<!--K2 Specific-->
 				<field name="article_extra_fields" type="radio" default="0" label="SHOW_EXTRA_FIELDS" description="SHOW_EXTRA_FIELDS_DESC" class="btn-group">
 					<option value="0">JNO</option>
@@ -193,12 +190,11 @@
 				<!--End Virtuemart-->
 				
 				<!--Animation-->
-				<field name="article_animation" type="list" default="cover-horizontal-push" label="ANIMATION" description="ANIMATION_DESC">
+				<field name="article_animation" type="list" default="nssp2-slide" label="ANIMATION" description="ANIMATION_DESC">
 					<option value="disabled">DISABLED</option>
-					<option value="cover-horizontal-push">HORIZONTAL</option>
-					<option value="cover-vertical-push">VERTICAL</option>
-					<option value="cover-inplace-fade">FADE</option>
-					<option value="cover-inplace">No Effect</option>
+					<option value="nssp2-slide">SLIDE</option>
+					<option value="nssp2-slide nssp2-fade">FADE</option>
+					<option value="nssp2-noeffect">NOEFFECT</option>
 				</field>				
 				<field name="article_slide_count" type="text" default="2" label="ARTICLE_SLIDE_COUNT" description="ARTICLE_SLIDE_COUNT_DESC" class="btn-group ani1" />	
 				<field name="article_controllers_style" type="list" default="nssp2-default" label="Controllers Style" description="Controllers Style" class="btn-group ani1">
@@ -216,50 +212,8 @@
 				<field name="article_autoplay" type="radio" default="1" label="AUTOPLAY" description="AUTOPLAY_DESC" class="btn-group ani1">
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
-				</field>	
-				<field name="article_play_button" type="radio" default="0" label="SHOW_PLAY_BUTTON" description="SHOW_PLAY_BUTTON_DESC" class="btn-group ani1">
-					<option value="0">JNO</option>
-					<option value="1">JYES</option>
 				</field>
-				<field name="article_activator" type="radio" default="click" label="ACTIVATOR" description="ACTIVATOR_DESC" class="btn-group ani1">
-					<option value="click">CLICK</option>
-					<option value="mouseover">HOVER</option>					
-				</field>
-				<field name="article_animation_speed" type="text" default="300" label="SPEED" description="SPEED_DESC" class="btn-group ani1" />
 				<field name="article_animation_interval" type="text" default="5000" label="INTERVAL" description="INTERVAL_DESC" class="btn-group ani1" />
-				<field name="article_animation_transition" type="list" default="linear" label="TRANSITION" description="TRANSITION_DESC" class="btn-group ani1">
-					<option value="linear">linear</option>
-					<option value="Quad.easeOut">Quad.easeOut</option>
-					<option value="Quad.easeIn">Quad.easeIn</option>
-					<option value="Quad.easeInOut">Quad.easeInOut</option>
-					<option value="Cubic.easeOut">Cubic.easeOut</option>
-					<option value="Cubic.easeIn">Cubic.easeIn</option>
-					<option value="Cubic.easeInOut">Cubic.easeInOut</option>
-					<option value="Quart.easeOut">Quart.easeOut</option>
-					<option value="Quart.easeIn">Quart.easeIn</option>
-					<option value="Quart.easeInOut">Quart.easeInOut</option>
-					<option value="Quint.easeOut">Quint.easeOut</option>
-					<option value="Quint.easeIn">Quint.easeIn</option>
-					<option value="Quint.easeInOut">Quint.easeInOut</option>
-					<option value="Expo.easeOut">Expo.easeOut</option>
-					<option value="Expo.easeIn">Expo.easeIn</option>
-					<option value="Expo.easeInOut">Expo.easeInOut</option>
-					<option value="Circ.easeOut">Circ.easeOut</option>
-					<option value="Circ.easeIn">Circ.easeIn</option>
-					<option value="Circ.easeInOut">Circ.easeInOut</option>
-					<option value="Sine.easeOut">Sine.easeOut</option>
-					<option value="Sine.easeIn">Sine.easeIn</option>
-					<option value="Sine.easeInOut">Sine.easeInOut</option>
-					<option value="Back.easeOut">Back.easeOut</option>
-					<option value="Back.easeIn">Back.easeIn</option>
-					<option value="Back.easeInOut">Back.easeInOut</option>
-					<option value="Bounce.easeOut">Bounce.easeOut</option>
-					<option value="Bounce.easeIn">Bounce.easeIn</option>
-					<option value="Bounce.easeInOut">Bounce.easeInOut</option>
-					<option value="Elastic.easeOut">Elastic.easeOut</option>
-					<option value="Elastic.easeIn">Elastic.easeIn</option>
-					<option value="Elastic.easeInOut">Elastic.easeInOut</option>
-				</field>
 			</fieldset>		
 			
 			<fieldset name="LINKS_LAYOUT">
@@ -311,11 +265,7 @@
 				</field>				
 				<field name="links_image_margin" type="text" default="0 0 0 0" label="IMG_MARGIN" description="IMG_MARGIN_DESC" />			
 				<field name="links_thumb_width" type="text" default="50" label="THUMBWIDTH" description="THUMBWIDTH_DESC" />	
-				<field name="links_thumb_height" type="text" default="50" label="THUMBHEIGHT" description="THUMBHEIGHT_DESC" />							
-				<field name="links_thumb_ratio" type="radio" default="0" label="RATIO" description="RATIO_DESC" class="btn-group">
-					<option value="0">JNO</option>
-					<option value="1">JYES</option>
-				</field>
+				<field name="links_thumb_height" type="text" default="50" label="THUMBHEIGHT" description="THUMBHEIGHT_DESC" />
 				<!--Virtuemart-->
 				<field name="links_show_price" type="radio" default="0" class="btn-group vm" label="SHOW_PRICE" description="SHOW_PRICE_DESC">
 					<option value="0">JNO</option>
@@ -328,12 +278,11 @@
 				<!--End Virtuemart-->
 				
 				<!--Animation-->
-				<field name="links_animation" type="list" default="cover-horizontal-push" label="ANIMATION" description="ANIMATION_DESC">
+				<field name="links_animation" type="list" default="nssp2-slide" label="ANIMATION" description="ANIMATION_DESC">
 					<option value="disabled">DISABLED</option>
-					<option value="cover-horizontal-push">HORIZONTAL</option>
-					<option value="cover-vertical-push">VERTICAL</option>
-					<option value="cover-inplace-fade">FADE</option>
-					<option value="cover-inplace">No Effect</option>
+					<option value="nssp2-slide">SLIDE</option>
+					<option value="nssp2-slide nssp2-fade">FADE</option>
+					<option value="nssp2-noeffect">NOEFFECT</option>
 				</field>
 				<field name="links_slide_count" type="text" default="2" label="ARTICLE_SLIDE_COUNT" description="ARTICLE_SLIDE_COUNT_DESC" class="btn-group ani2" />	
 				<field name="links_controllers_style" type="list" default="nssp2-default" label="Controllers Style" description="Controllers Style" class="btn-group ani2">
@@ -351,59 +300,12 @@
 				<field name="links_autoplay" type="radio" default="1" label="AUTOPLAY" description="AUTOPLAY_DESC" class="btn-group ani2">
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
-				</field>	
-				<field name="links_play_button" type="radio" default="0" label="SHOW_PLAY_BUTTON" description="SHOW_PLAY_BUTTON_DESC" class="btn-group ani2">
-					<option value="0">JNO</option>
-					<option value="1">JYES</option>
 				</field>
-				<field name="links_activator" type="radio" default="click" label="ACTIVATOR" description="ACTIVATOR_DESC" class="btn-group ani2">
-					<option value="click">CLICK</option>
-					<option value="mouseover">HOVER</option>					
-				</field>
-				<field name="links_animation_speed" type="text" default="300" label="SPEED" description="SPEED_DESC" class="btn-group ani2" />
-				<field name="links_animation_interval" type="text" default="5000" label="INTERVAL" description="INTERVAL_DESC" class="btn-group ani2" />
-				<field name="links_animation_transition" type="list" default="linear" label="TRANSITION" description="TRANSITION_DESC" class="btn-group ani2">
-					<option value="linear">linear</option>
-					<option value="Quad.easeOut">Quad.easeOut</option>
-					<option value="Quad.easeIn">Quad.easeIn</option>
-					<option value="Quad.easeInOut">Quad.easeInOut</option>
-					<option value="Cubic.easeOut">Cubic.easeOut</option>
-					<option value="Cubic.easeIn">Cubic.easeIn</option>
-					<option value="Cubic.easeInOut">Cubic.easeInOut</option>
-					<option value="Quart.easeOut">Quart.easeOut</option>
-					<option value="Quart.easeIn">Quart.easeIn</option>
-					<option value="Quart.easeInOut">Quart.easeInOut</option>
-					<option value="Quint.easeOut">Quint.easeOut</option>
-					<option value="Quint.easeIn">Quint.easeIn</option>
-					<option value="Quint.easeInOut">Quint.easeInOut</option>
-					<option value="Expo.easeOut">Expo.easeOut</option>
-					<option value="Expo.easeIn">Expo.easeIn</option>
-					<option value="Expo.easeInOut">Expo.easeInOut</option>
-					<option value="Circ.easeOut">Circ.easeOut</option>
-					<option value="Circ.easeIn">Circ.easeIn</option>
-					<option value="Circ.easeInOut">Circ.easeInOut</option>
-					<option value="Sine.easeOut">Sine.easeOut</option>
-					<option value="Sine.easeIn">Sine.easeIn</option>
-					<option value="Sine.easeInOut">Sine.easeInOut</option>
-					<option value="Back.easeOut">Back.easeOut</option>
-					<option value="Back.easeIn">Back.easeIn</option>
-					<option value="Back.easeInOut">Back.easeInOut</option>
-					<option value="Bounce.easeOut">Bounce.easeOut</option>
-					<option value="Bounce.easeIn">Bounce.easeIn</option>
-					<option value="Bounce.easeInOut">Bounce.easeInOut</option>
-					<option value="Elastic.easeOut">Elastic.easeOut</option>
-					<option value="Elastic.easeIn">Elastic.easeIn</option>
-					<option value="Elastic.easeInOut">Elastic.easeInOut</option>
-				</field>				
-				<field type="asset" />					
+				<field name="links_animation_interval" type="text" default="5000" label="INTERVAL" description="INTERVAL_DESC" class="btn-group ani2" />		
 			</fieldset>	
 				
 			<fieldset name="advanced">
 				<field name="layout" type="modulelayout" label="JFIELD_ALT_LAYOUT_LABEL" description="JFIELD_ALT_MODULE_LAYOUT_DESC" />
-				<field name="custom_js" type="radio" default="0" label="Use Custom Javascript" description="Disable built-in javascript including mootools" class="btn-group">
-					<option value="0">No</option>
-					<option value="1">Yes</option>					
-				</field>
 				<field name="moduleclass_sfx" type="text" default="" label="MODSFX" description="MODSFX_DESC" />
 				<field name="cache" type="list" default="1" label="COM_MODULES_FIELD_CACHING_LABEL" description="COM_MODULES_FIELD_CACHING_DESC">
 					<option value="1">JGLOBAL_USE_GLOBAL</option>

@@ -1794,7 +1794,7 @@ class VirtueMartCart {
 
 		if ($data->totalProduct>1) $data->totalProductTxt = vmText::sprintf('COM_VIRTUEMART_CART_X_PRODUCTS', $data->totalProduct);
 		else if ($data->totalProduct == 1) $data->totalProductTxt = vmText::_('COM_VIRTUEMART_CART_ONE_PRODUCT');
-		else $data->totalProductTxt = vmText::_('COM_VIRTUEMART_EMPTY_CART');
+		else $data->totalProductTxt = vmText::_('COM_VIRTUEMART_CART_TITLE');
 		if (false && $data->dataValidated == true) {
 			$taskRoute = '&task=confirm';
 			$linkName = vmText::_('COM_VIRTUEMART_ORDER_CONFIRM_MNU');
@@ -1802,8 +1802,8 @@ class VirtueMartCart {
 			$taskRoute = '';
 			$linkName = vmText::_('COM_VIRTUEMART_CART_SHOW');
 		}
-
-		$data->cart_show = '<a style ="float:right;" href="'.JRoute::_("index.php?option=com_virtuemart&view=cart".$taskRoute,$this->useSSL).'" rel="nofollow" >'.$linkName.'</a>';
+        
+		$data->cart_show = '<a style ="float:right;" href="'.JRoute::_("index.php?option=com_virtuemart&view=cart".$taskRoute,$this->useSSL).'&mode=step1" rel="nofollow" >'.$linkName.'</a>';
 		$data->billTotal = vmText::sprintf('COM_VIRTUEMART_CART_TOTALP',$data->billTotal);
 
 		return $data ;

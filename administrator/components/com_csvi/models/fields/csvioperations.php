@@ -1,65 +1,83 @@
 <?php
 /**
- * List the operations
+ * @package     CSVI
+ * @subpackage  Forms
  *
- * @package 	CSVI
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: csvioperations.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
 
-// Check to ensure this file is included in Joomla!
-defined('_JEXEC') or die('Restricted access');
+defined('_JEXEC') or die;
 
 jimport('joomla.form.helper');
 JFormHelper::loadFieldClass('CsviForm');
 
 /**
- * Select list form field with operations
+ * Select list met operations.
  *
- * @package	CSVI
+ * @package     CSVI
+ * @subpackage  Forms
+ * @since       6.0
  */
-class JFormFieldCsviOperations extends JFormFieldCsviForm {
-
+class JFormFieldCsviOperations extends JFormFieldCsviForm
+{
+	/**
+	 * The type of field
+	 *
+	 * @var    string
+	 * @since  6.0
+	 */
 	protected $type = 'CsviOperations';
 
 	/**
-	 * Specify the options to load
+	 * Get the list of operations.
 	 *
-	 * @copyright
-	 * @author 		RolandD
-	 * @todo
-	 * @see
-	 * @access 		protected
-	 * @param
-	 * @return 		array	an array of options
-	 * @since 		4.0
+	 * @return  array  The sorted list of operations.
+	 *
+	 * @since   4.0
 	 */
-	protected function getOptions() {
-		$jinput = JFactory::getApplication()->input;
-		$jform = $jinput->get('jform', array(), 'array');
+	protected function getOptions()
+	{
+		if ($this->form->getValue('action'))
+		{
+			$action = $this->form->getValue('action');
+		}
+		elseif ($this->form->getValue('filter.action'))
+		{
+			$action = $this->form->getValue('filter.action');
+		}
+		else
+		{
+			$action = $this->form->getValue('jform.action');
+		}
+
+		if ($this->form->getValue('component'))
+		{
+			$component = $this->form->getValue('component');
+		}
+		elseif ($this->form->getValue('filter.component'))
+		{
+			$component = $this->form->getValue('filter.component');
+		}
+		else
+		{
+			$component = $this->form->getValue('jform.component');
+		}
+
 		$trans = array();
+		$tasksModel = JModelLegacy::getInstance('Tasks', 'CsviModel', array('ignore_request' => true));
+		$types = $tasksModel->getOperations($action, $component);
 
-		if (!empty($jform) && isset($jform['options'])) {
-			$db = JFactory::getDbo();
-			$q = "SELECT t.template_type_name
-				FROM `#__csvi_template_types` AS t
-				WHERE t.template_type = ".$db->Quote($jform['options']['action'])."
-				AND t.component = ".$db->Quote($jform['options']['component']);
-			$db->setQuery($q);
-			$types = $db->loadResultArray();
+		// Create an array
+		foreach ($types as $type)
+		{
+			$trans[$type->value] = $type->name;
+		}
 
-			// Get translations
-			foreach ($types as $type) {
-				$trans[$type] = JText::_('COM_CSVI_'.strtoupper($type));
-			}
-		}
-		else {
-			$trans = parent::getOptions();
-		}
+		ksort($trans);
+
 		return $trans;
 	}
 }
-?>

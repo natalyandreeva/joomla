@@ -1,7 +1,13 @@
 <?php
+/**
+ * @package   AkeebaBackup
+ * @copyright Copyright (c)2006-2016 Nicholas K. Dionysopoulos
+ * @license   GNU General Public License version 3, or later
+ */
+
 // Protect from unauthorized access
-defined('_JEXEC') or die('Restricted Access');
+defined('_JEXEC') or die();
 
 define('AKEEBA_PRO', '0');
-define('AKEEBA_VERSION', '3.10.0');
-define('AKEEBA_DATE', '2014-02-05');
+define('AKEEBA_VERSION', '5.2.5');
+define('AKEEBA_DATE', '2016-12-12');

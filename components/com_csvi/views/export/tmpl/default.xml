@@ -11,7 +11,7 @@
 		<fieldset name="request"
 			addfieldpath="/administrator/components/com_csvi/models/fields">
 
-			<field name="template_id"
+			<field name="csvi_template_id"
 				type="CsviTemplates"
 				description="COM_CSVI_SELECT_TEMPLATE_DESC"
 				label="COM_CSVI_SELECT_TEMPLATE"
@@ -27,9 +27,25 @@
 				size="1"
 				required="true"
 				default="tofront">
+				<option value="template">COM_CSVI_EXPORT_USE_TEMPLATE_LABEL</option>
 				<option value="tofront">COM_CSVI_EXPORT_TO_FRONT_LABEL</option>
 				<option value="todownload">COM_CSVI_EXPORT_TO_DOWNLOAD_LABEL</option>
 			</field>
+
+			<field name="key"
+				   type="text"
+				   description="COM_CSVI_SECRET_DESC"
+				   label="COM_CSVI_SECRET_LABEL"
+				   required="true"
+				   maxlength="25" />
+
+			<field name="task"
+				   type="hidden"
+				   default="export"/>
+
+			<field name="tmpl"
+				   type="hidden"
+				   default="component"/>
 		</fieldset>
 	</fields>
 </metadata>

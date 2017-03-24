@@ -1,166 +1,321 @@
 <?php
 /**
- * Installation file for CSVI
+ * @package     CSVI
+ * @subpackage  Install
  *
- * @author 		Roland Dalmulder
- * @link 		http://www.csvimproved.com
- * @copyright 	Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.
- * @license 	GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
- * @version 	$Id: script.php 2275 2013-01-03 21:08:43Z RolandD $
+ * @author      RolandD Cyber Produksi <contact@csvimproved.com>
+ * @copyright   Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ * @link        https://csvimproved.com
  */
+
+use Joomla\Registry\Registry;
 
 defined('_JEXEC') or die;
 
 /**
- * Load the CSVI installer 
- * 
- * @copyright 
- * @author 		RolandD
- * @todo 
- * @see 
- * @access 		public
- * @param 
- * @return 
- * @since 		3.0
+ * Script to run on installation of CSVI.
+ *
+ * @package     CSVI
+ * @subpackage  Install
+ * @since       6.0
  */
-class com_csviInstallerScript {
-	
+class Com_CsviInstallerScript
+{
 	/**
-	 * method to install the component
+	 * The minimum PHP version required to install this extension
 	 *
-	 * @return void
-	 */
-	function install($parent) {
-	}
- 
-	/**
-	 * method to uninstall the component
+	 * @var   string
 	 *
-	 * @return void
+	 * @since 6.0
 	 */
-	function uninstall($parent) 
-	{
-		// $parent is the class calling this method
-		echo JText::_('COM_CSVI_UNINSTALL_TEXT');
-	}
- 
-	/**
-	 * method to update the component
-	 *
-	 * @return void
-	 */
-	function update($parent) {
-	}
- 
-	/**
-	 * method to run before an install/update/uninstall method
-	 *
-	 * @return void
-	 */
-	function preflight($type, $parent) 
-	{
-		// $parent is the class calling this method
-		// $type is the type of change (install, update or discover_install)
-		
-		// Check if the PHP version is correct
-		if (version_compare(phpversion(), '5.2', '<') == '-1') {
-			$app = JFactory::getApplication();
-			$app->enqueueMessage(JText::sprintf('COM_CSVI_PHP_VERSION_ERROR', phpversion()), 'error');
-			return false;
-		}
-		
-		// Check if the Joomla version is correct
-		$version = new JVersion();
-		if (version_compare($version->getShortVersion(), '2.5', '<') == '-1') {
-			$app = JFactory::getApplication();
-			$app->enqueueMessage(JText::sprintf('COM_CSVI_JOOMLA_VERSION_ERROR', $version->getShortVersion()), 'error');
-			return false;
-		}
-		
-		// Check if there is an entry in the schemas table
-		if ($type == 'update') {
-			$db = JFactory::getDbo();
+	protected $minimumPHPVersion = '5.4';
 
-			// Get the extension id first
-			$query = $db->getQuery(true);
-			$query->select('extension_id')->from('#__extensions')->where($db->qn('type').'='.$db->q('component'))->where($db->qn('element').'='.$db->q('com_csvi'));
+	/**
+	 * The minimum PHP version required to install this extension
+	 *
+	 * @var   string
+	 *
+	 * @since 6.0
+	 */
+	protected $minimumJoomlaVersion = '3.6.2';
+
+	/**
+	 * Method to install the component
+	 *
+	 * @param   string  $type    Installation type (install, update, discover_install)
+	 * @param   object  $parent  The parent calling class
+	 *
+	 * @return  boolean  True to let the installation proceed, false to halt the installation
+	 *
+	 * @since   6.0
+	 *
+	 * @throws  \RuntimeException
+	 */
+	public function preflight($type, $parent)
+	{
+		if (!defined('CSVIPATH_DEBUG'))
+		{
+			define('CSVIPATH_DEBUG', JPath::clean(JFactory::getConfig()->get('log_path'), '/'));
+		}
+
+		// Clean up files and folders if any
+		$this->cleanFiles();
+
+		/** @var JDatabaseDriver $db */
+		$db     = JFactory::getDbo();
+		$tables = $db->getTableList();
+		$table  = $db->getPrefix() . 'csvi_settings';
+
+		if (in_array($table, $tables))
+		{
+			$query = $db->getQuery(true)
+				->select($db->quoteName('params'))
+				->from($db->quoteName($table))
+				->where($db->quoteName('csvi_setting_id') . ' = 1');
 			$db->setQuery($query);
-			$eid = $db->loadResult();
+			$csvisettings = $db->loadResult();
 
-			if ($eid) {
-				// Check if there is a version in the schemas table
-				$query->clear();
-				$query->select('version_id')
-					->from('#__schemas')
-					->where('extension_id = ' . $eid);
+			// Make sure the user has any saved settings
+			if ($csvisettings)
+			{
+				$csviregistry = json_decode($csvisettings, true);
+
+				$query->clear()
+					->select($db->quoteName('params'))
+					->from($db->quoteName('#__extensions'))
+					->where($db->quoteName('element') . ' = ' . $db->quote('com_csvi'))
+					->where($db->quoteName('type') . ' = ' . $db->quote('component'));
 				$db->setQuery($query);
-				$version = $db->loadResult();
+				$extsettings = $db->loadResult();
 
-				if (empty($version)) {
-					// Get the current CSVI version
-					$query->clear();
-					$query->select('params')
-						->from('#__csvi_settings')
-						->where('id = 2');
-					$db->setQuery($query);
-					$version = $db->loadResult();
+				if (!$extsettings)
+				{
+					$extsettings = array();
+				}
 
-					// Add the version number
-					$query->clear();
-					$query->insert('#__schemas')->values($eid.','.$db->q($version));
-					$db->setQuery($query);
-					$db->query();
+				$extregistry = json_decode($extsettings, true);
+				$newparams   = array_merge($csviregistry, $extregistry);
+				$newparams   = new Registry($newparams);
+
+				$query->clear()
+					->update($db->quoteName('#__extensions'))
+					->set($db->quoteName('params') . ' = ' . $db->quote($newparams))
+					->where($db->quoteName('element') . ' = ' . $db->quote('com_csvi'))
+					->where($db->quoteName('type') . ' = ' . $db->quote('component'));
+				$db->setQuery($query)->execute();
+			}
+
+			// Make sure the column has been renamed
+			$columns = $db->getTableColumns($table);
+
+			if (array_key_exists('id', $columns))
+			{
+				// User removed CSVI before installing, need to run the update scripts
+				$files = JFolder::files(
+					__DIR__ . '/admin/sql/updates/mysql',
+					'\.sql$',
+					1,
+					true,
+					array('.svn', 'CVS', '.DS_Store', '__MACOSX'),
+					array('^\..*', '.*~'),
+					true
+				);
+
+				foreach ($files as $filename)
+				{
+					$queries = $db->splitSql(file_get_contents($filename));
+
+					foreach ($queries as $query)
+					{
+						$query = trim($query);
+
+						if ($query)
+						{
+							try
+							{
+								$db->setQuery($query)->execute();
+							}
+							catch (Exception $e)
+							{
+								JFactory::getApplication()->enqueueMessage($e->getMessage());
+							}
+						}
+					}
 				}
 			}
 		}
-		
-		return true;
 	}
- 
+
 	/**
-	 * method to run after an install/update/uninstall method
+	 * Method to run after an install/update/uninstall method
+	 *
+	 * @param   string  $type    The type of installation being done
+	 * @param   object  $parent  The parent calling class
 	 *
 	 * @return void
+	 *
+	 * @since   6.0
+	 *
+	 * @throws  RuntimeException
 	 */
-	function postflight($type, $parent) 
+	public function postflight($type, $parent)
 	{
-		// Load the CSS
-		?>
-		<style type="text/css">
-			#install a, #install a:visited {
+		// Convert any pre version 6 templates if needed
+		$this->convertTemplates();
+	}
 
-			display: block;
-			padding: 5px;
+	/**
+	 * Convert old templates to the new CSVI 6 format.
+	 *
+	 * @return  void.
+	 *
+	 * @since   6.0
+	 *
+	 * @throws  RuntimeException
+	 */
+	private function convertTemplates()
+	{
+		/** @var JDatabaseDriver $db */
+		$db = JFactory::getDbo();
 
-			border: 1px solid #fba534;
-			-webkit-border-radius: 6px 6px 6px 6px;
-			-moz-border-radius: 6px 6px 6px 6px;
-			border-radius: 6px 6px 6px 6px;
+		// Load all the existing templates
+		$query = $db->getQuery(true)
+			->select(
+				array(
+					$db->quoteName('csvi_template_id'),
+					$db->quoteName('settings'),
+				)
+			)
+			->from($db->quoteName('#__csvi_templates'));
+		$db->setQuery($query);
+		$templates = $db->loadObjectList('csvi_template_id');
 
-			background-color: #fba534;
-			filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffad40', endColorstr='#f58c04'); /* for IE */
-			background: -webkit-gradient(linear, left top, left bottom, from(#ffad40), to(#f58c04)); /* for webkit browsers */
-					background: -moz-linear-gradient(top,  #ffad40,  #f58c04); /* for firefox 3.6+ */
+		foreach ($templates as $csvi_template_id => $template)
+		{
+			// Check if the template is in the old format
+			if (0 === strpos($template->settings, '{"options'))
+			{
+				// Get the old data format
+				$oldformat = json_decode($template->settings);
 
-							-webkit-box-shadow:  1px 1px 4px #666;
-							-moz-box-shadow:  1px 1px 4px #666;
-							box-shadow:  1px 1px 4px #666;
+				// Store everything in the new format
+				$newformat = array();
 
-							color: #FFF;
-							text-decoration:none;
-			font-weight: bold;
-			font-size: 25px;
+				foreach ($oldformat as $section => $settings)
+				{
+					$newformat = array_merge($newformat, (array) $settings);
+				}
 
-			margin-bottom: 10px;
-			margin-top: 12px;
-			text-align:center;
+				// Perform some extra changes
+				if (isset($newformat['operation']))
+				{
+					$newformat['operation'] = str_replace(array('import', 'export'), '', $newformat['operation']);
+				}
 
+				if (isset($newformat['exportto']))
+				{
+					$newformat['exportto'] = array($newformat['exportto']);
+				}
+
+				// Store the new template format
+				$query->clear()
+					->update($db->quoteName('#__csvi_templates'))
+					->set($db->quoteName('settings') . ' = ' . $db->quote(json_encode($newformat)))
+					->where($db->quoteName('csvi_template_id') . ' = ' . (int) $csvi_template_id);
+				$db->setQuery($query)->execute();
 			}
-		</style>
-		<?php
-		// Show the message to show users to click to continue to the second step
-		echo '<div id="install">';
-			echo JHtml::_('link', JRoute::_('index.php?option=com_csvi&view=install'), JText::_('COM_CSVI_CONTINUE_SETUP'));
-		echo '</div>';
+		}
+	}
+
+	/**
+	 * Rename any files after installation if needed.
+	 *
+	 * @return  void.
+	 *
+	 * @since   6.6.0
+	 */
+	private function cleanFiles()
+	{
+		$files = array(
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/abouts.php',
+			JPATH_ADMINISTRATOR . '/language/en-GB/en-GB.com_csvi.ini',
+			JPATH_ADMINISTRATOR . '/language/en-GB/en-GB.com_csvi.sys.ini',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/assets/css/images/index.html',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/addon/com_categories/install/csvi_templates.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/log.txt',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/assets/js/autocomplete.js',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/assets/js/jquery-ui.js',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/assets/js/jquery.js',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/controllers/availablefield.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/controllers/cpanel.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/controllers/settings.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/controllers/settings.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/abouts.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/analyzers.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/forms/settings_google.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/forms/settings_icecat.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/forms/settings_log.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/forms/settings_site.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/forms/settings_yandex.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/settings.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/sql/updates/mysql/6.0.0.sql',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/sql/updates/mysql/6.1.0.sql',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/map/tmpl/form.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/rule/tmpl/form.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/task/tmpl/form.form.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/task/tmpl/form.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/templatefield/tmpl/form.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/templates/tmpl/form.default.xml',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/templates/view.form.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/controllers/addons.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/dispatcher.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/helper/db.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/addons.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/models/maintenances.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/toolbar.php',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/imports/tmpl/steps.php',
+			JPATH_SITE . '/components/com_csvi/controllers/exports.php',
+			JPATH_SITE . '/components/com_csvi/controllers/imports.php',
+			JPATH_SITE . '/components/com_csvi/models/imports.php',
+		);
+
+		JFile::delete($files);
+
+		$folders = array(
+			JPATH_ADMINISTRATOR . '/components/com_csvi/install',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/settings',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/cpanel',
+			JPATH_SITE . '/layouts/csvi',
+			JPATH_SITE . '/components/com_csvi',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/assets/render',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/addons',
+			JPATH_ADMINISTRATOR . '/components/com_csvi/views/default',
+		);
+
+		foreach ($folders as $folder)
+		{
+			if (JFolder::exists($folder))
+			{
+				JFolder::delete($folder);
+			}
+		}
+
+	}
+
+	/**
+	 * Actions to perform after un-installation.
+	 *
+	 * @param   object  $parent  The parent object.
+	 *
+	 * @return  bool  True on success | False on failure.
+	 *
+	 * @since   7.0.1
+	 */
+	public function uninstall($parent)
+	{
+		// Clean up the cache
+		$cache = JFactory::getCache('com_csvi', '');
+		$cache->clean('com_csvi');
 	}
 }

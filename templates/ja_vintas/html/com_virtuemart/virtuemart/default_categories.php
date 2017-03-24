@@ -7,7 +7,7 @@ $iCol = 1;
 $iCategory = 1;
 
 // Calculating Categories Per Row
-$categories_per_row = VmConfig::get('homepage_categories_per_row', 3);
+$categories_per_row = VmConfig::get('homepage_categories_per_row', 1);
 $category_cellwidth = ' width' . floor(100 / $categories_per_row);
 
 // Separator
@@ -16,8 +16,7 @@ $verticalseparator = " vertical-separator";
 
 <div class="category-view">
 
-    <h4><?php echo JText::_('COM_VIRTUEMART_CATEGORIES') ?></h4>
-
+    <div class="horizontal-separator-green"></div>
     <?php
     // Start the Output
     foreach ($this->categories as $category) {
@@ -50,17 +49,26 @@ $verticalseparator = " vertical-separator";
 	    ?>
     	<div class="category floatleft<?php echo $category_cellwidth . $show_vertical_separator ?>">
     	    <div class="spacer">
-    		<h2>
-    		    <a href="<?php echo $caturl ?>" title="<?php echo $category->category_name ?>">
-    <?php echo $category->category_name ?>
-    			<br />
-	    <?php
+
+    	      <ul class="category_info">
+    	      	 <li><a href="<?php echo $caturl ?>" title="<?php echo $category->category_name ?>"><?php
 	    if (!empty($category->images)) {
 		echo $category->images[0]->displayMediaThumb("", false);
 	    }
 	    ?>
-    		    </a>
-    		</h2>
+    	</li>
+    	    <li>  
+    		<h2>
+    		    <a href="<?php echo $caturl ?>" title="<?php echo $category->category_name ?>">
+                    <?php echo $category->category_name ?>
+    		
+	            </a>
+	        </h2>
+	        <a href="<?php echo $caturl ?>">
+			    <span class="read-more"><?php echo JText::_('COM_VIRTUEMART_FEED_READMORE'); ?></span>
+			</a>
+        </li>
+    	
     	    </div>
     	</div>
 	<?php

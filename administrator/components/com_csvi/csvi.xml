@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<extension type="component" version="2.5" method="upgrade">
+<extension type="component" version="3.5" method="upgrade">
 	<name>CSVI</name>
-	<creationDate>4 februari 2013</creationDate>
+	<creationDate>23 January 2017</creationDate>
 	<author>RolandD Cyber Produksi</author>
 	<authorEmail>contact@csvimproved.com</authorEmail>
-	<authorUrl>http://www.csvimproved.com/</authorUrl>
-	<copyright>Copyright (C) 2006 - 2013 RolandD Cyber Produksi. All rights reserved.</copyright>
+	<authorUrl>https://csvimproved.com/</authorUrl>
+	<copyright>Copyright (C) 2006 - 2017 RolandD Cyber Produksi. All rights reserved.</copyright>
 	<license>GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html</license>
-	<version>4.5.3.2</version>
+	<version>7.0.2</version>
 	<description>COM_CSVI_XML_DESCRIPTION</description>
 
-  <!-- Front-end files -->
+	  <!-- Front-end files -->
 	<files folder="site">
 		<filename>csvi.php</filename>
 		<folder>controllers</folder>
+		<folder>language</folder>
 		<folder>models</folder>
 		<folder>views</folder>
 	</files>
@@ -21,61 +22,52 @@
 	<!-- Scripts to run on installation -->
 	<scriptfile>script.php</scriptfile>
 
-	<!-- Language files -->
-	<languages folder="site/language">
-		<language tag="en-GB">en-GB/en-GB.com_csvi.ini</language>
-	</languages>
-
 	<install> <!-- Runs on install -->
 		<sql>
-			<file driver="mysql" charset="utf8">install/install.mysql.utf8.sql</file>
+			<file driver="mysql" charset="utf8">sql/install/mysql/install.mysql.utf8.sql</file>
 		</sql>
 	</install>
-	<update> <!-- Runs on update; New in 2.5 -->
+	<update>
 		<schemas>
-			<schemapath type="mysql">install/update</schemapath>
+			<schemapath type="mysql">sql/updates/mysql</schemapath>
 		</schemas>
 	</update>
 
 	<administration>
 		<!-- Menu entries -->
-		<menu img="components/com_csvi/assets/images/csvi_logo_16.png" view="csvi">COM_CSVI</menu>
+		<menu view="csvi">COM_CSVI</menu>
 		<submenu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_process_16.png" view="process">COM_CSVI_PROCESS</menu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_replace_16.png" view="replacements">COM_CSVI_REPLACEMENTS</menu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_log_16.png" view="log">COM_CSVI_LOG</menu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_maintenance_16.png" view="maintenance">COM_CSVI_MAINTENANCE</menu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_av_fields_16.png" view="availablefields">COM_CSVI_AVAILABLEFIELDS</menu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_settings_16.png" view="settings">COM_CSVI_SETTINGS</menu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_template_16.png" view="templatetypes">COM_CSVI_TEMPLATETYPES</menu>
-			<menu link="" img="components/com_csvi/assets/images/csvi_about_16.png" view="about">COM_CSVI_ABOUT</menu>
+			<menu link="option=com_csvi&amp;view=csvi">COM_CSVI_DASHBOARD</menu>
+			<menu link="option=com_csvi&amp;view=imports">COM_CSVI_IMPORTS</menu>
+			<menu link="option=com_csvi&amp;view=exports">COM_CSVI_EXPORTS</menu>
+			<menu link="option=com_csvi&amp;view=templates">COM_CSVI_TEMPLATES</menu>
+			<menu link="option=com_csvi&amp;view=maintenance">COM_CSVI_MAINTENANCE</menu>
+			<menu link="option=com_csvi&amp;view=logs">COM_CSVI_LOGS</menu>
+			<menu link="option=com_csvi&amp;view=about">COM_CSVI_ABOUT</menu>
 		</submenu>
 
 		<!-- Core files -->
 		<files folder="admin">
+			<filename>access.xml</filename>
 			<filename>changelog.txt</filename>
 			<filename>config.xml</filename>
 			<filename>csvi.php</filename>
 			<filename>controller.php</filename>
-			<filename>index.html</filename>
+			<filename>gpl-3.0.txt</filename>
 			<folder>assets</folder>
 			<folder>controllers</folder>
-			<folder>helpers</folder>
-			<folder>install</folder>
-			<folder>liveupdate</folder>
+			<folder>helper</folder>
+			<folder>language</folder>
+			<folder>layouts</folder>
 			<folder>models</folder>
+			<folder>rantai</folder>
+			<folder>sql</folder>
 			<folder>tables</folder>
 			<folder>views</folder>
 		</files>
-
-		<!-- Language files -->
-		<languages folder="admin/language">
-			<language tag="en-GB">en-GB/en-GB.com_csvi.ini</language>
-			<language tag="en-GB">en-GB/en-GB.com_csvi.sys.ini</language>
-		</languages>
 	</administration>
 
 	<updateservers>
-	   <server type="extension" priority="1" name="CSVI">http://www.csvimproved.com/csvi.xml</server>
+	   <server type="extension" priority="1" name="CSVI Pro">https://csvimproved.com/updates/csvipro.xml</server>
 	</updateservers>
 </extension>
